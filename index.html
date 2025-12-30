@@ -55,6 +55,34 @@
                         </div>
                     </div>
 
+                    <!-- Project -->
+                    <div class="sidebar-section">
+                        <h3>Project</h3>
+                        <button id="save-project" class="project-btn">
+                            💾 Save Project
+                        </button>
+                        <button id="load-project" class="project-btn">
+                            📂 Load Project
+                        </button>
+                        <input
+                            type="file"
+                            id="file-input"
+                            accept=".json"
+                            style="display: none"
+                        />
+                        <div id="dropzone" class="dropzone">
+                            <div class="dropzone-content">
+                                <span class="dropzone-icon">📂</span>
+                                <span class="dropzone-text"
+                                    >Drop .json file here</span
+                                >
+                            </div>
+                        </div>
+                        <div id="project-status" class="project-status hidden">
+                            ✅ Project saved!
+                        </div>
+                    </div>
+
                     <!-- View Controls -->
                     <div class="sidebar-section">
                         <h3>View</h3>

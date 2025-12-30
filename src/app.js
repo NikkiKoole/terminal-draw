@@ -16,6 +16,7 @@ import { PickerTool } from "./tools/PickerTool.js";
 import { LayerPanel } from "./ui/LayerPanel.js";
 import { GlyphPicker } from "./ui/GlyphPicker.js";
 import { ClipboardManager } from "./export/ClipboardManager.js";
+import { ProjectManager } from "./io/ProjectManager.js";
 
 // =============================================================================
 // Configuration & State
@@ -43,6 +44,7 @@ let currentTool = null;
 let layerPanel = null;
 let glyphPicker = null;
 let clipboardManager = null;
+let projectManager = null;
 
 // Color selection state
 let selectedFg = 7;
@@ -573,6 +575,193 @@ function showExportStatus(result, statusElement, layerId = null) {
 }
 
 /**
+ * Initialize project manager and file operations
+ */
+function initProject() {
+  projectManager = new ProjectManager(scene, stateManager);
+
+  const saveBtn = document.getElementById("save-project");
+  const loadBtn = document.getElementById("load-project");
+  const fileInput = document.getElementById("file-input");
+  const dropzone = document.getElementById("dropzone");
+  const projectStatus = document.getElementById("project-status");
+
+  // Save project
+  if (saveBtn) {
+    saveBtn.addEventListener("click", () => {
+      const filename = prompt("Project name:", "my-artwork");
+      if (filename) {
+        const result = projectManager.saveToFile(filename);
+        showProjectStatus(result, projectStatus);
+      }
+    });
+  }
+
+  // Load project (file picker)
+  if (loadBtn && fileInput) {
+    loadBtn.addEventListener("click", () => {
+      fileInput.click();
+    });
+
+    fileInput.addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        await loadProjectFile(file, projectStatus);
+      }
+      // Reset input so same file can be loaded again
+      fileInput.value = "";
+    });
+  }
+
+  // Dropzone functionality
+  if (dropzone) {
+    // Prevent default drag behaviors
+    ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
+      dropzone.addEventListener(eventName, preventDefaults, false);
+      document.body.addEventListener(eventName, preventDefaults, false);
+    });
+
+    // Highlight dropzone when dragging over it
+    ["dragenter", "dragover"].forEach((eventName) => {
+      dropzone.addEventListener(eventName, () => {
+        dropzone.classList.add("drag-over");
+      });
+    });
+
+    ["dragleave", "drop"].forEach((eventName) => {
+      dropzone.addEventListener(eventName, () => {
+        dropzone.classList.remove("drag-over");
+      });
+    });
+
+    // Handle dropped files
+    dropzone.addEventListener("drop", async (e) => {
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        await loadProjectFile(files[0], projectStatus);
+      }
+    });
+
+    // Also allow clicking on dropzone
+    dropzone.addEventListener("click", () => {
+      fileInput.click();
+    });
+  }
+
+  // Listen to project events
+  stateManager.on("project:saved", (data) => {
+    console.log("Project saved:", data);
+  });
+
+  stateManager.on("project:loaded", (data) => {
+    console.log("Project loaded:", data);
+  });
+
+  stateManager.on("project:error", (data) => {
+    console.error("Project error:", data.error);
+  });
+}
+
+/**
+ * Prevent default drag/drop behavior
+ */
+function preventDefaults(e) {
+  e.preventDefault();
+  e.stopPropagation();
+}
+
+/**
+ * Load project from file
+ */
+async function loadProjectFile(file, statusElement) {
+  // Confirm if user wants to lose current work
+  const confirmed = confirm(
+    "Loading a project will replace your current work. Continue?",
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  const result = await projectManager.loadFromFile(file);
+
+  if (result.success) {
+    // Replace current scene
+    replaceScene(result.scene);
+    showProjectStatus(result, statusElement);
+  } else {
+    showProjectStatus(result, statusElement);
+  }
+}
+
+/**
+ * Replace current scene with a new one
+ */
+function replaceScene(newScene) {
+  // Update scene reference
+  scene = newScene;
+
+  // Update all components that reference the scene
+  if (projectManager) {
+    projectManager.scene = scene;
+  }
+  if (clipboardManager) {
+    clipboardManager.scene = scene;
+  }
+
+  // Re-render all layers
+  renderScene();
+
+  // Update layer panel
+  if (layerPanel) {
+    layerPanel.scene = scene;
+    layerPanel.render();
+  }
+
+  // Update hit test overlay
+  if (hitTestOverlay) {
+    hitTestOverlay.scene = scene;
+    hitTestOverlay.updateOverlaySize();
+  }
+
+  // Apply the palette from loaded scene
+  applyPalette(scene.paletteId);
+
+  updateStatus(
+    `Loaded project • Grid: ${scene.w}×${scene.h} • Palette: ${scene.paletteId}`,
+  );
+}
+
+/**
+ * Show project status message
+ */
+function showProjectStatus(result, statusElement) {
+  if (!statusElement) return;
+
+  statusElement.classList.remove("hidden", "error");
+
+  if (result.success) {
+    if (result.filename) {
+      // Load success
+      statusElement.textContent = `✅ Loaded: ${result.name}`;
+    } else {
+      // Save success
+      const kb = Math.round(result.size / 1024);
+      statusElement.textContent = `✅ Saved: ${result.name} (${kb} KB)`;
+    }
+    statusElement.classList.remove("error");
+  } else {
+    statusElement.textContent = `❌ Error: ${result.error}`;
+    statusElement.classList.add("error");
+  }
+
+  // Hide after 3 seconds
+  setTimeout(() => {
+    statusElement.classList.add("hidden");
+  }, 3000);
+}
+
+/**
  * Initialize all UI controls and apply defaults
  */
 function init() {
@@ -583,6 +772,7 @@ function init() {
   initInteractivePalette();
   initGlyphPicker();
   initClipboard();
+  initProject();
   initScaleControls();
   initPaletteSelector();
 }

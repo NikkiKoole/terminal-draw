@@ -4,6 +4,15 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Terminal Draw - ASCII Art Editor</title>
+        <style>
+            /* Prevent FOUC (Flash of Unstyled Content) */
+            body {
+                visibility: hidden;
+            }
+            body.loaded {
+                visibility: visible;
+            }
+        </style>
         <link rel="stylesheet" href="styles/main.css" />
         <link rel="stylesheet" href="styles/grid.css" />
         <link rel="stylesheet" href="styles/ui.css" />
@@ -213,5 +222,11 @@
         </div>
 
         <script type="module" src="src/app.js"></script>
+        <script>
+            // Show body once page is loaded
+            window.addEventListener("DOMContentLoaded", () => {
+                document.body.classList.add("loaded");
+            });
+        </script>
     </body>
 </html>

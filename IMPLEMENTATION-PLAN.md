@@ -117,7 +117,7 @@ DOM structure:
 
 ---
 
-### Step 2: Core Data Models ✅ PARTIAL (2/4 complete)
+### Step 2: Core Data Models ✅ COMPLETE
 
 #### Cell.js ✅ COMPLETE
 - [x] Simple class with `{ch, fg, bg}`
@@ -154,25 +154,41 @@ DOM structure:
 - [x] Helper exports: ALL_GLYPHS, GLYPH_CATEGORIES
 - [x] **15 tests passing** - defaults, palette ID, layer IDs, glyph categories
 
-#### Scene.js 🚧 TODO
-- [ ] Properties: `{w, h, paletteId, layers[], activeLayerId, options}`
-- [ ] Methods:
+#### Scene.js ✅ COMPLETE
+- [x] Properties: `{w, h, paletteId, layers[], activeLayerId, options}`
+- [x] Methods:
   - `getActiveLayer()` - returns current active layer
   - `getLayer(id)` - returns layer by id
   - `setActiveLayer(id)` - switch active layer
+  - `addLayer(layer)` - add new layer
+  - `removeLayer(id)` - remove layer by id
+  - `getVisibleLayers()` - get all visible layers
+  - `clearAll()` - clear all layers
   - `getCellIndex(x, y)` - converts coords to index
   - `isValidCoord(x, y)` - bounds checking
   - `toObject()` / `fromObject()` - serialization
+- [x] Initializes with 3 default layers (bg, mid, fg)
+- [x] **53 tests passing** - constructor, layer management, active layer, coordinates, serialization, integration tests
 
-#### StateManager.js 🚧 TODO
-- [ ] Simple event emitter with `on(event, callback)`, `emit(event, data)`, `off(event, callback)`
-- [ ] Events: `'scene:updated'`, `'layer:changed'`, `'tool:changed'`, `'cell:changed'`
+#### StateManager.js ✅ COMPLETE
+- [x] Simple event emitter pattern
+- [x] Methods:
+  - `on(event, callback)` - subscribe to event (returns unsubscribe function)
+  - `off(event, callback)` - unsubscribe from event
+  - `emit(event, data)` - emit event with optional data
+  - `clear(event)` - remove all listeners for event
+  - `listenerCount(event)` - get number of listeners
+  - `hasListeners(event)` - check if event has listeners
+  - `eventNames()` - get all registered event names
+- [x] Supports events: `'scene:updated'`, `'layer:changed'`, `'tool:changed'`, `'cell:changed'`
+- [x] Error handling for callback exceptions
+- [x] **46 tests passing** - on/off/emit, multiple callbacks, error handling, integration tests
 
-**Deliverable:** Data models tested and ready for use (2/4 complete, 80 tests passing)
+**Deliverable:** Data models tested and ready for use ✅ COMPLETE (4/4 modules, 179 tests passing)
 
 **Testing Infrastructure Added:**
 - ✅ Vitest test runner with watch mode
-- ✅ 80 tests passing (23 Cell + 42 Layer + 15 constants)
+- ✅ **179 tests passing** (23 Cell + 42 Layer + 15 constants + 53 Scene + 46 StateManager)
 - ✅ Node 20 requirement (.nvmrc added)
 - ✅ Test commands: `npm test`, `npm run test:run`, `npm run test:ui`
 
@@ -457,10 +473,10 @@ class Tool {
 
 ### Date Started: 2024-12-30
 ### Step 1 Completed: 2024-12-30
-### Step 2 Started: 2024-12-30 (Partial - 2/4 modules complete)
+### Step 2 Completed: 2024-12-30 (All 4 modules complete - 179 tests passing)
 ### Current Milestone: 1 (In Progress)
-### Current Step: Step 2 - Core Data Models (50% complete)
-### Next: Complete Scene.js and StateManager.js
+### Current Step: Step 3 - Basic Rendering (Next)
+### Next: Implement LayerRenderer.js and Compositor.js
 
 ### Step 1 Accomplishments:
 - ✅ Project structure with Vite dev server
@@ -505,21 +521,28 @@ class Tool {
 - `package.json` - Vite dev server setup
 - `.gitignore` - Node modules, build artifacts
 
-### Step 2 Progress (50% Complete):
+### Step 2 Progress (100% Complete):
 **Completed:**
 - ✅ Cell.js with full test coverage (23 tests)
 - ✅ Layer.js with comprehensive tests (42 tests)
+- ✅ Scene.js with full test coverage (53 tests)
+- ✅ StateManager.js with comprehensive tests (46 tests)
 - ✅ constants.js with 14 glyph categories (15 tests)
 - ✅ Testing infrastructure (Vitest + Node 20)
-- ✅ 80 tests passing
+- ✅ **179 tests passing** (all modules complete)
 
-**Remaining:**
-- 🚧 Scene.js - Top-level scene container
-- 🚧 StateManager.js - Event system for reactive updates
+**Files Created:**
+- `src/core/Cell.js` + `tests/Cell.test.js`
+- `src/core/Layer.js` + `tests/Layer.test.js`
+- `src/core/constants.js` + `tests/constants.test.js`
+- `src/core/Scene.js` + `tests/Scene.test.js`
+- `src/core/StateManager.js` + `tests/StateManager.test.js`
 
 **Key Decisions:**
 - Use palettes.json as single source of truth (not duplicated in constants)
 - DEFAULT_PALETTE_ID references palette by ID
+- Scene initializes with 3 default layers (bg, mid, fg)
+- StateManager returns unsubscribe function from on() for convenience
 - 14 glyph categories: Box styles, Shading, Math, Arrows, Currency, etc.
 - Test-driven development approach working well
 

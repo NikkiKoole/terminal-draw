@@ -113,30 +113,126 @@ header h1 {
 main {
     flex: 1;
     display: grid;
-    grid-template-columns: 200px 1fr 250px;
-    gap: var(--spacing-sm);
-    padding: var(--spacing-md);
+    grid-template-columns: 180px 1fr;
     overflow: hidden;
     min-height: 0;
+    gap: 0;
 }
 
-aside {
+#sidebar {
     background: var(--ui-bg-light);
-    border: 1px solid var(--ui-border);
-    border-radius: var(--radius-md);
+    border-right: 1px solid var(--ui-border);
     padding: var(--spacing-md);
     overflow-y: auto;
 }
 
-#editor {
+.sidebar-section {
+    margin-bottom: var(--spacing-lg);
+}
+
+.sidebar-section h3 {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--ui-text-dim);
+    margin-bottom: var(--spacing-sm);
+}
+
+.sidebar-section button {
+    width: 100%;
+    margin-bottom: var(--spacing-md);
+}
+
+.scale-control {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--ui-bg-light);
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.scale-control label {
+    font-size: 12px;
+    color: var(--ui-text);
+    display: flex;
+    justify-content: space-between;
+}
+
+.scale-control input[type="range"] {
+    width: 100%;
+    accent-color: var(--ui-accent);
+}
+
+.scale-control input[type="number"] {
+    width: 100%;
+    padding: var(--spacing-xs);
+    background: var(--ui-bg);
     border: 1px solid var(--ui-border);
-    border-radius: var(--radius-md);
-    padding: var(--spacing-md);
+    border-radius: var(--radius-sm);
+    color: var(--ui-text);
+    font-size: 12px;
+}
+
+#palette-selector {
+    width: 100%;
+    padding: var(--spacing-xs);
+    margin-bottom: var(--spacing-sm);
+    background: var(--ui-bg);
+    border: 1px solid var(--ui-border);
+    border-radius: var(--radius-sm);
+    color: var(--ui-text);
+    font-size: 12px;
+    cursor: pointer;
+}
+
+#palette-selector:hover {
+    border-color: var(--ui-accent);
+}
+
+.palette-row {
+    display: flex;
+    gap: 2px;
+}
+
+.palette-swatch {
+    flex: 1;
+    height: 24px;
+    border: 1px solid var(--ui-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.palette-swatch:hover {
+    transform: scale(1.1);
+}
+
+.palette-swatch[data-color="0"] {
+    background-color: var(--color-fg-0);
+}
+.palette-swatch[data-color="1"] {
+    background-color: var(--color-fg-1);
+}
+.palette-swatch[data-color="2"] {
+    background-color: var(--color-fg-2);
+}
+.palette-swatch[data-color="3"] {
+    background-color: var(--color-fg-3);
+}
+.palette-swatch[data-color="4"] {
+    background-color: var(--color-fg-4);
+}
+.palette-swatch[data-color="5"] {
+    background-color: var(--color-fg-5);
+}
+.palette-swatch[data-color="6"] {
+    background-color: var(--color-fg-6);
+}
+.palette-swatch[data-color="7"] {
+    background-color: var(--color-fg-7);
+}
+
+#editor {
     overflow: auto;
+    padding: var(--spacing-lg);
 }
 
 footer {

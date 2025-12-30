@@ -1,10 +1,124 @@
 /* ============================================
    Terminal Draw - UI Component Styles
-   Toolbar, layer panel, color palette, controls
+   Sidebar, controls, palette
    ============================================ */
 
 /* ============================================
-   Toolbar
+   Sidebar
+   ============================================ */
+
+#sidebar {
+    background: var(--ui-bg-light);
+    border-right: 1px solid var(--ui-border);
+    padding: var(--spacing-md);
+    overflow-y: auto;
+}
+
+.sidebar-section {
+    margin-bottom: var(--spacing-lg);
+}
+
+.sidebar-section h3 {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--ui-text-dim);
+    margin-bottom: var(--spacing-sm);
+}
+
+.sidebar-section button {
+    width: 100%;
+    margin-bottom: var(--spacing-md);
+}
+
+/* ============================================
+   Scale Controls
+   ============================================ */
+
+.scale-control {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.scale-control label {
+    font-size: 12px;
+    color: var(--ui-text);
+    display: flex;
+    justify-content: space-between;
+    white-space: nowrap;
+}
+
+.scale-control input[type="range"] {
+    width: 100%;
+    accent-color: var(--ui-accent);
+}
+
+/* ============================================
+   Palette Selector
+   ============================================ */
+
+#palette-selector {
+    width: 100%;
+    padding: var(--spacing-xs);
+    margin-bottom: var(--spacing-sm);
+    background: var(--ui-bg);
+    border: 1px solid var(--ui-border);
+    border-radius: var(--radius-sm);
+    color: var(--ui-text);
+    font-size: 12px;
+    cursor: pointer;
+}
+
+#palette-selector:hover {
+    border-color: var(--ui-accent);
+}
+
+.palette-row {
+    display: flex;
+    gap: 2px;
+}
+
+.palette-swatch {
+    flex: 1;
+    height: 24px;
+    border: 1px solid var(--ui-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.palette-swatch:hover {
+    transform: scale(1.1);
+}
+
+.palette-swatch[data-color="0"] {
+    background-color: var(--color-fg-0);
+}
+.palette-swatch[data-color="1"] {
+    background-color: var(--color-fg-1);
+}
+.palette-swatch[data-color="2"] {
+    background-color: var(--color-fg-2);
+}
+.palette-swatch[data-color="3"] {
+    background-color: var(--color-fg-3);
+}
+.palette-swatch[data-color="4"] {
+    background-color: var(--color-fg-4);
+}
+.palette-swatch[data-color="5"] {
+    background-color: var(--color-fg-5);
+}
+.palette-swatch[data-color="6"] {
+    background-color: var(--color-fg-6);
+}
+.palette-swatch[data-color="7"] {
+    background-color: var(--color-fg-7);
+}
+
+/* ============================================
+   Toolbar (placeholder for Step 2)
    ============================================ */
 
 #toolbar {
@@ -12,333 +126,6 @@
     gap: var(--spacing-sm);
     align-items: center;
     flex: 1;
-}
-
-.tool-group {
-    display: flex;
-    gap: var(--spacing-xs);
-    padding: 0 var(--spacing-sm);
-    border-right: 1px solid var(--ui-border);
-}
-
-.tool-group:last-child {
-    border-right: none;
-}
-
-.tool-btn {
-    width: 36px;
-    height: 36px;
-    padding: var(--spacing-xs);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid var(--ui-border);
-    border-radius: var(--radius-sm);
-    background: var(--ui-bg);
-    color: var(--ui-text);
-    cursor: pointer;
-    transition: all 0.2s;
-    position: relative;
-}
-
-.tool-btn:hover {
-    background: var(--ui-border);
-    border-color: var(--ui-accent);
-}
-
-.tool-btn.active {
-    background: var(--ui-accent);
-    border-color: var(--ui-accent);
-    color: white;
-}
-
-.tool-btn[title]::after {
-    content: attr(title);
-    position: absolute;
-    bottom: -28px;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: var(--spacing-xs) var(--spacing-sm);
-    background: var(--ui-bg-light);
-    border: 1px solid var(--ui-border);
-    border-radius: var(--radius-sm);
-    font-size: 11px;
-    white-space: nowrap;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.2s;
-    z-index: 100;
-}
-
-.tool-btn:hover[title]::after {
-    opacity: 1;
-}
-
-.current-brush {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-    padding: var(--spacing-xs) var(--spacing-md);
-    background: var(--ui-bg);
-    border: 1px solid var(--ui-border);
-    border-radius: var(--radius-sm);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 18px;
-}
-
-.current-brush-glyph {
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid var(--ui-border);
-}
-
-/* ============================================
-   Layer Panel
-   ============================================ */
-
-#layer-panel {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-sm);
-}
-
-.layer-panel-header {
-    font-weight: 600;
-    font-size: 12px;
-    text-transform: uppercase;
-    color: var(--ui-text-dim);
-    margin-bottom: var(--spacing-xs);
-}
-
-.layer-list {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xs);
-}
-
-.layer-item {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-    padding: var(--spacing-sm);
-    background: var(--ui-bg);
-    border: 1px solid var(--ui-border);
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.layer-item:hover {
-    border-color: var(--ui-accent);
-}
-
-.layer-item.active {
-    background: var(--ui-accent);
-    border-color: var(--ui-accent);
-    color: white;
-}
-
-.layer-item.active .layer-name {
-    color: white;
-}
-
-.layer-controls {
-    display: flex;
-    gap: var(--spacing-xs);
-}
-
-.layer-toggle {
-    width: 24px;
-    height: 24px;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid var(--ui-border);
-    border-radius: var(--radius-sm);
-    background: var(--ui-bg);
-    cursor: pointer;
-    font-size: 12px;
-    transition: all 0.2s;
-}
-
-.layer-toggle:hover {
-    background: var(--ui-border);
-}
-
-.layer-toggle.active {
-    background: var(--ui-accent);
-    border-color: var(--ui-accent);
-    color: white;
-}
-
-.layer-item.active .layer-toggle {
-    background: rgba(255, 255, 255, 0.2);
-    border-color: rgba(255, 255, 255, 0.3);
-}
-
-.layer-item.active .layer-toggle:hover {
-    background: rgba(255, 255, 255, 0.3);
-}
-
-.layer-item.active .layer-toggle.active {
-    background: white;
-    color: var(--ui-accent);
-}
-
-.layer-name {
-    flex: 1;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--ui-text);
-}
-
-/* ============================================
-   Color Palette
-   ============================================ */
-
-#color-palette {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-md);
-}
-
-.palette-section {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-sm);
-}
-
-.palette-label {
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
-    color: var(--ui-text-dim);
-}
-
-.palette-colors {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: var(--spacing-xs);
-}
-
-.color-swatch {
-    width: 100%;
-    aspect-ratio: 1;
-    border: 2px solid var(--ui-border);
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    transition: all 0.2s;
-    position: relative;
-}
-
-.color-swatch:hover {
-    border-color: var(--ui-text);
-    transform: scale(1.05);
-}
-
-.color-swatch.active {
-    border-color: white;
-    border-width: 3px;
-    box-shadow: 0 0 0 2px var(--ui-accent);
-}
-
-.color-swatch.transparent {
-    background:
-        linear-gradient(45deg, var(--ui-border) 25%, transparent 25%),
-        linear-gradient(-45deg, var(--ui-border) 25%, transparent 25%),
-        linear-gradient(45deg, transparent 75%, var(--ui-border) 75%),
-        linear-gradient(-45deg, transparent 75%, var(--ui-border) 75%);
-    background-size: 8px 8px;
-    background-position: 0 0, 0 4px, 4px -4px, -4px 0px;
-}
-
-.color-swatch[data-color="0"] { background-color: var(--color-fg-0); }
-.color-swatch[data-color="1"] { background-color: var(--color-fg-1); }
-.color-swatch[data-color="2"] { background-color: var(--color-fg-2); }
-.color-swatch[data-color="3"] { background-color: var(--color-fg-3); }
-.color-swatch[data-color="4"] { background-color: var(--color-fg-4); }
-.color-swatch[data-color="5"] { background-color: var(--color-fg-5); }
-.color-swatch[data-color="6"] { background-color: var(--color-fg-6); }
-.color-swatch[data-color="7"] { background-color: var(--color-fg-7); }
-
-/* ============================================
-   Glyph Picker
-   ============================================ */
-
-#glyph-picker {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-sm);
-    margin-top: var(--spacing-md);
-    padding-top: var(--spacing-md);
-    border-top: 1px solid var(--ui-border);
-}
-
-.glyph-section {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xs);
-}
-
-.glyph-section-label {
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    color: var(--ui-text-dim);
-}
-
-.glyph-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(28px, 1fr));
-    gap: 2px;
-}
-
-.glyph-btn {
-    aspect-ratio: 1;
-    padding: 0;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid var(--ui-border);
-    border-radius: var(--radius-sm);
-    background: var(--ui-bg);
-    color: var(--ui-text);
-    cursor: pointer;
-    transition: all 0.15s;
-}
-
-.glyph-btn:hover {
-    background: var(--ui-border);
-    border-color: var(--ui-accent);
-    transform: scale(1.1);
-    z-index: 1;
-}
-
-.glyph-btn.active {
-    background: var(--ui-accent);
-    border-color: var(--ui-accent);
-    color: white;
-}
-
-/* ============================================
-   Controls Section
-   ============================================ */
-
-#controls {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-md);
-}
-
-#copy-btn {
-    margin-top: auto;
-    width: 100%;
 }
 
 /* ============================================
@@ -349,19 +136,4 @@
     display: flex;
     align-items: center;
     gap: var(--spacing-md);
-}
-
-.status-item {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-xs);
-}
-
-.status-item::before {
-    content: '•';
-    color: var(--ui-text-dim);
-}
-
-.status-item:first-child::before {
-    content: none;
 }

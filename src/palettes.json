@@ -1,0 +1,132 @@
+{
+  "default": {
+    "name": "Default Terminal",
+    "colors": [
+      "#000000",
+      "#cc0000",
+      "#4e9a06",
+      "#c4a000",
+      "#3465a4",
+      "#75507b",
+      "#06989a",
+      "#d3d7cf"
+    ]
+  },
+  "gruvbox": {
+    "name": "Gruvbox Dark",
+    "colors": [
+      "#282828",
+      "#cc241d",
+      "#98971a",
+      "#d79921",
+      "#458588",
+      "#b16286",
+      "#689d6a",
+      "#a89984"
+    ]
+  },
+  "nord": {
+    "name": "Nord",
+    "colors": [
+      "#2e3440",
+      "#bf616a",
+      "#a3be8c",
+      "#ebcb8b",
+      "#81a1c1",
+      "#b48ead",
+      "#88c0d0",
+      "#e5e9f0"
+    ]
+  },
+  "dracula": {
+    "name": "Dracula",
+    "colors": [
+      "#282a36",
+      "#ff5555",
+      "#50fa7b",
+      "#f1fa8c",
+      "#bd93f9",
+      "#ff79c6",
+      "#8be9fd",
+      "#f8f8f2"
+    ]
+  },
+  "monokai": {
+    "name": "Monokai",
+    "colors": [
+      "#272822",
+      "#f92672",
+      "#a6e22e",
+      "#f4bf75",
+      "#66d9ef",
+      "#ae81ff",
+      "#a1efe4",
+      "#f8f8f2"
+    ]
+  },
+  "solarized": {
+    "name": "Solarized Dark",
+    "colors": [
+      "#002b36",
+      "#dc322f",
+      "#859900",
+      "#b58900",
+      "#268bd2",
+      "#d33682",
+      "#2aa198",
+      "#eee8d5"
+    ]
+  },
+  "tokyo-night": {
+    "name": "Tokyo Night",
+    "colors": [
+      "#1a1b26",
+      "#f7768e",
+      "#9ece6a",
+      "#e0af68",
+      "#7aa2f7",
+      "#bb9af7",
+      "#7dcfff",
+      "#c0caf5"
+    ]
+  },
+  "catppuccin": {
+    "name": "Catppuccin Mocha",
+    "colors": [
+      "#1e1e2e",
+      "#f38ba8",
+      "#a6e3a1",
+      "#f9e2af",
+      "#89b4fa",
+      "#f5c2e7",
+      "#94e2d5",
+      "#cdd6f4"
+    ]
+  },
+  "claude": {
+    "name": "Anthropic Claude",
+    "colors": [
+      "#1F1E1D",
+      "#C15F3C",
+      "#26831A",
+      "#F4F3EE",
+      "#1C6BBB",
+      "#8A46CE",
+      "#D73A83",
+      "#B1ADA1"
+    ]
+  },
+  "monet": {
+    "name": "Monet Muted",
+    "colors": [
+      "#89A89E",
+      "#A2664B",
+      "#EAD992",
+      "#F8D175",
+      "#A3A5C3",
+      "#B994C0",
+      "#F4B5C1",
+      "#D4E1E0"
+    ]
+  }
+}

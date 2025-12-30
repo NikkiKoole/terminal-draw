@@ -93,14 +93,27 @@ DOM structure:
 
 **Estimated Time:** 15-20 hours
 
-### Step 1: Project Setup (30 min)
+### Step 1: Project Setup ✅ COMPLETE
 - [x] Create `index.html` with basic structure
 - [x] Set up CSS with font-face for JetBrains Mono
 - [x] Define CSS custom properties (colors, cell size)
 - [x] Test font rendering with sample box-drawing characters
 - [x] Set up ES6 modules (type="module" in script tag)
+- [x] Add npm/Vite dev server setup
+- [x] Implement cell-based rendering with row wrappers
+- [x] Create background grid layer (single div)
+- [x] Add scale controls (slider + scale-to-fit button)
+- [x] Implement palette system with 10 color schemes
+- [x] Clean and organize code structure
 
-**Deliverable:** HTML page loads with font displaying test characters ✅
+**Deliverable:** Working grid with seamless rendering, scaling, and palette switching ✅
+
+**Key Decisions Made:**
+- Cell-based rendering with row wrappers for seamless box-drawing characters
+- Separate background layer (single colored div) vs per-cell backgrounds
+- Dynamic palette switching via CSS custom properties
+- Scale-to-fit calculates from background-grid dimensions
+- Test pattern demonstrates font capabilities (will be replaced in Step 2)
 
 ---
 
@@ -426,14 +439,55 @@ class Tool {
 ## Development Notes
 
 ### Date Started: 2024-12-30
-### Current Milestone: 1
-### Current Step: Step 1 Complete ✅ - Moving to Step 2
+### Step 1 Completed: 2024-12-30
+### Current Milestone: 1 ✅ Complete
+### Next Step: Step 2 - Core Data Models
 
-### Issues / Questions:
-- (Add notes as you work)
+### Step 1 Accomplishments:
+- ✅ Project structure with Vite dev server
+- ✅ Cell-based rendering with seamless box-drawing
+- ✅ Palette system with 10 color schemes (JSON-based)
+- ✅ Scaling controls (10-1000%, auto-fit)
+- ✅ Clean, organized codebase ready for Step 2
 
-### Decisions Made:
-- (Track architectural decisions)
+### Key Technical Decisions:
+1. **Rendering Approach**: Row-based wrapping with individual cell spans
+   - Each row is a `<div class="grid-row">` containing cell `<span>`s
+   - Parent has `font-size: 0` to eliminate inline-block gaps
+   - Achieves seamless character connection for box-drawing
+   
+2. **Background Layer**: Single colored div instead of 2000 cell divs
+   - More efficient: `background-grid` is one div with calculated dimensions
+   - Scales used for dimension calculations (via getBoundingClientRect)
+   
+3. **Palette System**: Dynamic CSS custom property updates
+   - Palettes stored in JSON with single `colors` array (8 colors)
+   - Applied to both `--color-fg-X` and `--color-bg-X` variables
+   - Instant theme switching without page reload
+   
+4. **Scaling**: Transform-based with viewport-aware calculations
+   - Range: 10% to 1000% (slider control)
+   - Auto-fit calculates optimal scale from available editor space
+   - Uses `requestAnimationFrame` for accurate dimension measurement
+
+### Issues Resolved:
+- ✅ CORS issues with file:// protocol → Added Vite dev server
+- ✅ Cell gaps in grid → Row wrappers + font-size: 0 on parent
+- ✅ Background rendering → Separate layer approach
+- ✅ Scale-to-fit accuracy → Measure background-grid after transform reset
+
+### Files Created (Step 1):
+- `index.html` - Clean structure, no test code in header
+- `src/app.js` - Well-organized with JSDoc comments
+- `src/palettes.json` - 10 curated color schemes
+- `styles/main.css` - Global styles, CSS variables, layout
+- `styles/grid.css` - Grid and cell rendering
+- `styles/ui.css` - Sidebar, controls, palette UI
+- `package.json` - Vite dev server setup
+- `.gitignore` - Node modules, build artifacts
+
+### Ready for Step 2:
+The foundation is solid. Next step: build the actual data models (Cell, Layer, Scene, StateManager) that will replace the test pattern with real editing functionality.
 
 ---
 

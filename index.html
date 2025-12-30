@@ -12,57 +12,104 @@
         <div id="app">
             <header>
                 <h1>Terminal Draw</h1>
+                <!-- Toolbar will be added in Step 2 -->
                 <div id="toolbar"></div>
-                <!-- Test: seamless character connection -->
-                <div
-                    style="
-                        font-family: &quot;JetBrains Mono&quot;, monospace;
-                        font-size: 16px;
-                        line-height: 1;
-                        background: #000;
-                        color: #0f0;
-                        padding: 8px;
-                        margin-left: auto;
-                    "
-                >
-                    Test:
-                    <span style="letter-spacing: 0"
-                        >┌─────────┐│████████│└─────────┘</span
-                    >
-                    <br />
-                    Ligatures OFF:
-                    <span
-                        style="
-                            letter-spacing: 0;
-                            font-feature-settings:
-                                &quot;calt&quot; 0,
-                                &quot;liga&quot; 0;
-                        "
-                        >-&gt; =&gt; != &lt;= &gt;= :: ++ -- /** */</span
-                    >
-                    <br />
-                    Ligatures ON:
-                    <span
-                        style="
-                            letter-spacing: 0;
-                            font-feature-settings:
-                                &quot;calt&quot; 1,
-                                &quot;liga&quot; 1;
-                        "
-                        >-&gt; =&gt; != &lt;= &gt;= :: ++ -- /** */</span
-                    >
-                </div>
             </header>
 
             <main>
-                <aside id="layer-panel"></aside>
+                <!-- Sidebar: View controls and palette selector -->
+                <aside id="sidebar">
+                    <!-- View Controls -->
+                    <div class="sidebar-section">
+                        <h3>View</h3>
+                        <button id="scale-to-fit-btn" class="btn-primary">
+                            Scale to Fit
+                        </button>
+                        <div class="scale-control">
+                            <label for="scale-slider">
+                                Scale: <span id="scale-value">100</span>%
+                            </label>
+                            <input
+                                type="range"
+                                id="scale-slider"
+                                min="10"
+                                max="1000"
+                                value="100"
+                                step="5"
+                            />
+                        </div>
+                    </div>
 
+                    <!-- Palette Selector -->
+                    <div class="sidebar-section">
+                        <h3>Palette</h3>
+                        <select id="palette-selector">
+                            <option value="default">Default Terminal</option>
+                            <option value="gruvbox">Gruvbox Dark</option>
+                            <option value="nord">Nord</option>
+                            <option value="dracula">Dracula</option>
+                            <option value="monokai">Monokai</option>
+                            <option value="solarized">Solarized Dark</option>
+                            <option value="tokyo-night">Tokyo Night</option>
+                            <option value="catppuccin">Catppuccin Mocha</option>
+                            <option value="claude">Anthropic Claude</option>
+                            <option value="monet">Monet Muted</option>
+                        </select>
+                        <div class="palette-row">
+                            <div
+                                class="palette-swatch"
+                                data-color="0"
+                                title="Color 0"
+                            ></div>
+                            <div
+                                class="palette-swatch"
+                                data-color="1"
+                                title="Color 1"
+                            ></div>
+                            <div
+                                class="palette-swatch"
+                                data-color="2"
+                                title="Color 2"
+                            ></div>
+                            <div
+                                class="palette-swatch"
+                                data-color="3"
+                                title="Color 3"
+                            ></div>
+                            <div
+                                class="palette-swatch"
+                                data-color="4"
+                                title="Color 4"
+                            ></div>
+                            <div
+                                class="palette-swatch"
+                                data-color="5"
+                                title="Color 5"
+                            ></div>
+                            <div
+                                class="palette-swatch"
+                                data-color="6"
+                                title="Color 6"
+                            ></div>
+                            <div
+                                class="palette-swatch"
+                                data-color="7"
+                                title="Color 7"
+                            ></div>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Main Editor Area -->
                 <div id="editor">
                     <div class="grid-container">
-                        <!-- Hit test layer (top, handles all events) -->
+                        <!-- Background: Solid color layer -->
+                        <div id="background-grid" class="background-grid"></div>
+
+                        <!-- Hit Test: Invisible layer for mouse events -->
                         <div id="hit-test-layer" class="hit-test-layer"></div>
 
-                        <!-- Visual layers (no pointer events) -->
+                        <!-- Text Layers: 3 layers for drawing (bg/mid/fg) -->
                         <div
                             id="layer-bg"
                             class="visual-layer"
@@ -80,14 +127,6 @@
                         ></div>
                     </div>
                 </div>
-
-                <aside id="controls">
-                    <div id="color-palette"></div>
-                    <div id="glyph-picker"></div>
-                    <button id="copy-btn" class="btn-primary">
-                        Copy to Clipboard
-                    </button>
-                </aside>
             </main>
 
             <footer>

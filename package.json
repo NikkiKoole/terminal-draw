@@ -1,0 +1,23 @@
+{
+  "name": "terminal-draw",
+  "version": "0.1.0",
+  "description": "A web-based ASCII drawing tool for terminal art",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  },
+  "keywords": [
+    "ascii",
+    "terminal",
+    "drawing",
+    "art",
+    "editor"
+  ],
+  "author": "",
+  "license": "MIT"
+}

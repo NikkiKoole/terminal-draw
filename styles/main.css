@@ -1,0 +1,198 @@
+/* ============================================
+   Terminal Draw - Main Styles
+   Font setup, CSS custom properties, globals
+   ============================================ */
+
+/* Font Face */
+@font-face {
+    font-family: "JetBrains Mono";
+    src: url("../assets/JetBrainsMono-Medium.woff2") format("woff2");
+    font-weight: 500;
+    font-style: normal;
+    font-display: block;
+}
+
+/* CSS Custom Properties */
+:root {
+    /* Grid dimensions */
+    --grid-w: 80;
+    --grid-h: 25;
+    --cell-size: 16px;
+    --cell-line-height: 1;
+
+    /* Terminal color palette - Foreground */
+    --color-fg-0: #000000; /* Black */
+    --color-fg-1: #cc0000; /* Red */
+    --color-fg-2: #4e9a06; /* Green */
+    --color-fg-3: #c4a000; /* Yellow */
+    --color-fg-4: #3465a4; /* Blue */
+    --color-fg-5: #75507b; /* Magenta */
+    --color-fg-6: #06989a; /* Cyan */
+    --color-fg-7: #d3d7cf; /* White */
+
+    /* Terminal color palette - Background */
+    --color-bg-0: #000000; /* Black */
+    --color-bg-1: #cc0000; /* Red */
+    --color-bg-2: #4e9a06; /* Green */
+    --color-bg-3: #c4a000; /* Yellow */
+    --color-bg-4: #3465a4; /* Blue */
+    --color-bg-5: #75507b; /* Magenta */
+    --color-bg-6: #06989a; /* Cyan */
+    --color-bg-7: #d3d7cf; /* White */
+
+    /* UI colors */
+    --ui-bg: #1e1e1e;
+    --ui-bg-light: #2d2d2d;
+    --ui-border: #3e3e3e;
+    --ui-text: #cccccc;
+    --ui-text-dim: #808080;
+    --ui-accent: #007acc;
+    --ui-accent-hover: #1a8cd8;
+
+    /* Spacing */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+
+    /* Border radius */
+    --radius-sm: 4px;
+    --radius-md: 6px;
+}
+
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+body {
+    font-family:
+        -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+        "Ubuntu", "Cantarell", sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--ui-text);
+    background: var(--ui-bg);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* App Layout */
+#app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+}
+
+header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--ui-bg-light);
+    border-bottom: 1px solid var(--ui-border);
+}
+
+header h1 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--ui-text);
+    margin: 0;
+}
+
+main {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 200px 1fr 250px;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md);
+    overflow: hidden;
+    min-height: 0;
+}
+
+aside {
+    background: var(--ui-bg-light);
+    border: 1px solid var(--ui-border);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    overflow-y: auto;
+}
+
+#editor {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--ui-bg-light);
+    border: 1px solid var(--ui-border);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    overflow: auto;
+}
+
+footer {
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--ui-bg-light);
+    border-top: 1px solid var(--ui-border);
+    font-size: 12px;
+    color: var(--ui-text-dim);
+}
+
+/* Button Styles */
+button {
+    font-family: inherit;
+    font-size: 14px;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 1px solid var(--ui-border);
+    border-radius: var(--radius-sm);
+    background: var(--ui-bg-light);
+    color: var(--ui-text);
+    cursor: pointer;
+    transition:
+        background 0.2s,
+        border-color 0.2s;
+}
+
+button:hover {
+    background: var(--ui-border);
+}
+
+button:active {
+    transform: translateY(1px);
+}
+
+button.btn-primary {
+    background: var(--ui-accent);
+    border-color: var(--ui-accent);
+    color: white;
+}
+
+button.btn-primary:hover {
+    background: var(--ui-accent-hover);
+    border-color: var(--ui-accent-hover);
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Utility Classes */
+.hidden {
+    display: none !important;
+}
+
+.active {
+    background: var(--ui-accent) !important;
+    border-color: var(--ui-accent) !important;
+    color: white !important;
+}

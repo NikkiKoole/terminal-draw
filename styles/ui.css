@@ -74,24 +74,6 @@
     border-color: var(--ui-accent);
 }
 
-.palette-row {
-    display: flex;
-    gap: 2px;
-}
-
-.palette-swatch {
-    flex: 1;
-    height: 24px;
-    border: 1px solid var(--ui-border);
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    transition: transform 0.2s;
-}
-
-.palette-swatch:hover {
-    transform: scale(1.1);
-}
-
 .palette-swatch[data-color="0"] {
     background-color: var(--color-fg-0);
 }
@@ -224,6 +206,270 @@
 .layer-lock.locked {
     background: rgba(204, 0, 0, 0.1);
     border-color: rgba(204, 0, 0, 0.3);
+}
+
+/* ============================================
+   Color Palette
+   ============================================ */
+
+.color-palette {
+    width: 100%;
+}
+
+.color-section {
+    margin-bottom: var(--spacing-md);
+}
+
+.color-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--ui-text-dim);
+    margin-bottom: var(--spacing-xs);
+    text-transform: uppercase;
+}
+
+.color-swatches {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+}
+
+.color-swatch {
+    width: 100%;
+    aspect-ratio: 1;
+    border: 2px solid var(--ui-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: white;
+    text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+    padding: 0;
+    margin: 0;
+    background: var(--ui-bg);
+}
+
+.color-swatch:hover {
+    transform: scale(1.1);
+    border-color: var(--ui-text);
+    z-index: 1;
+}
+
+.color-swatch.selected {
+    border-color: var(--ui-accent);
+    border-width: 3px;
+    box-shadow: 0 0 0 2px rgba(0, 122, 204, 0.3);
+}
+
+.color-swatch.transparent {
+    background: repeating-conic-gradient(#808080 0% 25%, #404040 0% 50%) 50% /
+        8px 8px;
+    color: var(--ui-text);
+}
+
+.color-preview {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm);
+    background: var(--ui-bg);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--ui-border);
+    margin-top: var(--spacing-md);
+}
+
+.preview-label {
+    font-size: 11px;
+    color: var(--ui-text-dim);
+    text-transform: uppercase;
+}
+
+.preview-cell {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 24px;
+    line-height: 1;
+    min-width: 32px;
+    min-height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--ui-border);
+    border-radius: var(--radius-sm);
+}
+
+/* ============================================
+   Glyph Picker
+   ============================================ */
+
+.glyph-trigger-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-sm) var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+    background: var(--ui-bg);
+    border: 1px solid var(--ui-border);
+    border-radius: var(--radius-sm);
+    color: var(--ui-text);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.glyph-trigger-btn:hover {
+    border-color: var(--ui-accent);
+    background: var(--ui-bg-light);
+}
+
+.trigger-label {
+    font-size: 12px;
+    color: var(--ui-text-dim);
+    text-transform: uppercase;
+}
+
+.trigger-char {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 24px;
+    line-height: 1;
+    min-width: 32px;
+    min-height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--ui-border);
+    border-radius: var(--radius-sm);
+    background: var(--ui-bg-light);
+}
+
+.glyph-picker-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.glyph-picker-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+}
+
+.glyph-picker-container {
+    position: relative;
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    background: var(--ui-bg-light);
+    border: 1px solid var(--ui-border);
+    border-radius: var(--radius-md);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    z-index: 1001;
+}
+
+.glyph-picker-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--ui-border);
+}
+
+.glyph-picker-header h3 {
+    margin: 0;
+    font-size: 18px;
+    color: var(--ui-text);
+}
+
+.glyph-picker-close {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    color: var(--ui-text-dim);
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    transition: all 0.2s;
+}
+
+.glyph-picker-close:hover {
+    background: var(--ui-bg);
+    color: var(--ui-text);
+}
+
+.glyph-picker-filter {
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--ui-border);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.glyph-picker-filter label {
+    font-size: 12px;
+    color: var(--ui-text-dim);
+    text-transform: uppercase;
+}
+
+.glyph-picker-filter select {
+    flex: 1;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    background: var(--ui-bg);
+    border: 1px solid var(--ui-border);
+    border-radius: var(--radius-sm);
+    color: var(--ui-text);
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.glyph-picker-grid {
+    padding: var(--spacing-md);
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+    gap: 4px;
+    overflow-y: auto;
+    max-height: 50vh;
+}
+
+.glyph-item {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 20px;
+    background: var(--ui-bg);
+    border: 1px solid var(--ui-border);
+    border-radius: var(--radius-sm);
+    color: var(--ui-text);
+    cursor: pointer;
+    transition: all 0.2s;
+    padding: 0;
+    margin: 0;
+}
+
+.glyph-item:hover {
+    background: var(--ui-accent);
+    border-color: var(--ui-accent);
+    color: white;
+    transform: scale(1.1);
+    z-index: 1;
 }
 
 /* ============================================

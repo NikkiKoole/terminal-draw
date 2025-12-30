@@ -348,39 +348,41 @@ class Tool {
 
 ---
 
-### Step 6: Basic UI (2-3 hours)
+### Step 6: Basic UI ✅ COMPLETE (2-3 hours)
 
-#### Toolbar.js
-- [ ] Create tool buttons: Brush, Eraser, Picker
-- [ ] Click handler: `setActiveTool(toolName)`
-- [ ] Visual indication of active tool (CSS class)
-- [ ] Listen to `'tool:changed'` to update UI
-- [ ] Display current glyph/fg/bg for brush
+#### Toolbar.js ✅ COMPLETE
+- [x] Create tool buttons: Brush, Eraser, Picker
+- [x] Click handler: `setActiveTool(toolName)`
+- [x] Visual indication of active tool (CSS class)
+- [x] Listen to `'tool:changed'` to update UI
+- [x] Display current glyph/fg/bg for brush
 
-#### ColorPalette.js
-- [ ] Display 8 foreground color swatches
-- [ ] Display 8 background color swatches + transparent option
-- [ ] Click handlers: `setForeground(index)`, `setBackground(index)`
-- [ ] Visual indication of current selection
-- [ ] Update brush tool's `currentCell` on change
+#### ColorPalette.js ✅ COMPLETE
+- [x] Display 8 foreground color swatches
+- [x] Display 8 background color swatches + transparent option
+- [x] Click handlers: `setForeground(index)`, `setBackground(index)`
+- [x] Visual indication of current selection
+- [x] Update brush tool's `currentCell` on change
 
-#### LayerPanel.js
-- [ ] Render 3 layer rows (BG, MID, FG)
-- [ ] Each row shows:
+#### LayerPanel.js ✅ COMPLETE
+- [x] Render 3 layer rows (BG, MID, FG)
+- [x] Each row shows:
   - Layer name
   - Visibility toggle (eye icon or checkbox)
   - Lock toggle (lock icon or checkbox)
   - Active indicator (radio button or highlight)
-- [ ] Click handlers:
+- [x] Click handlers:
   - Toggle visibility → update `layer.visible`, re-render layer
   - Toggle lock → update `layer.locked`
   - Click row → set as active layer
-- [ ] Listen to `'layer:changed'` to update UI
+- [x] Listen to `'layer:changed'` to update UI
 
-#### Glyph Picker (Simple Version)
-- [ ] Dropdown or grid showing glyph presets from constants
-- [ ] Click glyph → update brush tool's `currentCell.ch`
-- [ ] Display current glyph in toolbar
+#### GlyphPicker.js ✅ COMPLETE
+- [x] Modal with 23 glyph categories (expanded from original 14)
+- [x] Category dropdown filter
+- [x] Click glyph → update brush tool's `currentCell.ch`
+- [x] Display current glyph in trigger button
+- [x] Auto-updates when picker tool samples character
 
 **Deliverable:** Full UI for tool/layer/color selection
 
@@ -534,8 +536,9 @@ class Tool {
 ### Step 4 Completed: 2024-12-30 (HitTestOverlay - 322 tests passing)
 ### Step 5 Completed: 2024-12-30 (Tool System - 398 tests passing)
 ### Current Milestone: 1 (In Progress)
-### Current Step: Step 6 - Basic UI (Next)
-### Next: Implement ColorPalette, LayerPanel, GlyphPicker components
+### Step 6 Completed: 2024-12-30 (UI Components - 398 tests passing)
+### Current Step: Step 7 - Copy to Clipboard (Next)
+### Next: Implement ClipboardManager for export functionality
 
 ### Step 1 Accomplishments:
 - ✅ Project structure with Vite dev server
@@ -647,6 +650,19 @@ class Tool {
 - ✅ Picker auto-switches to brush
 - ✅ DOM updates on cell changes
 - ✅ Total: 398 tests passing (76 new tests)
+
+### Step 6 Progress (100% Complete):
+- ✅ LayerPanel.js - Layer management UI component
+- ✅ GlyphPicker.js - Modal character picker with 23 categories
+- ✅ Interactive color palette (left/right click for fg/bg)
+- ✅ Color preview cell
+- ✅ Trigger button showing current character
+- ✅ Expanded glyph system from 14 to 23 categories (500+ characters)
+- ✅ Full UI integration in app.js
+- ✅ Updated constants.test.js for new glyph structure
+- ✅ Layer visibility/lock/active controls
+- ✅ Auto-updates when picker tool samples
+- ✅ Total: 398 tests passing (all tests updated)
 
 ### Step 4 Archived Progress:
 **Completed:**

@@ -1,8 +1,8 @@
 # Handoff Document - Next Session
 
 **Date:** 2024-12-30  
-**Current State:** Step 5 Complete  
-**Next Step:** Step 6 - Basic UI  
+**Current State:** Step 6 Complete  
+**Next Step:** Step 7 - Copy to Clipboard  
 **Tests Passing:** 398/398 (100%)
 
 ---
@@ -20,7 +20,7 @@
 - **Layer.js** (42 tests) - 2D grid of cells with visibility/lock/ligatures
 - **Scene.js** (53 tests) - Container with 3 layers (bg/mid/fg)
 - **StateManager.js** (46 tests) - Event emitter for reactive updates
-- **constants.js** (15 tests) - Default values and 14 glyph categories
+- **constants.js** (15 tests) - Default values and 23 glyph categories
 - **integration.test.js** (18 tests) - Workflow tests
 
 ### Step 3: Basic Rendering ✅
@@ -46,6 +46,15 @@
 - Cursor changes per tool
 - Picker auto-switches to brush after sampling
 
+### Step 6: Basic UI ✅
+- **LayerPanel.js** - Layer visibility, lock, and active state controls
+- **GlyphPicker.js** - Modal character picker with 23 categories
+- Interactive color palette with left/right click for fg/bg
+- Color preview cell
+- Trigger button showing current character
+- Full UI integration in app.js
+- 23 comprehensive glyph categories (500+ characters)
+
 ---
 
 ## 🎯 Current Functionality
@@ -56,13 +65,14 @@
 - Text "TERMINAL DRAW - STEP 3 COMPLETE" on MID layer
 - Box-drawing characters on FG layer
 - Hover over any cell → yellow highlight appears
-- **NEW:** Three tool buttons: Brush 🖌️, Eraser 🧹, Picker 💧
-- **NEW:** Click/drag to draw with brush tool
-- **NEW:** Switch to eraser to clear cells
-- **NEW:** Use picker to sample cell colors/characters
-- **NEW:** Tool buttons show active state
-- **NEW:** Cursor changes per tool (crosshair/not-allowed/copy)
-- Status bar shows: "Tool: [name] • Grid: 80×25 • Scale: 100%"
+- **Three tools:** Brush 🖌️, Eraser 🧹, Picker 💧
+- **Color palette:** Left-click for foreground, right-click for background
+- **Character picker:** Modal with 23 categories (A-Z, Greek, Cyrillic, Math, Arrows, Blocks, Box Drawing, etc.)
+- **Layer panel:** Toggle visibility 👁️, lock 🔒, and active layer selection
+- Click/drag to draw with brush tool
+- Switch to eraser to clear cells
+- Use picker to sample cell colors/characters
+- Status bar shows: "Tool: [name] • Layer: [id] • Scale: [%]"
 - Zoom controls work (10%-1000%)
 - Palette selector switches between 10 color schemes
 - All layers render identically and align perfectly
@@ -72,53 +82,76 @@
 - LayerRenderer renders each layer independently to DOM
 - HitTestOverlay captures mouse events and emits via StateManager
 - Tools listen to events and modify active layer
+- UI components (LayerPanel, GlyphPicker) manage editor state
 - Cell changes immediately update DOM via renderer.updateCell()
 - CSS z-index composites layers visually
-- Compositor provides logical compositing for export
+- Compositor provides logical compositing for export (ready for Step 7!)
 
 ---
 
-## 🚀 Next Step: Step 6 - Basic UI
+## 🚀 Next Step: Step 7 - Copy to Clipboard
 
-**Goal:** Enhance user interface with dedicated UI components
+**Goal:** Enable users to export their artwork to clipboard as plain text or ANSI
 
 **Files to Create:**
-1. `src/ui/Toolbar.js` - Dedicated toolbar component (optional refinement)
-2. `src/ui/ColorPalette.js` - Interactive color picker for fg/bg
-3. `src/ui/LayerPanel.js` - Layer visibility, lock, and active state controls
-4. `src/ui/GlyphPicker.js` - Character selection from glyph categories
+1. `src/export/ClipboardManager.js` - Main clipboard integration
+2. `tests/ClipboardManager.test.js` - Tests for clipboard operations
 
-**ColorPalette Requirements:**
-- Show 8 color swatches for current palette
-- Separate sections for foreground and background
-- Click swatch to select color
-- Highlight selected fg and bg colors
-- Update brush tool's currentCell when colors change
-- Show transparent option for background (-1)
+**Core Requirements:**
 
-**LayerPanel Requirements:**
-- Display all 3 layers (bg/mid/fg)
-- Show layer name and visibility icon
-- Toggle visibility (eye icon)
-- Toggle lock (lock icon)
-- Click to set active layer
-- Highlight active layer
-- Emit events: layer:visibility, layer:lock, layer:active
+### Export Formats:
+1. **Plain Text** - Composite all visible layers, no color codes
+2. **ANSI** - Include ANSI color escape codes for terminal display
+3. **Single Layer** - Export only the active layer
 
-**GlyphPicker Requirements:**
-- Show all 14 glyph categories from constants.js
-- Collapsible/expandable categories
-- Click glyph to select for brush
-- Highlight selected glyph
-- Search/filter functionality (optional for Step 6)
-- Common characters at top (space, █, ░, ▒, ▓)
+### ClipboardManager Class:
+```javascript
+class ClipboardManager {
+  constructor(scene, compositor, stateManager)
+  
+  // Export Methods
+  exportPlainText() → string
+  exportAnsi() → string
+  exportLayer(layerId) → string
+  
+  // Clipboard Methods
+  copyToClipboard(text) → Promise
+  
+  // Event Emission
+  emit('export:success', { format, charCount })
+  emit('export:error', { error })
+}
+```
 
-**Integration in app.js:**
-- Initialize UI components
-- Listen to color selection events → update brush
-- Listen to glyph selection events → update brush
-- Listen to layer panel events → update scene
-- Update UI when tool picks colors
+### UI Integration:
+- Add "Export" section to sidebar
+- Button: "Copy as Text" → plain text to clipboard
+- Button: "Copy as ANSI" → ANSI codes to clipboard
+- Button: "Copy Layer" → current layer only
+- Show success/error notifications
+- Display character count after export
+
+### Compositor Integration:
+The `Compositor.js` class already has:
+- `compositeToText(scene)` - Returns plain text with newlines
+- `compositeToAnsi(scene, palette)` - Returns ANSI color codes
+- Both methods respect layer visibility
+
+**Implementation Strategy:**
+1. Create ClipboardManager with scene and compositor references
+2. Use existing Compositor methods for text generation
+3. Use Clipboard API (`navigator.clipboard.writeText()`)
+4. Add export buttons to sidebar
+5. Show toast notifications for success/error
+6. Update status bar with export statistics
+
+**Testing Strategy:**
+- Mock Clipboard API in tests
+- Verify text format correctness
+- Test ANSI escape code generation
+- Test layer filtering
+- Test error handling
+- Integration test with Scene → Compositor → Clipboard
 
 ---
 
@@ -171,7 +204,9 @@ terminal-draw/
 │   ├── core/                  # Data models ✅
 │   ├── rendering/             # LayerRenderer, Compositor ✅
 │   ├── input/                 # HitTestOverlay ✅
-│   └── tools/                 # Tool, BrushTool, EraserTool, PickerTool ✅
+│   ├── tools/                 # Tool, BrushTool, EraserTool, PickerTool ✅
+│   ├── ui/                    # LayerPanel, GlyphPicker ✅
+│   └── export/                # ClipboardManager (Step 7)
 ├── tests/                     # All test files (398 tests)
 ├── styles/                    # CSS (main.css, grid.css, ui.css)
 └── index.html                 # Entry point
@@ -199,6 +234,10 @@ terminal-draw/
 6. **Tool Drawing:** Currently no undo/redo
    - cell:changed events provide foundation for future implementation
 
+7. **Clipboard API:** Requires HTTPS or localhost
+   - Works in dev server (localhost:5173)
+   - Will need HTTPS in production
+
 ---
 
 ## 💡 Key Insights
@@ -211,24 +250,37 @@ terminal-draw/
 6. **Tool Pattern:** Base class with consistent interface makes adding tools easy
 7. **Immediate Updates:** DOM updates on cell change feels responsive
 8. **Lock Protection:** All modification tools check layer.locked
+9. **Modal Pattern:** GlyphPicker demonstrates reusable modal UI pattern
+10. **Compositor Ready:** Export logic already exists, just needs clipboard integration
 
 ---
 
-## 📝 Important Files for Step 6
+## 📝 Important Files for Step 7
 
 **Reference these:**
-- `src/core/constants.js` - GLYPH_CATEGORIES with all characters
-- `src/core/Scene.js` - How to get/set active layer, visibility, lock
-- `src/core/Layer.js` - Layer properties (visible, locked, name)
-- `src/tools/BrushTool.js` - How to setCurrentCell() for colors/glyph
+- `src/rendering/Compositor.js` - Already has compositeToText() and compositeToAnsi()
+- `src/core/Scene.js` - How to access layers and dimensions
 - `src/core/StateManager.js` - How to emit/listen to events
-- `src/app.js` - How tools are integrated, event handling patterns
+- `src/app.js` - How to integrate new components
+- `src/palettes.json` - Palette data for ANSI color codes
+- `tests/Compositor.test.js` - Existing export logic tests
+
+**UI Patterns:**
+- `src/ui/LayerPanel.js` - Event handling pattern
+- `src/ui/GlyphPicker.js` - Modal and trigger button pattern
 - `styles/ui.css` - Existing UI styles for consistency
 
-**Test patterns:**
-- `tests/Scene.test.js` - Layer management testing
-- `tests/BrushTool.test.js` - Tool state management
-- `tests/HitTestOverlay.test.js` - Event emission and handling
+**Clipboard API Example:**
+```javascript
+async function copyToClipboard(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+}
+```
 
 ---
 
@@ -237,36 +289,62 @@ terminal-draw/
 1. **True terminal rendering** - Uses actual text glyphs, not canvas
 2. **Seamless box-drawing** - Characters connect perfectly
 3. **Multi-layer compositing** - Like Photoshop but for ASCII
-4. **Copy/paste ready** - Exports as plain text or ANSI
+4. **Copy/paste ready** - Compositor already generates text/ANSI
 5. **Fully tested** - 398 tests with 100% pass rate
 6. **Interactive tools** - Draw, erase, and pick colors with mouse
-7. **Production quality** - Clean code, comprehensive docs
+7. **Rich UI** - Full control over colors, characters, and layers
+8. **Production quality** - Clean code, comprehensive docs
+9. **Massive glyph library** - 23 categories with 500+ characters
 
 ---
 
-## 🎯 Session Goals for Step 6
+## 🎯 Session Goals for Step 7
 
-1. Implement ColorPalette component for fg/bg color selection
-2. Implement LayerPanel component for layer management
-3. Implement GlyphPicker component for character selection
-4. Write tests for each UI component (aim for ~30-40 tests total)
-5. Integrate components into app.js
-6. Add UI sections to sidebar
-7. Verify color selection updates brush
-8. Verify glyph selection updates brush
-9. Verify layer controls work (visibility, lock, active)
-10. Polish UI styling for cohesive look
+1. Create ClipboardManager class with export methods
+2. Integrate Clipboard API for copy operations
+3. Add export buttons to sidebar UI
+4. Implement success/error notifications (toast or status bar)
+5. Write comprehensive tests (~20-30 tests)
+6. Handle browser compatibility (fallback for older browsers)
+7. Add character count display after export
+8. Test with actual artwork export
+9. Verify ANSI codes display correctly in terminal
+10. Update documentation
 
-**Estimated Time:** 2-3 hours
+**Estimated Time:** 1-2 hours
 
 **Success Criteria:**
-- Can select foreground color → brush updates
-- Can select background color → brush updates
-- Can select glyph → brush updates
-- Can toggle layer visibility → layer shows/hides
-- Can toggle layer lock → layer prevents edits
-- Can switch active layer → drawing affects correct layer
-- ~430-440 tests passing
+- Can export plain text to clipboard
+- Can export ANSI with colors to clipboard
+- Can export single layer to clipboard
+- Success/error feedback shown to user
+- Character count displayed
+- All tests passing (~418-428 total tests)
+- ANSI output displays correctly when pasted in terminal
+
+---
+
+## 🎨 Proposed Export UI
+
+Add to sidebar after Layers section:
+
+```html
+<div class="sidebar-section">
+  <h3>Export</h3>
+  <button id="export-text" class="export-btn">
+    📋 Copy as Text
+  </button>
+  <button id="export-ansi" class="export-btn">
+    🎨 Copy as ANSI
+  </button>
+  <button id="export-layer" class="export-btn">
+    📄 Copy Layer Only
+  </button>
+  <div id="export-status" class="export-status hidden">
+    ✅ Copied 1234 characters!
+  </div>
+</div>
+```
 
 ---
 
@@ -274,12 +352,26 @@ terminal-draw/
 
 - `IMPLEMENTATION-PLAN.md` - Full 9-step roadmap
 - `SESSION-NOTES.md` - Current state summary
-- `STEP-5-COMPLETION.md` - Details of what was just completed
+- `STEP-6-COMPLETION.md` - Details of what was just completed
 - `design-document.md` - Original design specification
 - `README.md` - Quick start guide
 
 ---
 
-**Ready to build UI components!** 🎨🖼️
+## 🎉 Progress Tracking
 
-The tool system is solid and functional. Step 6 is about making the editor more user-friendly by adding intuitive controls for colors, characters, and layers. Users will be able to fully customize what they're drawing without touching code!
+**Steps Completed:** 6/9 (67%)
+
+- ✅ Step 1: Project Setup
+- ✅ Step 2: Core Data Models
+- ✅ Step 3: Basic Rendering
+- ✅ Step 4: Hit Test Overlay
+- ✅ Step 5: Tool System
+- ✅ Step 6: Basic UI
+- ⏭️ Step 7: Copy to Clipboard (NEXT)
+- 🔜 Step 8: Save/Load Projects
+- 🔜 Step 9: Advanced Tools & Polish
+
+**Ready to implement clipboard export!** 📋✨
+
+The hard work is already done - Compositor has the export logic. Step 7 is mostly about wiring up the Clipboard API and adding nice UI feedback. After this, users will be able to create ASCII art and immediately share it!

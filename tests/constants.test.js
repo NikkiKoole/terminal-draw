@@ -46,20 +46,29 @@ describe("constants", () => {
 
   describe("GLYPHS", () => {
     it("should have all expected categories", () => {
-      expect(GLYPHS.BOX_LIGHT).toBeDefined();
-      expect(GLYPHS.BOX_HEAVY).toBeDefined();
-      expect(GLYPHS.BOX_DOUBLE).toBeDefined();
-      expect(GLYPHS.BOX_ROUNDED).toBeDefined();
-      expect(GLYPHS.SHADING).toBeDefined();
-      expect(GLYPHS.DOTS).toBeDefined();
-      expect(GLYPHS.ARROWS).toBeDefined();
-      expect(GLYPHS.GEOMETRY).toBeDefined();
-      expect(GLYPHS.TRIANGLES).toBeDefined();
-      expect(GLYPHS.MATH_OPERATORS).toBeDefined();
-      expect(GLYPHS.EXTENDED_ARROWS).toBeDefined();
+      expect(GLYPHS.ALPHANUMERIC_UPPER).toBeDefined();
+      expect(GLYPHS.ALPHANUMERIC_LOWER).toBeDefined();
+      expect(GLYPHS.NUMBERS).toBeDefined();
+      expect(GLYPHS.PUNCTUATION).toBeDefined();
+      expect(GLYPHS.DIACRITICS_UPPER).toBeDefined();
+      expect(GLYPHS.DIACRITICS_LOWER).toBeDefined();
+      expect(GLYPHS.GREEK_UPPER).toBeDefined();
+      expect(GLYPHS.GREEK_LOWER).toBeDefined();
+      expect(GLYPHS.CYRILLIC_UPPER).toBeDefined();
+      expect(GLYPHS.CYRILLIC_LOWER).toBeDefined();
       expect(GLYPHS.CURRENCY).toBeDefined();
-      expect(GLYPHS.SYMBOLS_COMMON).toBeDefined();
-      expect(GLYPHS.COMMON).toBeDefined();
+      expect(GLYPHS.MATH_OPERATORS).toBeDefined();
+      expect(GLYPHS.ARROWS).toBeDefined();
+      expect(GLYPHS.SHAPES_CIRCLES).toBeDefined();
+      expect(GLYPHS.SHAPES_DIAMONDS).toBeDefined();
+      expect(GLYPHS.SHAPES_TRIANGLES).toBeDefined();
+      expect(GLYPHS.APL_SYMBOLS).toBeDefined();
+      expect(GLYPHS.MISC_SYMBOLS).toBeDefined();
+      expect(GLYPHS.DOUBLE_STRUCK).toBeDefined();
+      expect(GLYPHS.BLOCKS).toBeDefined();
+      expect(GLYPHS.BOX_ALL).toBeDefined();
+      expect(GLYPHS.POWERLINE).toBeDefined();
+      expect(GLYPHS.CONTROL_CODES).toBeDefined();
     });
 
     it("should have name and chars for each category", () => {
@@ -71,17 +80,17 @@ describe("constants", () => {
     });
 
     it("should contain expected box drawing characters", () => {
-      expect(GLYPHS.BOX_LIGHT.chars).toContain("─");
-      expect(GLYPHS.BOX_LIGHT.chars).toContain("│");
-      expect(GLYPHS.BOX_LIGHT.chars).toContain("┌");
-      expect(GLYPHS.BOX_LIGHT.chars).toContain("┐");
+      expect(GLYPHS.BOX_ALL.chars).toContain("─");
+      expect(GLYPHS.BOX_ALL.chars).toContain("│");
+      expect(GLYPHS.BOX_ALL.chars).toContain("┌");
+      expect(GLYPHS.BOX_ALL.chars).toContain("┐");
     });
 
-    it("should contain expected shading characters", () => {
-      expect(GLYPHS.SHADING.chars).toContain("░");
-      expect(GLYPHS.SHADING.chars).toContain("▒");
-      expect(GLYPHS.SHADING.chars).toContain("▓");
-      expect(GLYPHS.SHADING.chars).toContain("█");
+    it("should contain expected block characters", () => {
+      expect(GLYPHS.BLOCKS.chars).toContain("░");
+      expect(GLYPHS.BLOCKS.chars).toContain("▒");
+      expect(GLYPHS.BLOCKS.chars).toContain("▓");
+      expect(GLYPHS.BLOCKS.chars).toContain("█");
     });
 
     it("should contain expected arrow characters", () => {
@@ -99,22 +108,22 @@ describe("constants", () => {
 
     it("should contain glyphs from all categories", () => {
       expect(ALL_GLYPHS.length).toBeGreaterThan(0);
-      expect(ALL_GLYPHS).toContain("─"); // from BOX_LIGHT
-      expect(ALL_GLYPHS).toContain("━"); // from BOX_HEAVY
-      expect(ALL_GLYPHS).toContain("░"); // from SHADING
+      expect(ALL_GLYPHS).toContain("A"); // from ALPHANUMERIC_UPPER
+      expect(ALL_GLYPHS).toContain("─"); // from BOX_ALL
+      expect(ALL_GLYPHS).toContain("░"); // from BLOCKS
       expect(ALL_GLYPHS).toContain("→"); // from ARROWS
     });
 
-    it("should have unique characters", () => {
-      // Check that flattening worked (some duplication is okay in original design)
-      expect(ALL_GLYPHS.length).toBeGreaterThan(50);
+    it("should have many characters", () => {
+      // With 23 categories, we should have hundreds of characters
+      expect(ALL_GLYPHS.length).toBeGreaterThan(100);
     });
   });
 
   describe("GLYPH_CATEGORIES", () => {
     it("should be an array of category objects", () => {
       expect(GLYPH_CATEGORIES).toBeInstanceOf(Array);
-      expect(GLYPH_CATEGORIES.length).toBe(14);
+      expect(GLYPH_CATEGORIES.length).toBe(23);
     });
 
     it("should have id, name, and chars for each category", () => {
@@ -125,9 +134,9 @@ describe("constants", () => {
       }
     });
 
-    it("should have BOX_LIGHT as first category", () => {
-      expect(GLYPH_CATEGORIES[0].id).toBe("BOX_LIGHT");
-      expect(GLYPH_CATEGORIES[0].name).toBe("Box Drawing (Light)");
+    it("should have ALPHANUMERIC_UPPER as first category", () => {
+      expect(GLYPH_CATEGORIES[0].id).toBe("ALPHANUMERIC_UPPER");
+      expect(GLYPH_CATEGORIES[0].name).toBe("Uppercase Letters");
     });
   });
 });

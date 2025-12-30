@@ -14,6 +14,7 @@ import { BrushTool } from "./tools/BrushTool.js";
 import { EraserTool } from "./tools/EraserTool.js";
 import { PickerTool } from "./tools/PickerTool.js";
 import { LayerPanel } from "./ui/LayerPanel.js";
+import { GlyphPicker } from "./ui/GlyphPicker.js";
 
 // =============================================================================
 // Configuration & State
@@ -39,6 +40,11 @@ let currentTool = null;
 
 // UI Components
 let layerPanel = null;
+let glyphPicker = null;
+
+// Color selection state
+let selectedFg = 7;
+let selectedBg = -1;
 
 // Hover indicator element
 let hoverIndicator = null;
@@ -345,6 +351,157 @@ function initLayerPanel() {
 }
 
 /**
+ * Initialize interactive palette swatches
+ */
+function initInteractivePalette() {
+  const swatches = document.querySelectorAll(".palette-swatch");
+
+  swatches.forEach((swatch) => {
+    // Left click = foreground
+    swatch.addEventListener("click", (e) => {
+      e.preventDefault();
+      const color = parseInt(swatch.dataset.color);
+      selectFgColor(color);
+    });
+
+    // Right click = background
+    swatch.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+      const color = parseInt(swatch.dataset.color);
+      selectBgColor(color);
+    });
+  });
+
+  // Listen to picker tool events
+  stateManager.on("tool:picked", (data) => {
+    if (data.cell) {
+      selectFgColor(data.cell.fg);
+      selectBgColor(data.cell.bg);
+    }
+  });
+
+  // Initialize visual state
+  updatePaletteSelection();
+  updateColorPreview();
+}
+
+/**
+ * Select foreground color
+ */
+function selectFgColor(colorIndex) {
+  // Don't allow transparent foreground
+  if (colorIndex === -1) {
+    return;
+  }
+
+  selectedFg = colorIndex;
+
+  // Update brush tool
+  const currentCell = brushTool.getCurrentCell();
+  brushTool.setCurrentCell({
+    ...currentCell,
+    fg: colorIndex,
+  });
+
+  // Update UI
+  updatePaletteSelection();
+  updateColorPreview();
+
+  // Emit event
+  stateManager.emit("color:fg-selected", { color: colorIndex });
+}
+
+/**
+ * Select background color
+ */
+function selectBgColor(colorIndex) {
+  selectedBg = colorIndex;
+
+  // Update brush tool
+  const currentCell = brushTool.getCurrentCell();
+  brushTool.setCurrentCell({
+    ...currentCell,
+    bg: colorIndex,
+  });
+
+  // Update UI
+  updatePaletteSelection();
+  updateColorPreview();
+
+  // Emit event
+  stateManager.emit("color:bg-selected", { color: colorIndex });
+}
+
+/**
+ * Update palette swatch selection visual indicators
+ */
+function updatePaletteSelection() {
+  const swatches = document.querySelectorAll(".palette-swatch");
+
+  swatches.forEach((swatch) => {
+    const color = parseInt(swatch.dataset.color);
+
+    // Remove existing classes
+    swatch.classList.remove("selected-fg", "selected-bg");
+
+    // Add classes for selected colors
+    if (color === selectedFg) {
+      swatch.classList.add("selected-fg");
+    }
+    if (color === selectedBg) {
+      swatch.classList.add("selected-bg");
+    }
+  });
+}
+
+/**
+ * Update color preview cell
+ */
+function updateColorPreview() {
+  const previewCell = document.getElementById("color-preview");
+  if (!previewCell) return;
+
+  const currentCell = brushTool.getCurrentCell();
+
+  previewCell.textContent = currentCell.ch || "█";
+  previewCell.className = "preview-cell";
+  previewCell.classList.add(`fg-${currentCell.fg}`);
+
+  if (currentCell.bg >= 0) {
+    previewCell.classList.add(`bg-${currentCell.bg}`);
+  } else {
+    previewCell.classList.add("bg--1");
+  }
+}
+
+/**
+ * Initialize glyph picker
+ */
+function initGlyphPicker() {
+  const container = document.getElementById("glyph-picker-trigger");
+  if (!container) {
+    console.error("Glyph picker trigger container not found");
+    return;
+  }
+
+  glyphPicker = new GlyphPicker(brushTool, stateManager);
+
+  // Add trigger button to container
+  const triggerButton = glyphPicker.getTriggerButton();
+  container.appendChild(triggerButton);
+
+  // Attach click handler to open modal
+  triggerButton.addEventListener("click", () => {
+    glyphPicker.open();
+  });
+
+  // Listen to glyph selection events to update preview
+  stateManager.on("glyph:selected", () => {
+    updateColorPreview();
+  });
+}
+
+/**
  * Initialize all UI controls and apply defaults
  */
 function init() {
@@ -352,6 +509,8 @@ function init() {
   initInput();
   initTools();
   initLayerPanel();
+  initInteractivePalette();
+  initGlyphPicker();
   initScaleControls();
   initPaletteSelector();
 }

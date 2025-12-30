@@ -189,21 +189,46 @@ main {
 }
 
 .palette-row {
-    display: flex;
-    gap: 2px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin-bottom: var(--spacing-sm);
+    width: 100%;
 }
 
 .palette-swatch {
-    flex: 1;
-    height: 24px;
-    border: 1px solid var(--ui-border);
+    width: 100%;
+    aspect-ratio: 1;
+    height: auto;
+    border: 3px solid var(--ui-border);
     border-radius: var(--radius-sm);
     cursor: pointer;
-    transition: transform 0.2s;
+    transition: all 0.2s;
+    position: relative;
+    box-sizing: border-box;
 }
 
 .palette-swatch:hover {
-    transform: scale(1.1);
+    transform: scale(1.05);
+    border-color: var(--ui-text-dim);
+}
+
+.palette-swatch.selected-fg {
+    border-top-color: var(--ui-accent);
+    border-left-color: var(--ui-accent);
+    border-top-width: 4px;
+    border-left-width: 4px;
+}
+
+.palette-swatch.selected-bg {
+    border-bottom-color: #4caf50;
+    border-right-color: #4caf50;
+    border-bottom-width: 4px;
+    border-right-width: 4px;
+}
+
+.palette-swatch.selected-fg.selected-bg {
+    box-shadow: 0 0 0 2px var(--ui-accent) inset;
 }
 
 .palette-swatch[data-color="0"] {
@@ -229,6 +254,54 @@ main {
 }
 .palette-swatch[data-color="7"] {
     background-color: var(--color-fg-7);
+}
+
+.palette-swatch.transparent {
+    background: repeating-conic-gradient(#808080 0% 25%, #404040 0% 50%) 50% /
+        8px 8px;
+    position: relative;
+}
+
+.palette-swatch.transparent::after {
+    content: "✕";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 20px;
+    font-weight: bold;
+    color: #ff4444;
+    text-shadow: 0 0 3px rgba(0, 0, 0, 0.9);
+}
+
+.color-preview {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm);
+    background: var(--ui-bg);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--ui-border);
+    margin-top: var(--spacing-sm);
+}
+
+.preview-label {
+    font-size: 11px;
+    color: var(--ui-text-dim);
+    text-transform: uppercase;
+}
+
+.preview-cell {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 24px;
+    line-height: 1;
+    min-width: 32px;
+    min-height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--ui-border);
+    border-radius: var(--radius-sm);
 }
 
 #editor {

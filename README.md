@@ -4,18 +4,20 @@ A web-based ASCII art editor that renders true text glyphs in the DOM for creati
 
 ## Features
 
-**Steps 1-5 Complete ✅**
+**Steps 1-6 Complete ✅**
 - ✅ Project Setup - Cell-based rendering, palettes, scaling
 - ✅ Core Data Models - Cell, Layer, Scene, StateManager, constants
 - ✅ Basic Rendering - LayerRenderer and Compositor
 - ✅ Hit Test Overlay - Mouse input and coordinate conversion
 - ✅ Tool System - Brush, Eraser, and Picker tools
+- ✅ Basic UI - LayerPanel, GlyphPicker, interactive color palette
 - ✅ **398 tests passing** across 13 test files
 
-**Current Status: Step 6 Next 🚧**
-- Interactive drawing with three tools working
-- Event-driven architecture fully functional
-- Ready to build UI components (ColorPalette, LayerPanel, GlyphPicker)
+**Current Status: Step 7 Next 🚧**
+- Fully interactive drawing with three tools
+- Complete UI for layer management, color selection, and character picking
+- 23 glyph categories with 500+ characters
+- Ready to implement clipboard export functionality
 
 ## Quick Start
 
@@ -68,15 +70,33 @@ Tests are located in the `tests/` directory and use Vitest.
 ```
 terminal-draw/
 ├── src/
-│   ├── app.js           # Main application logic
-│   └── palettes.json    # Color scheme definitions
+│   ├── app.js                # Main application logic
+│   ├── palettes.json         # Color scheme definitions
+│   ├── core/                 # Data models
+│   │   ├── Cell.js
+│   │   ├── Layer.js
+│   │   ├── Scene.js
+│   │   ├── StateManager.js
+│   │   └── constants.js
+│   ├── rendering/            # Rendering system
+│   │   ├── LayerRenderer.js
+│   │   └── Compositor.js
+│   ├── input/                # Mouse input
+│   │   └── HitTestOverlay.js
+│   ├── tools/                # Drawing tools
+│   │   ├── Tool.js
+│   │   ├── BrushTool.js
+│   │   ├── EraserTool.js
+│   │   └── PickerTool.js
+│   └── ui/                   # UI components
+│       ├── LayerPanel.js
+│       └── GlyphPicker.js
 ├── styles/
-│   ├── main.css         # Global styles & layout
-│   ├── grid.css         # Grid rendering
-│   └── ui.css           # UI components
-├── assets/
-│   └── JetBrainsMono-Medium.woff2
-└── index.html           # Application shell
+│   ├── main.css              # Global styles & layout
+│   ├── grid.css              # Grid rendering
+│   └── ui.css                # UI components
+├── tests/                    # 398 tests
+└── index.html                # Application shell
 ```
 
 ## Technology Stack
@@ -84,6 +104,7 @@ terminal-draw/
 - **Vanilla JavaScript** (ES6 modules)
 - **Plain CSS** (CSS Grid, custom properties)
 - **Vite** (dev server & build tool)
+- **Vitest** (testing framework)
 - **JetBrains Mono** (monospace font with ligatures)
 
 ## Architecture
@@ -91,13 +112,21 @@ terminal-draw/
 ### Rendering Strategy
 - **Row-based wrapping** - Each grid row is a container div with cell spans
 - **Background layer** - Single colored div sized to match grid
-- **Text layers** - 3 stacked layers (bg/mid/fg) for future compositing
-- **Hit-test overlay** - Separate layer for mouse event handling (not yet implemented)
+- **Text layers** - 3 stacked layers (bg/mid/fg) for multi-layer compositing
+- **Hit-test overlay** - Separate layer for mouse event handling
+- **Hover indicator** - Visual feedback for current cell
+
+### Event-Driven Architecture
+- **StateManager** - Central event bus for all components
+- **Tools** - Listen to cell events (down/drag/up)
+- **UI Components** - Emit events for state changes
+- **Reactive updates** - DOM updates automatically on state changes
 
 ### Palette System
 - JSON-based color definitions (8 colors per palette)
 - Dynamic CSS custom property updates
 - Real-time theme switching
+- Interactive swatches (left-click fg, right-click bg)
 
 ### Scaling
 - CSS transform-based scaling (10-1000%)
@@ -106,17 +135,50 @@ terminal-draw/
 
 ## Current Status
 
-**Steps 1-5: Complete** ✅  
+**Steps 1-6: Complete** ✅  
 - ✅ Step 1: Project Setup (HTML/CSS, palettes, scaling)
 - ✅ Step 2: Core Data Models (Cell, Layer, Scene, StateManager, constants)
 - ✅ Step 3: Basic Rendering (LayerRenderer, Compositor)
 - ✅ Step 4: Hit Test Overlay (Mouse input, coordinate conversion)
 - ✅ Step 5: Tool System (Brush, Eraser, Picker tools)
-- **398 tests passing**
+- ✅ Step 6: Basic UI (LayerPanel, GlyphPicker, color palette)
+- **398 tests passing (100%)**
 
-**Next:** Step 6 - Basic UI (ColorPalette, LayerPanel, GlyphPicker)
+**Next:** Step 7 - Copy to Clipboard (export as text/ANSI)
 
 See [IMPLEMENTATION-PLAN.md](./IMPLEMENTATION-PLAN.md) for detailed roadmap.
+
+## User Interface
+
+### Tools
+- **🖌️ Brush** - Paint cells with current character and colors
+- **🧹 Eraser** - Clear cells to default state
+- **💧 Picker** - Sample colors and characters from existing cells
+
+### Color Palette
+- **8 color swatches** from current palette
+- **Left-click** to set foreground color
+- **Right-click** to set background color
+- **Transparent option** for backgrounds
+- **Live preview** showing current color combination
+
+### Layer Panel
+- **3 layers** - Background, Middle, Foreground
+- **Visibility toggle** (👁️ icon)
+- **Lock toggle** (🔒 icon)
+- **Active indicator** (● badge)
+- Click layer name to set as active
+
+### Glyph Picker
+- **23 categories** with 500+ characters
+- **Modal interface** with category filter
+- **Trigger button** showing current character
+- **Auto-updates** when using picker tool
+
+### View Controls
+- **Scale slider** (10%-1000%)
+- **Scale to Fit** button
+- **Palette selector** (10 color schemes)
 
 ## Testing Strategy
 
@@ -127,7 +189,7 @@ We use **Vitest** for unit and integration tests:
 - ✅ **Coverage tracking** - ensure code quality
 - ✅ **Fast feedback** - tests run in milliseconds
 
-**Current test status: 398 tests passing**
+**Current test status: 398 tests passing (100%)**
 
 ```bash
 ✓ tests/Cell.test.js (23)
@@ -149,12 +211,12 @@ See `tests/` directory for all test suites.
 
 ## Color Palettes
 
-- Default Terminal
-- **Gruvbox Dark** - Warm, retro
-- **Nord** - Cool, blue-ish
-- **Dracula** - Purple/pink
-- **Monokai** - Classic
-- **Solarized Dark** - Muted
+- **Default Terminal** - Classic terminal colors
+- **Gruvbox Dark** - Warm, retro aesthetic
+- **Nord** - Cool, blue-ish theme
+- **Dracula** - Purple/pink vampire theme
+- **Monokai** - Classic editor theme
+- **Solarized Dark** - Muted, eye-friendly
 - **Tokyo Night** - Modern blue/purple
 - **Catppuccin Mocha** - Soft pastels
 - **Anthropic Claude** - Warm browns/blues
@@ -162,18 +224,25 @@ See `tests/` directory for all test suites.
 
 Edit `src/palettes.json` to add more!
 
-## Glyph Presets (14 Categories)
+## Glyph Categories (23 Total)
 
-Over 100 useful characters organized in categories:
-- Box Drawing (Light/Heavy/Double/Rounded)
-- Shading & Blocks
-- Triangles & Pointers
-- Math Operators
-- Arrows & Extended Arrows
-- Dots & Circles
-- Geometric Shapes
-- Currency Symbols
-- Common Symbols & Characters
+Over 500 characters organized in categories:
+- **Alphanumeric** - Uppercase, lowercase, numbers
+- **Punctuation** - Common punctuation marks
+- **Diacritics** - Accented letters (upper/lower)
+- **Greek** - Greek alphabet (upper/lower)
+- **Cyrillic** - Cyrillic alphabet (upper/lower)
+- **Currency** - Currency symbols
+- **Math Operators** - Mathematical symbols
+- **Arrows** - Arrow symbols
+- **Shapes** - Circles, diamonds, triangles
+- **APL Symbols** - APL programming language
+- **Misc Symbols** - Various symbols
+- **Double Struck** - Mathematical double-struck
+- **Blocks** - Block and shading characters (░▒▓█)
+- **Box Drawing** - Box characters (─│┌┐└┘┬┴├┤┼)
+- **Powerline** - Powerline font characters
+- **Control Codes** - Control code representations
 
 See `src/core/constants.js` for complete list.
 
@@ -182,13 +251,15 @@ See `src/core/constants.js` for complete list.
 ### Key Files
 
 - `src/app.js` - Application entry point and initialization
-- `src/core/` - Data models (Cell, Layer, Scene, StateManager)
+- `src/core/` - Data models (Cell, Layer, Scene, StateManager, constants)
 - `src/rendering/` - LayerRenderer and Compositor
 - `src/input/` - HitTestOverlay for mouse events
 - `src/tools/` - Tool system (Brush, Eraser, Picker)
+- `src/ui/` - UI components (LayerPanel, GlyphPicker)
 - `src/palettes.json` - Color scheme definitions
 - `styles/grid.css` - Grid cell rendering and color classes
 - `styles/main.css` - Layout, CSS variables, global styles
+- `styles/ui.css` - UI component styles
 - `tests/` - Test suites for all modules (398 tests)
 
 ### Adding Tests
@@ -217,13 +288,24 @@ Colors are defined as CSS variables for easy theming:
 --color-bg-0 through --color-bg-7  /* Background colors */
 --grid-w: 80                        /* Grid width */
 --grid-h: 25                        /* Grid height */
---cell-size: 12px                   /* Base cell size */
+--cell-height: 21px                 /* Cell height */
 ```
 
 ## Design Documents
 
 - [design-document.md](./design-document.md) - Full feature specification
 - [IMPLEMENTATION-PLAN.md](./IMPLEMENTATION-PLAN.md) - Development roadmap
+- [STEP-6-COMPLETION.md](./STEP-6-COMPLETION.md) - Latest completion details
+- [HANDOFF-NEXT-SESSION.md](./HANDOFF-NEXT-SESSION.md) - Next session guide
+
+## Progress
+
+**6 of 9 steps complete (~67%)**
+
+Remaining steps:
+- Step 7: Copy to Clipboard
+- Step 8: Save/Load Projects
+- Step 9: Advanced Tools & Polish
 
 ## License
 

@@ -27,6 +27,12 @@
                         <button id="tool-picker">💧 Picker</button>
                     </div>
 
+                    <!-- Glyph Picker -->
+                    <div class="sidebar-section">
+                        <h3>Character</h3>
+                        <div id="glyph-picker-trigger"></div>
+                    </div>
+
                     <!-- Layers -->
                     <div class="sidebar-section">
                         <div id="layer-panel"></div>
@@ -72,43 +78,54 @@
                             <div
                                 class="palette-swatch"
                                 data-color="0"
-                                title="Color 0"
+                                title="Left-click: Foreground | Right-click: Background"
                             ></div>
                             <div
                                 class="palette-swatch"
                                 data-color="1"
-                                title="Color 1"
+                                title="Left-click: Foreground | Right-click: Background"
                             ></div>
                             <div
                                 class="palette-swatch"
                                 data-color="2"
-                                title="Color 2"
+                                title="Left-click: Foreground | Right-click: Background"
                             ></div>
                             <div
                                 class="palette-swatch"
                                 data-color="3"
-                                title="Color 3"
+                                title="Left-click: Foreground | Right-click: Background"
                             ></div>
                             <div
                                 class="palette-swatch"
                                 data-color="4"
-                                title="Color 4"
+                                title="Left-click: Foreground | Right-click: Background"
                             ></div>
                             <div
                                 class="palette-swatch"
                                 data-color="5"
-                                title="Color 5"
+                                title="Left-click: Foreground | Right-click: Background"
                             ></div>
                             <div
                                 class="palette-swatch"
                                 data-color="6"
-                                title="Color 6"
+                                title="Left-click: Foreground | Right-click: Background"
                             ></div>
                             <div
                                 class="palette-swatch"
                                 data-color="7"
-                                title="Color 7"
+                                title="Left-click: Foreground | Right-click: Background"
                             ></div>
+                            <div
+                                class="palette-swatch transparent"
+                                data-color="-1"
+                                title="Transparent (Right-click only: Background)"
+                            ></div>
+                        </div>
+                        <div class="color-preview">
+                            <span class="preview-label">Preview:</span>
+                            <span class="preview-cell" id="color-preview"
+                                >█</span
+                            >
                         </div>
                     </div>
                 </aside>

@@ -17,16 +17,22 @@
   - ✅ Scene.js (53 tests passing)
   - ✅ StateManager.js (46 tests passing)
 
+- **Step 3: Basic Rendering** - 100% complete ✅ (2/2 modules)
+  - ✅ LayerRenderer.js (43 tests passing)
+  - ✅ Compositor.js (37 tests passing)
+  - ✅ Scene-based rendering integrated into app.js
+  - ✅ All 3 layers rendering with proper z-index compositing
+
 ### 🚧 Next Tasks
 
-**Begin Step 3: Basic Rendering**
-1. Create `src/rendering/LayerRenderer.js` - Renders single layer to DOM
-2. Create `src/rendering/Compositor.js` - Composites multiple layers
-3. Update `grid.css` for optimized cell rendering
-4. Connect Scene data model to actual DOM rendering
+**Begin Step 4: Hit Test Overlay**
+1. Create `src/input/HitTestOverlay.js` - Mouse event handling
+2. Convert mouse coordinates to cell coordinates
+3. Handle mouse down/drag/up events
+4. Prepare for tool integration in Step 5
 
 ### 📊 Test Status
-- **197 tests passing** across 6 files ✅
+- **277 tests passing** across 8 files ✅
 - Test command: `npm test` (watch mode) or `npm run test:run` (once)
 - **IMPORTANT:** Use Node 20 (see .nvmrc)
 - Command prefix: `source ~/.nvm/nvm.sh && nvm use 20 && <command>`
@@ -39,6 +45,9 @@
 5. **Node 20 required:** Specified in .nvmrc for Vitest compatibility
 6. **Scene initialization:** 3 default layers (bg/mid/fg) with middle layer active
 7. **StateManager convenience:** Returns unsubscribe function from on() method
+8. **Rendering separation:** LayerRenderer handles DOM, Compositor handles logic
+9. **Visual compositing:** CSS z-index handles layer stacking, not JavaScript
+10. **Export utilities:** Compositor provides text and ANSI export functions
 
 ### 📁 Project Structure
 ```
@@ -47,17 +56,23 @@ terminal-draw/
 │   ├── app.js                 # Main app (uses test pattern currently)
 │   ├── palettes.json          # 10 color schemes (source of truth)
 │   ├── core/
-│       ├── Cell.js            ✅ Complete (23 tests)
-│       ├── Layer.js           ✅ Complete (42 tests)
-│       ├── constants.js       ✅ Complete (15 tests)
-│       ├── Scene.js           ✅ Complete (53 tests)
-│       └── StateManager.js    ✅ Complete (46 tests)
+│   │   ├── Cell.js            ✅ Complete (23 tests)
+│   │   ├── Layer.js           ✅ Complete (42 tests)
+│   │   ├── constants.js       ✅ Complete (15 tests)
+│   │   ├── Scene.js           ✅ Complete (53 tests)
+│   │   └── StateManager.js    ✅ Complete (46 tests)
+│   └── rendering/
+│       ├── LayerRenderer.js   ✅ Complete (43 tests)
+│       └── Compositor.js      ✅ Complete (37 tests)
 ├── tests/
 │   ├── Cell.test.js           ✅ 23 passing
 │   ├── Layer.test.js          ✅ 42 passing
 │   ├── constants.test.js      ✅ 15 passing
 │   ├── Scene.test.js          ✅ 53 passing
 │   ├── StateManager.test.js   ✅ 46 passing
+│   ├── integration.test.js    ✅ 18 passing
+│   ├── LayerRenderer.test.js  ✅ 43 passing
+│   └── Compositor.test.js     ✅ 37 passing
 │   └── integration.test.js    ✅ 18 passing
 ├── styles/
 │   ├── main.css               # Global styles, CSS vars, layout
@@ -68,8 +83,20 @@ terminal-draw/
 ├── .nvmrc                     # Node 20
 └── package.json               # Vite + Vitest
 
-Total: 197 tests passing ✅
+Total: 277 tests passing ✅
 ```
+
+### 🎯 Step 3 Acceptance Criteria ✅ COMPLETE
+- ✅ LayerRenderer renders Layer objects to DOM
+- ✅ Creates proper grid-row and cell structure
+- ✅ Applies fg-X and bg-Y color classes correctly
+- ✅ Handles layer visibility
+- ✅ Supports single cell updates (dirty updates)
+- ✅ Compositor provides logical compositing
+- ✅ Export functions (text, ANSI) work correctly
+- ✅ Scene integrated into app.js
+- ✅ All 277 tests passing
+- ✅ Visual rendering verified
 
 ### 🎯 Step 2 Acceptance Criteria ✅ COMPLETE
 - ✅ Can create Scene with 3 layers
@@ -77,7 +104,6 @@ Total: 197 tests passing ✅
 - ✅ Can add/remove layers
 - ✅ Can serialize/deserialize Scene
 - ✅ StateManager emits and receives events
-- ✅ All tests passing (197 total including 18 integration tests)
 - ✅ Scene includes coordinate validation and layer management
 - ✅ StateManager includes error handling and convenience features
 
@@ -89,6 +115,8 @@ Total: 197 tests passing ✅
 - `src/core/Layer.js` - Example of complex class with comprehensive tests
 - `src/core/Scene.js` - Top-level scene container with layer management
 - `src/core/StateManager.js` - Event emitter for reactive updates
+- `src/rendering/LayerRenderer.js` - DOM rendering for layers
+- `src/rendering/Compositor.js` - Logical compositing and export
 
 ### 🔧 Common Commands
 ```bash
@@ -106,29 +134,32 @@ source ~/.nvm/nvm.sh && nvm use 20 && npm run test:ui
 ```
 
 ### 💡 Notes for Next Session
-- Step 2 is now complete with 179 tests passing!
-- Next up: Step 3 - Basic Rendering
-  - LayerRenderer.js - Render individual layers to DOM
-  - Compositor.js - Composite multiple layers together
-  - Update grid.css for performance optimizations
-- Current test pattern in app.js will be replaced with Scene-based rendering
-- Scene model is ready to use: initializes with 3 layers, handles serialization
-- StateManager ready for reactive updates throughout the app
+- Step 3 is now complete with 277 tests passing!
+- Next up: Step 4 - Hit Test Overlay
+  - HitTestOverlay.js - Mouse coordinate to cell coordinate conversion
+  - Handle mouse events (down/drag/up)
+  - Prepare foundation for tool system
+- Rendering system complete:
+  - LayerRenderer handles all DOM rendering
+  - Compositor provides logical compositing for export
+  - Scene renders properly to all 3 layers with z-index
+- App.js now uses Scene instead of manual DOM manipulation
 
 ### 📈 Progress Tracking
 - **Milestone 1 Total:** 9 steps
 - **Step 1:** ✅ Complete (100%)
-- **Step 2:** ✅ Complete (100% - 4/4 modules, 197 tests including integration)
-- **Steps 3-9:** ⏳ Not started
-- **Overall:** ~22% complete (2/9 steps)
+- **Step 2:** ✅ Complete (100% - 4/4 modules)
+- **Step 3:** ✅ Complete (100% - 2/2 modules, 277 tests total)
+- **Steps 4-9:** ⏳ Not started
+- **Overall:** ~33% complete (3/9 steps)
 
 ### 🎨 Current Visual State
-The app currently shows a test pattern in the browser:
-- Border box with box-drawing characters
-- "TERMINAL DRAW - FONT TEST" text in center
-- Sample box-drawing characters
-- All rendered with cell-based approach
+The app now uses Scene-based rendering:
+- Border box rendered on BG layer
+- "TERMINAL DRAW - STEP 3 COMPLETE" text on MID layer
+- Box-drawing characters on FG layer
+- All rendered through LayerRenderer from Scene data model
+- Proper z-index compositing (BG → MID → FG)
 - Scales correctly with controls in sidebar
 - 10 palettes switchable via dropdown
-
-Next step will keep this test pattern until Step 3 (rendering) when we connect the Scene data model to actual DOM rendering.
+- Ready for mouse input handling in Step 4

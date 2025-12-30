@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rendering Verification - Terminal Draw</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #e0e0e0;
+        }
+        h1 {
+            color: #4a9eff;
+        }
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            background: #2a2a2a;
+            border-radius: 8px;
+        }
+        .grid-container {
+            background: #000;
+            display: inline-block;
+            position: relative;
+            border: 2px solid #444;
+            font-size: 16px;
+            line-height: 16px;
+        }
+        .visual-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0;
+            line-height: 0;
+        }
+        .visual-layer[data-layer="bg"] { z-index: 2; }
+        .visual-layer[data-layer="mid"] { z-index: 3; }
+        .visual-layer[data-layer="fg"] { z-index: 4; }
+        .grid-row {
+            display: block;
+            line-height: 0;
+            font-size: 0;
+            white-space: nowrap;
+        }
+        .cell {
+            display: inline-block;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 16px;
+            line-height: 16px;
+            text-align: center;
+            white-space: pre;
+            background: transparent;
+        }
+        .fg-0 { color: #000000; }
+        .fg-1 { color: #cc0000; }
+        .fg-2 { color: #00cc00; }
+        .fg-3 { color: #cccc00; }
+        .fg-4 { color: #0000cc; }
+        .fg-5 { color: #cc00cc; }
+        .fg-6 { color: #00cccc; }
+        .fg-7 { color: #cccccc; }
+        .bg--1 { background-color: transparent; }
+        .bg-0 { background-color: #000000; }
+        .bg-1 { background-color: #cc0000; }
+        .bg-2 { background-color: #00cc00; }
+        .bg-3 { background-color: #cccc00; }
+        .bg-4 { background-color: #0000cc; }
+        .bg-5 { background-color: #cc00cc; }
+        .bg-6 { background-color: #00cccc; }
+        .bg-7 { background-color: #cccccc; }
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            background: #1a1a1a;
+            border-left: 3px solid #4a9eff;
+            font-family: monospace;
+        }
+        .pass { color: #00ff00; }
+        .fail { color: #ff0000; }
+        button {
+            background: #4a9eff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #3a8eef;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎨 Terminal Draw - Rendering Verification</h1>
+
+    <div class="test-section">
+        <h2>Test 1: LayerRenderer Basic</h1> Rendering</h2>
+        <div class="grid-container" id="test1-container">
+            <div id="test1-layer" class="visual-layer" data-layer="mid"></div>
+        </div>
+        <div class="status" id="test1-status">Waiting...</div>
+        <button onclick="runTest1()">Run Test 1</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 2: Multi-Layer Compositing</h2>
+        <div class="grid-container" id="test2-container">
+            <div id="test2-bg" class="visual-layer" data-layer="bg"></div>
+            <div id="test2-mid" class="visual-layer" data-layer="mid"></div>
+            <div id="test2-fg" class="visual-layer" data-layer="fg"></div>
+        </div>
+        <div class="status" id="test2-status">Waiting...</div>
+        <button onclick="runTest2()">Run Test 2</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 3: Full Scene with Test Pattern</h2>
+        <div class="grid-container" id="test3-container">
+            <div id="test3-bg" class="visual-layer" data-layer="bg"></div>
+            <div id="test3-mid" class="visual-layer" data-layer="mid"></div>
+            <div id="test3-fg" class="visual-layer" data-layer="fg"></div>
+        </div>
+        <div class="status" id="test3-status">Waiting...</div>
+        <button onclick="runTest3()">Run Test 3</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 4: Run All Tests</h2>
+        <button onclick="runAllTests()">Run All Tests</button>
+        <div class="status" id="all-status">Ready</div>
+    </div>
+
+    <script type="module">
+        import { Scene } from './src/core/Scene.js';
+        import { Layer } from './src/core/Layer.js';
+        import { Cell } from './src/core/Cell.js';
+        import { LayerRenderer } from './src/rendering/LayerRenderer.js';
+        import { LAYER_BG, LAYER_MID, LAYER_FG } from './src/core/constants.js';
+
+        window.Scene = Scene;
+        window.Layer = Layer;
+        window.Cell = Cell;
+        window.LayerRenderer = LayerRenderer;
+        window.LAYER_BG = LAYER_BG;
+        window.LAYER_MID = LAYER_MID;
+        window.LAYER_FG = LAYER_FG;
+
+        console.log('✅ Modules loaded successfully');
+    </script>
+
+    <script>
+        function setStatus(id, message, pass = null) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.textContent = message;
+                if (pass === true) el.className = 'status pass';
+                else if (pass === false) el.className = 'status fail';
+                else el.className = 'status';
+            }
+        }
+
+        function runTest1() {
+            try {
+                setStatus('test1-status', '🔄 Running Test 1...');
+
+                const layer = new window.Layer('test', 'Test Layer', 10, 3);
+                const renderer = new window.LayerRenderer();
+                const container = document.getElementById('test1-layer');
+
+                // Set some cells
+                layer.setCell(0, 0, new window.Cell('┌', 7, -1));
+                layer.setCell(9, 0, new window.Cell('┐', 7, -1));
+                layer.setCell(0, 2, new window.Cell('└', 7, -1));
+                layer.setCell(9, 2, new window.Cell('┘', 7, -1));
+
+                for (let x = 1; x < 9; x++) {
+                    layer.setCell(x, 0, new window.Cell('─', 7, -1));
+                    layer.setCell(x, 2, new window.Cell('─', 7, -1));
+                }
+
+                layer.setCell(4, 1, new window.Cell('H', 3, -1));
+                layer.setCell(5, 1, new window.Cell('I', 3, -1));
+
+                renderer.render(layer, container);
+
+                // Verify
+                const cells = container.querySelectorAll('.cell');
+                if (cells.length === 30) {
+                    setStatus('test1-status', `✅ PASS: Rendered ${cells.length} cells correctly`, true);
+                } else {
+                    setStatus('test1-status', `❌ FAIL: Expected 30 cells, got ${cells.length}`, false);
+                }
+            } catch (error) {
+                setStatus('test1-status', `❌ ERROR: ${error.message}`, false);
+                console.error(error);
+            }
+        }
+
+        function runTest2() {
+            try {
+                setStatus('test2-status', '🔄 Running Test 2...');
+
+                const renderer = new window.LayerRenderer();
+
+                // Create 3 layers
+                const bgLayer = new window.Layer(window.LAYER_BG, 'BG', 15, 3);
+                const midLayer = new window.Layer(window.LAYER_MID, 'MID', 15, 3);
+                const fgLayer = new window.Layer(window.LAYER_FG, 'FG', 15, 3);
+
+                // BG: shading pattern
+                for (let x = 0; x < 15; x++) {
+                    for (let y = 0; y < 3; y++) {
+                        bgLayer.setCell(x, y, new window.Cell('░', 0, -1));
+                    }
+                }
+
+                // MID: box
+                midLayer.setCell(5, 0, new window.Cell('┌', 7, -1));
+                midLayer.setCell(9, 0, new window.Cell('┐', 7, -1));
+                midLayer.setCell(5, 2, new window.Cell('└', 7, -1));
+                midLayer.setCell(9, 2, new window.Cell('┘', 7, -1));
+                for (let x = 6; x < 9; x++) {
+                    midLayer.setCell(x, 0, new window.Cell('─', 7, -1));
+                    midLayer.setCell(x, 2, new window.Cell('─', 7, -1));
+                }
+                midLayer.setCell(5, 1, new window.Cell('│', 7, -1));
+                midLayer.setCell(9, 1, new window.Cell('│', 7, -1));
+
+                // FG: text with background
+                fgLayer.setCell(7, 1, new window.Cell('X', 3, 1));
+
+                // Render
+                renderer.render(bgLayer, document.getElementById('test2-bg'));
+                renderer.render(midLayer, document.getElementById('test2-mid'));
+                renderer.render(fgLayer, document.getElementById('test2-fg'));
+
+                setStatus('test2-status', '✅ PASS: Multi-layer rendering complete', true);
+            } catch (error) {
+                setStatus('test2-status', `❌ ERROR: ${error.message}`, false);
+                console.error(error);
+            }
+        }
+
+        function runTest3() {
+            try {
+                setStatus('test3-status', '🔄 Running Test 3...');
+
+                const scene = new window.Scene(40, 10, 'default');
+                const renderer = new window.LayerRenderer();
+
+                const bgLayer = scene.getLayer(window.LAYER_BG);
+                const midLayer = scene.getLayer(window.LAYER_MID);
+                const fgLayer = scene.getLayer(window.LAYER_FG);
+
+                // Border on BG
+                for (let y = 0; y < 10; y++) {
+                    for (let x = 0; x < 40; x++) {
+                        if (y === 0 || y === 9 || x === 0 || x === 39) {
+                            let ch = '│';
+                            if (y === 0 && x === 0) ch = '┌';
+                            else if (y === 0 && x === 39) ch = '┐';
+                            else if (y === 9 && x === 0) ch = '└';
+                            else if (y === 9 && x === 39) ch = '┘';
+                            else if (y === 0 || y === 9) ch = '─';
+                            bgLayer.setCell(x, y, new window.Cell(ch, 7, -1));
+                        }
+                    }
+                }
+
+                // Text on MID
+                const text = 'STEP 3 RENDERING COMPLETE';
+                const textX = Math.floor((40 - text.length) / 2);
+                for (let i = 0; i < text.length; i++) {
+                    midLayer.setCell(textX + i, 4, new window.Cell(text[i], 3, -1));
+                }
+
+                // Box chars on FG
+                const chars = '┌─┐│└┘┬┴├┤┼';
+                for (let i = 0; i < chars.length; i++) {
+                    fgLayer.setCell(15 + i, 6, new window.Cell(chars[i], 6, -1));
+                }
+
+                // Render
+                renderer.render(bgLayer, document.getElementById('test3-bg'));
+                renderer.render(midLayer, document.getElementById('test3-mid'));
+                renderer.render(fgLayer, document.getElementById('test3-fg'));
+
+                setStatus('test3-status', '✅ PASS: Full scene rendering complete', true);
+            } catch (error) {
+                setStatus('test3-status', `❌ ERROR: ${error.message}`, false);
+                console.error(error);
+            }
+        }
+
+        function runAllTests() {
+            setStatus('all-status', '🔄 Running all tests...');
+            let allPassed = true;
+
+            try {
+                runTest1();
+                runTest2();
+                runTest3();
+
+                setTimeout(() => {
+                    setStatus('all-status', '✅ All tests completed! Check results above.', true);
+                }, 100);
+            } catch (error) {
+                setStatus('all-status', `❌ ERROR: ${error.message}`, false);
+                console.error(error);
+            }
+        }
+
+        // Auto-run on load
+        window.addEventListener('load', () => {
+            console.log('Page loaded, modules ready');
+            setStatus('all-status', '✅ Ready to run tests');
+        });
+    </script>
+</body>
+</html>

@@ -4,6 +4,10 @@
  */
 
 import palettes from "./palettes.json";
+import { Scene } from "./core/Scene.js";
+import { Cell } from "./core/Cell.js";
+import { LayerRenderer } from "./rendering/LayerRenderer.js";
+import { LAYER_BG, LAYER_MID, LAYER_FG } from "./core/constants.js";
 
 // =============================================================================
 // Configuration & State
@@ -15,76 +19,93 @@ const GRID_HEIGHT = 25;
 let currentPalette = "default";
 let currentScale = 100;
 
+// Scene and Renderer
+let scene = null;
+let renderer = null;
+
 // =============================================================================
-// Initialization
+// Scene Management
 // =============================================================================
 
 /**
- * Initialize test pattern to demonstrate rendering
- * TODO: Replace with actual scene rendering in Step 2
+ * Initialize scene with test pattern
  */
-function initTestPattern() {
-  const bgLayer = document.getElementById("layer-bg");
-  if (!bgLayer) {
-    console.error("layer-bg not found");
+function initScene() {
+  // Create scene
+  scene = new Scene(GRID_WIDTH, GRID_HEIGHT, currentPalette);
+  renderer = new LayerRenderer();
+
+  // Get layers
+  const bgLayer = scene.getLayer(LAYER_BG);
+  const midLayer = scene.getLayer(LAYER_MID);
+  const fgLayer = scene.getLayer(LAYER_FG);
+
+  // Create test pattern in layers
+  const testChars = "─│┌┐└┘┬┴├┤┼━┃╔╗╚╝░▒▓█";
+
+  // Background: border
+  for (let y = 0; y < GRID_HEIGHT; y++) {
+    for (let x = 0; x < GRID_WIDTH; x++) {
+      if (y === 0 || y === GRID_HEIGHT - 1 || x === 0 || x === GRID_WIDTH - 1) {
+        let ch = "│";
+        if (y === 0 && x === 0) ch = "┌";
+        else if (y === 0 && x === GRID_WIDTH - 1) ch = "┐";
+        else if (y === GRID_HEIGHT - 1 && x === 0) ch = "└";
+        else if (y === GRID_HEIGHT - 1 && x === GRID_WIDTH - 1) ch = "┘";
+        else if (y === 0 || y === GRID_HEIGHT - 1) ch = "─";
+
+        bgLayer.setCell(x, y, new Cell(ch, 7, -1));
+      }
+    }
+  }
+
+  // Middle: center text
+  const centerY = Math.floor(GRID_HEIGHT / 2);
+  const text = "TERMINAL DRAW - STEP 3 COMPLETE";
+  const textX = Math.floor((GRID_WIDTH - text.length) / 2);
+  for (let i = 0; i < text.length; i++) {
+    midLayer.setCell(textX + i, centerY, new Cell(text[i], 3, -1));
+  }
+
+  // Foreground: box drawing characters
+  for (let i = 0; i < testChars.length && i < 20; i++) {
+    fgLayer.setCell(30 + i, centerY + 2, new Cell(testChars[i], 6, -1));
+  }
+
+  // Render all layers
+  renderScene();
+
+  updateStatus(`Ready • Grid: ${GRID_WIDTH}×${GRID_HEIGHT} • Step 3 Complete`);
+}
+
+/**
+ * Render the scene to DOM
+ */
+function renderScene() {
+  if (!scene || !renderer) return;
+
+  const bgContainer = document.getElementById("layer-bg");
+  const midContainer = document.getElementById("layer-mid");
+  const fgContainer = document.getElementById("layer-fg");
+
+  if (!bgContainer || !midContainer || !fgContainer) {
+    console.error("Layer containers not found");
     return;
   }
 
-  const testChars = "─│┌┐└┘┬┴├┤┼━┃╔╗╚╝░▒▓█";
-
-  for (let y = 0; y < GRID_HEIGHT; y++) {
-    const rowDiv = document.createElement("div");
-    rowDiv.className = "grid-row";
-
-    for (let x = 0; x < GRID_WIDTH; x++) {
-      const cell = document.createElement("span");
-      cell.className = "cell";
-
-      // Border
-      if (y === 0 || y === GRID_HEIGHT - 1 || x === 0 || x === GRID_WIDTH - 1) {
-        if (y === 0 && x === 0) cell.textContent = "┌";
-        else if (y === 0 && x === GRID_WIDTH - 1) cell.textContent = "┐";
-        else if (y === GRID_HEIGHT - 1 && x === 0) cell.textContent = "└";
-        else if (y === GRID_HEIGHT - 1 && x === GRID_WIDTH - 1)
-          cell.textContent = "┘";
-        else if (y === 0 || y === GRID_HEIGHT - 1) cell.textContent = "─";
-        else cell.textContent = "│";
-        cell.classList.add("fg-7");
-      }
-      // Center text
-      else if (y === Math.floor(GRID_HEIGHT / 2) && x >= 25 && x <= 54) {
-        const text = "TERMINAL DRAW - FONT TEST";
-        cell.textContent = text[x - 25] || " ";
-        cell.classList.add("fg-3");
-      }
-      // Box drawing characters
-      else if (y === Math.floor(GRID_HEIGHT / 2) + 2 && x >= 30 && x < 50) {
-        cell.textContent = testChars[x - 30] || " ";
-        cell.classList.add("fg-6");
-      }
-      // Empty
-      else {
-        cell.textContent = " ";
-        cell.classList.add("fg-7");
-      }
-
-      rowDiv.appendChild(cell);
-    }
-
-    bgLayer.appendChild(rowDiv);
-  }
-
-  updateStatus(`Ready • Grid: ${GRID_WIDTH}×${GRID_HEIGHT} • Step 1 Complete`);
+  renderer.render(scene.getLayer(LAYER_BG), bgContainer);
+  renderer.render(scene.getLayer(LAYER_MID), midContainer);
+  renderer.render(scene.getLayer(LAYER_FG), fgContainer);
 }
 
 /**
  * Initialize all UI controls and apply defaults
  */
 function init() {
-  initTestPattern();
+  initScene();
   initScaleControls();
   initPaletteSelector();
-  console.log("✓ Terminal Draw initialized");
+  console.log("✓ Terminal Draw initialized (Step 3 Complete)");
 }
 
 // =============================================================================
@@ -191,6 +212,12 @@ function applyPalette(paletteId) {
   });
 
   currentPalette = paletteId;
+
+  // Update scene palette if it exists
+  if (scene) {
+    scene.paletteId = paletteId;
+  }
+
   updatePaletteSwatches();
 }
 

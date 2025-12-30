@@ -112,7 +112,7 @@
     display: inline-block;
     font-family: "JetBrains Mono", monospace;
     font-size: var(--cell-size);
-    line-height: var(--cell-size);
+    line-height: var(--cell-height);
     width: 1ch;
     height: var(--cell-height);
     letter-spacing: 0;

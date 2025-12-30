@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cell Dimension Diagnostics</title>
+    <style>
+        @font-face {
+            font-family: "JetBrains Mono";
+            src: url("assets/JetBrainsMono-Medium.woff2") format("woff2");
+            font-weight: 500;
+            font-style: normal;
+            font-display: block;
+        }
+
+        :root {
+            --cell-size: 16px;
+            --cell-height: 21px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #cccccc;
+        }
+
+        h1 {
+            color: #fff;
+            margin-bottom: 30px;
+        }
+
+        .section {
+            background: #2d2d2d;
+            border: 1px solid #3e3e3e;
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .section h2 {
+            margin-top: 0;
+            color: #fff;
+            font-size: 18px;
+        }
+
+        .test-grid {
+            display: inline-block;
+            background: #000;
+            border: 2px solid #007acc;
+            position: relative;
+        }
+
+        .grid-row {
+            display: block;
+            line-height: 0;
+            font-size: 0;
+            white-space: nowrap;
+            margin: 0;
+            padding: 0;
+            letter-spacing: 0;
+            word-spacing: 0;
+            height: var(--cell-height);
+        }
+
+        .cell {
+            display: inline-block;
+            font-family: "JetBrains Mono", monospace;
+            font-size: var(--cell-size);
+            line-height: var(--cell-size);
+            width: 1ch;
+            height: var(--cell-height);
+            letter-spacing: 0;
+            word-spacing: 0;
+            text-align: center;
+            white-space: pre;
+            overflow: visible;
+            margin: 0;
+            padding: 0;
+            border: none;
+            box-sizing: border-box;
+            vertical-align: top;
+            background: transparent;
+            color: #00ff00;
+            font-variant-ligatures: none;
+            font-feature-settings: "calt" 0, "liga" 0;
+            font-kerning: none;
+            text-rendering: geometricPrecision;
+        }
+
+        .cell.with-bg {
+            background: rgba(255, 0, 0, 0.2);
+        }
+
+        .cell.with-border {
+            border: 1px solid rgba(255, 255, 0, 0.3);
+        }
+
+        .measurements {
+            font-family: "Courier New", monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            background: #1e1e1e;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 15px;
+        }
+
+        .measurements div {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+        }
+
+        .measurements .label {
+            color: #808080;
+            min-width: 250px;
+        }
+
+        .measurements .value {
+            color: #00ff00;
+            font-weight: bold;
+            text-align: right;
+        }
+
+        .measurements .mismatch {
+            color: #ff0000;
+        }
+
+        .single-cell-test {
+            display: inline-block;
+            font-family: "JetBrains Mono", monospace;
+            font-size: var(--cell-size);
+            background: rgba(0, 122, 204, 0.2);
+            border: 2px solid #007acc;
+            padding: 0;
+            margin: 10px;
+        }
+
+        button {
+            background: #007acc;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            font-size: 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        button:hover {
+            background: #1a8cd8;
+        }
+
+        .grid-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            border: 1px solid rgba(255, 0, 0, 0.5);
+            background: rgba(255, 0, 0, 0.1);
+        }
+
+        .info {
+            color: #808080;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Cell Dimension Diagnostics</h1>
+
+    <div class="section">
+        <h2>CSS Variables</h2>
+        <div class="measurements">
+            <div><span class="label">--cell-size (font size):</span><span class="value" id="css-cell-size">-</span></div>
+            <div><span class="label">--cell-height:</span><span class="value" id="css-cell-height">-</span></div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Single Character Measurements</h2>
+        <div>
+            <span class="single-cell-test" id="test-char-block">█</span>
+            <span class="single-cell-test" id="test-char-space"> </span>
+            <span class="single-cell-test" id="test-char-letter">A</span>
+            <span class="single-cell-test" id="test-char-zero">0</span>
+        </div>
+        <div class="measurements" id="char-measurements"></div>
+    </div>
+
+    <div class="section">
+        <h2>Test Grid (10×5 cells)</h2>
+        <div>
+            <button onclick="runDiagnostics()">🔄 Run Diagnostics</button>
+            <button onclick="toggleBorders()">Show/Hide Borders</button>
+            <button onclick="toggleBackgrounds()">Show/Hide Backgrounds</button>
+        </div>
+        <div style="margin-top: 15px;">
+            <div class="test-grid" id="test-grid"></div>
+        </div>
+        <div class="measurements" id="grid-measurements"></div>
+    </div>
+
+    <div class="section">
+        <h2>1ch Width Test</h2>
+        <div class="measurements" id="ch-measurements"></div>
+        <div class="info">
+            Note: 1ch is defined as the width of the "0" (zero) character in the current font.
+            It may not exactly match other character widths in monospace fonts.
+        </div>
+    </div>
+
+    <script>
+        let showBorders = false;
+        let showBackgrounds = false;
+
+        function createTestGrid() {
+            const grid = document.getElementById('test-grid');
+            grid.innerHTML = '';
+
+            const testPattern = '0123456789';
+
+            for (let y = 0; y < 5; y++) {
+                const row = document.createElement('div');
+                row.className = 'grid-row';
+
+                for (let x = 0; x < 10; x++) {
+                    const cell = document.createElement('span');
+                    cell.className = 'cell';
+                    if (showBorders) cell.classList.add('with-border');
+                    if (showBackgrounds) cell.classList.add('with-bg');
+                    cell.textContent = testPattern[x];
+                    cell.dataset.x = x;
+                    cell.dataset.y = y;
+                    row.appendChild(cell);
+                }
+
+                grid.appendChild(row);
+            }
+        }
+
+        function toggleBorders() {
+            showBorders = !showBorders;
+            createTestGrid();
+            runDiagnostics();
+        }
+
+        function toggleBackgrounds() {
+            showBackgrounds = !showBackgrounds;
+            createTestGrid();
+            runDiagnostics();
+        }
+
+        function measureElement(element) {
+            const rect = element.getBoundingClientRect();
+            const computed = window.getComputedStyle(element);
+
+            return {
+                width: rect.width,
+                height: rect.height,
+                offsetWidth: element.offsetWidth,
+                offsetHeight: element.offsetHeight,
+                computedWidth: parseFloat(computed.width),
+                computedHeight: parseFloat(computed.height),
+                fontSize: parseFloat(computed.fontSize),
+                lineHeight: computed.lineHeight
+            };
+        }
+
+        function runDiagnostics() {
+            // CSS Variables
+            const root = document.documentElement;
+            const rootStyle = getComputedStyle(root);
+            document.getElementById('css-cell-size').textContent =
+                rootStyle.getPropertyValue('--cell-size');
+            document.getElementById('css-cell-height').textContent =
+                rootStyle.getPropertyValue('--cell-height');
+
+            // Single character measurements
+            const chars = ['block', 'space', 'letter', 'zero'];
+            const charNames = { block: '█', space: '(space)', letter: 'A', zero: '0' };
+            let charHtml = '';
+
+            chars.forEach(char => {
+                const el = document.getElementById(`test-char-${char}`);
+                const m = measureElement(el);
+                charHtml += `
+                    <div><span class="label">${charNames[char]} - Width:</span><span class="value">${m.width.toFixed(2)}px</span></div>
+                    <div><span class="label">${charNames[char]} - Height:</span><span class="value">${m.height.toFixed(2)}px</span></div>
+                `;
+            });
+
+            document.getElementById('char-measurements').innerHTML = charHtml;
+
+            // Grid measurements
+            const grid = document.getElementById('test-grid');
+            const gridRect = grid.getBoundingClientRect();
+            const firstCell = grid.querySelector('.cell');
+            const firstRow = grid.querySelector('.grid-row');
+
+            if (firstCell && firstRow) {
+                const cellMeasure = measureElement(firstCell);
+                const rowMeasure = measureElement(firstRow);
+
+                const expectedWidth = cellMeasure.width * 10;
+                const expectedHeight = rowMeasure.height * 5;
+                const widthDiff = Math.abs(gridRect.width - expectedWidth);
+                const heightDiff = Math.abs(gridRect.height - expectedHeight);
+
+                let gridHtml = `
+                    <div><span class="label">Grid Total Width:</span><span class="value">${gridRect.width.toFixed(2)}px</span></div>
+                    <div><span class="label">Grid Total Height:</span><span class="value">${gridRect.height.toFixed(2)}px</span></div>
+                    <div><span class="label">First Cell Width (1ch):</span><span class="value">${cellMeasure.width.toFixed(2)}px</span></div>
+                    <div><span class="label">First Cell Height:</span><span class="value">${cellMeasure.height.toFixed(2)}px</span></div>
+                    <div><span class="label">First Row Height:</span><span class="value">${rowMeasure.height.toFixed(2)}px</span></div>
+                    <div><span class="label">Expected Grid Width (10 cells):</span><span class="value">${expectedWidth.toFixed(2)}px</span></div>
+                    <div><span class="label">Expected Grid Height (5 rows):</span><span class="value">${expectedHeight.toFixed(2)}px</span></div>
+                    <div><span class="label">Width Difference:</span><span class="value ${widthDiff > 0.5 ? 'mismatch' : ''}">${widthDiff.toFixed(2)}px</span></div>
+                    <div><span class="label">Height Difference:</span><span class="value ${heightDiff > 0.5 ? 'mismatch' : ''}">${heightDiff.toFixed(2)}px</span></div>
+                `;
+
+                document.getElementById('grid-measurements').innerHTML = gridHtml;
+            }
+
+            // 1ch test
+            const tempDiv = document.createElement('div');
+            tempDiv.style.cssText = `
+                font-family: "JetBrains Mono", monospace;
+                font-size: 16px;
+                width: 1ch;
+                height: 1em;
+                position: absolute;
+                visibility: hidden;
+            `;
+            document.body.appendChild(tempDiv);
+            const chWidth = tempDiv.getBoundingClientRect().width;
+            const emHeight = tempDiv.getBoundingClientRect().height;
+            document.body.removeChild(tempDiv);
+
+            let chHtml = `
+                <div><span class="label">1ch at 16px font-size:</span><span class="value">${chWidth.toFixed(2)}px</span></div>
+                <div><span class="label">1em at 16px font-size:</span><span class="value">${emHeight.toFixed(2)}px</span></div>
+                <div><span class="label">Actual cell width (measured):</span><span class="value">${firstCell ? measureElement(firstCell).width.toFixed(2) : 'N/A'}px</span></div>
+                <div><span class="label">Match:</span><span class="value ${Math.abs(chWidth - (firstCell ? measureElement(firstCell).width : 0)) > 0.1 ? 'mismatch' : ''}">
+                    ${Math.abs(chWidth - (firstCell ? measureElement(firstCell).width : 0)) < 0.1 ? '✓ Match' : '✗ Mismatch'}
+                </span></div>
+            `;
+
+            document.getElementById('ch-measurements').innerHTML = chHtml;
+        }
+
+        // Initialize
+        createTestGrid();
+        runDiagnostics();
+
+        // Re-run diagnostics on window resize
+        window.addEventListener('resize', runDiagnostics);
+    </script>
+</body>
+</html>

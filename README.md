@@ -21,6 +21,40 @@ npm run dev
 
 Open `http://localhost:5173` in your browser.
 
+## Node Version
+
+This project requires **Node 20** (specified in `.nvmrc`).
+
+If using nvm, run:
+```bash
+nvm use
+```
+
+**Important for development/testing:** All terminal commands should use Node 20. To ensure this, prefix commands with:
+```bash
+source ~/.nvm/nvm.sh && nvm use 20 && <your-command>
+```
+
+Example:
+```bash
+source ~/.nvm/nvm.sh && nvm use 20 && npm test -- --run
+```
+
+## Running Tests
+
+```bash
+# Run tests in watch mode (recommended during development)
+npm test
+
+# Run tests once
+npm run test:run
+
+# Run tests with UI
+npm run test:ui
+```
+
+Tests are located in the `tests/` directory and use Vitest.
+
 ## Project Structure
 
 ```
@@ -77,6 +111,29 @@ terminal-draw/
 
 See [IMPLEMENTATION-PLAN.md](./IMPLEMENTATION-PLAN.md) for detailed roadmap.
 
+## Testing Strategy
+
+We use **Vitest** for unit and integration tests:
+
+- ✅ **Unit tests** for core data models (Cell, Layer, Scene, etc.)
+- ✅ **Test-driven development** - write tests as features are built
+- ✅ **Coverage tracking** - ensure code quality
+- ✅ **Fast feedback** - tests run in milliseconds
+
+**Example test output:**
+```bash
+✓ tests/Cell.test.js (23 tests)
+  ✓ Cell > constructor (5)
+  ✓ Cell > clone (2)
+  ✓ Cell > equals (6)
+  ✓ Cell > isEmpty (4)
+  ✓ Cell > clear (2)
+  ✓ Cell > fromObject (2)
+  ✓ Cell > toObject (2)
+```
+
+See `tests/` directory for all test suites.
+
 ## Color Palettes
 
 - Default Terminal
@@ -97,9 +154,28 @@ Edit `src/palettes.json` to add more!
 ### Key Files
 
 - `src/app.js` - Application entry point and initialization
+- `src/core/` - Data models (Cell, Layer, Scene, StateManager)
 - `src/palettes.json` - Color scheme definitions
 - `styles/grid.css` - Grid cell rendering and color classes
 - `styles/main.css` - Layout, CSS variables, global styles
+- `tests/` - Test suites for all modules
+
+### Adding Tests
+
+When adding new features, create corresponding test files:
+
+```javascript
+// tests/YourModule.test.js
+import { describe, it, expect } from 'vitest';
+import { YourModule } from '../src/core/YourModule.js';
+
+describe('YourModule', () => {
+  it('should do something', () => {
+    const instance = new YourModule();
+    expect(instance.method()).toBe(expected);
+  });
+});
+```
 
 ### CSS Custom Properties
 

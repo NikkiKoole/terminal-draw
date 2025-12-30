@@ -194,54 +194,110 @@ DOM structure:
 
 ---
 
-### Step 3: Basic Rendering (2-3 hours)
+### Step 3: Basic Rendering ✅ COMPLETE (2-3 hours)
 
-#### LayerRenderer.js (Cell Mode)
-- [ ] `render(layer, container, width, height)` - creates w×h `<span>` elements
-- [ ] `updateCell(layer, x, y, width)` - patches single cell (dirty update)
-- [ ] Apply classes: `fg-X`, `bg-Y` for colors
-- [ ] Handle visibility: skip rendering if `layer.visible === false`
-- [ ] Cell content: use `textContent` or `innerText` for glyph
+#### LayerRenderer.js (Cell Mode) ✅ COMPLETE
+- [x] `render(layer, container)` - creates grid-row divs with cell `<span>` elements
+- [x] `createCellElement(cell, x, y)` - creates individual cell spans
+- [x] `updateCell(layer, container, x, y)` - patches single cell (dirty update)
+- [x] Apply classes: `fg-X`, `bg-Y` for colors
+- [x] Handle visibility: adds `.hidden` class if `layer.visible === false`
+- [x] Handle ligatures: adds `.ligatures-enabled` class if enabled
+- [x] Cell content: uses `textContent` for glyph
+- [x] Track rendered containers with WeakMap
+- [x] Methods: `updateVisibility()`, `updateLigatures()`, `clear()`, `isRendered()`
+- [x] **43 tests passing** - render, createCellElement, updateCell, visibility, ligatures, cleanup
 
-#### Compositor.js
-- [ ] `getVisibleCell(x, y, scene)` - applies compositing rules:
+#### Compositor.js ✅ COMPLETE
+- [x] `getVisibleCell(x, y, scene)` - applies compositing rules:
   - Glyph + FG: from topmost visible layer where `ch !== ' '`
   - BG: from topmost visible layer where `bg !== -1`
-- [ ] Used for copy/export, not direct rendering
+- [x] `getVisibleRegion(x, y, width, height, scene)` - composite rectangular region
+- [x] `exportScene(scene)` - export entire scene as 2D cell array
+- [x] `exportAsText(scene)` - export as plain text with newlines
+- [x] `exportAsANSI(scene)` - export with ANSI color codes
+- [x] Used for copy/export operations, not for rendering
+- [x] Respects layer visibility settings
+- [x] **37 tests passing** - compositing rules, region export, text export, ANSI export
 
-#### grid.css
-- [ ] CSS Grid layout for visual layers
-- [ ] Custom properties: `--grid-w`, `--grid-h`, `--cell-size`
-- [ ] `.visual-layer` styles:
-  - `display: grid`
-  - `grid-template-columns: repeat(var(--grid-w), var(--cell-size))`
+#### grid.css ✅ COMPLETE
+- [x] CSS custom properties: `--grid-w`, `--grid-h`, `--cell-size`
+- [x] `.visual-layer` styles:
   - `position: absolute`
   - `pointer-events: none`
-- [ ] `.cell` styles:
-  - Fixed width/height
+  - z-index layering (bg: 2, mid: 3, fg: 4)
+- [x] `.grid-row` styles:
+  - `display: block`
+  - `line-height: 0`, `font-size: 0`
+  - `white-space: nowrap`
+- [x] `.cell` styles:
+  - Fixed width/height via `--cell-size`
   - `font-family: 'JetBrains Mono'`
-  - `line-height: 1`
+  - `line-height: var(--cell-size)`
   - `text-align: center`
-- [ ] Color classes `.fg-0` through `.fg-7`, `.bg-0` through `.bg-7`, `.bg--1`
+  - Ligatures disabled by default
+- [x] Color classes `.fg-0` through `.fg-7`, `.bg-0` through `.bg-7`, `.bg--1`
+- [x] `.hidden` class for invisible layers
 
-**Deliverable:** Scene renders to DOM with all 3 layers visible
+#### Integration ✅ COMPLETE
+- [x] Updated `app.js` to use Scene + LayerRenderer
+- [x] Replaced manual DOM manipulation with Scene-based rendering
+- [x] Test pattern renders on all 3 layers
+- [x] Existing UI controls (palette, scale) still work
+
+**Deliverable:** Scene renders to DOM with all 3 layers visible ✅ COMPLETE
+
+**Testing:**
+- ✅ 80 tests passing (43 LayerRenderer + 37 Compositor)
+- ✅ Visual rendering verified in browser
+- ✅ All 3 layers render with proper z-index stacking
+- ✅ Color classes applied correctly
+- ✅ Scale/zoom works with rendering
 
 ---
 
-### Step 4: Hit Test Overlay (1-2 hours)
+### Step 4: Hit Test Overlay ✅ COMPLETE (1-2 hours)
 
-#### HitTestOverlay.js
-- [ ] Create transparent overlay matching grid dimensions
-- [ ] `getCellCoords(mouseEvent)` - converts pixel position to (x, y) grid coords
-- [ ] Track mouse states: `isDown`, `lastX`, `lastY`
-- [ ] Event handlers:
-  - `mousedown` → emit `'cell:down'` with (x, y)
-  - `mousemove` (if down) → emit `'cell:drag'` with (x, y)
-  - `mouseup` → emit `'cell:up'` with (x, y)
-- [ ] Prevent duplicate events for same cell
-- [ ] `setCursor(cursorType)` - updates CSS cursor
+#### HitTestOverlay.js ✅ COMPLETE
+- [x] Create transparent overlay matching grid dimensions (already in HTML)
+- [x] `getCellCoords(mouseEvent)` - converts pixel position to (x, y) grid coords
+- [x] `getCellDimensions()` - measures actual cell width and height separately
+- [x] `updateOverlaySize()` - dynamically sets overlay size to match rendered grid
+- [x] Account for scale/zoom transforms via `updateScale(newScale)`
+- [x] Track mouse states: `isDown`, `lastX`, `lastY`, `hoverX`, `hoverY`
+- [x] Event handlers:
+  - `mousedown` → emit `'cell:down'` with {x, y, button, modifiers}
+  - `mousemove` → emit `'cell:hover'` with {x, y}
+  - `mousemove` (if down) → emit `'cell:drag'` with {x, y, button, modifiers}
+  - `mouseup` → emit `'cell:up'` with {x, y, button, modifiers}
+  - `mouseleave` → emit `'cell:hover'` with {x: null, y: null} and `'cell:leave'`
+- [x] Prevent duplicate events for same cell (tracks last coordinates)
+- [x] `setCursor(cursorType)` - updates CSS cursor
+- [x] `destroy()` - cleanup resources
+- [x] **45 tests passing** - getCellCoords, scale handling, mouse events, hover tracking, duplicate prevention
 
-**Deliverable:** Mouse clicks translate to grid coordinates
+#### Integration ✅ COMPLETE
+- [x] Integrated into `app.js` with StateManager
+- [x] Visual hover feedback - yellow highlight on current cell
+- [x] Status bar shows cell coordinates and scale
+- [x] Scale synchronization when zoom changes
+- [x] Overlay size updates after rendering and scale changes
+- [x] Debug logging removed, clean production code
+
+#### CSS Fixes ✅ COMPLETE
+- [x] Hit-test-layer uses `1ch` for width with proper font-family/font-size
+- [x] Dynamic size calculation ensures accurate mouse tracking
+- [x] Works across entire grid at all zoom levels
+
+**Deliverable:** Mouse clicks translate to grid coordinates ✅ COMPLETE
+
+**Testing:**
+- ✅ 45 tests passing
+- ✅ Coordinate conversion verified at multiple scales (10%, 50%, 100%, 200%, 500%)
+- ✅ Visual hover feedback working accurately across entire grid
+- ✅ Status bar updates in real-time
+- ✅ Fixed coordinate calculation: separate width/height measurement
+- ✅ Fixed overlay size: dynamically calculated from rendered cells
 
 ---
 
@@ -473,10 +529,12 @@ class Tool {
 
 ### Date Started: 2024-12-30
 ### Step 1 Completed: 2024-12-30
-### Step 2 Completed: 2024-12-30 (All 4 modules complete - 179 tests passing)
+### Step 2 Completed: 2024-12-30 (All 4 modules complete - 197 tests passing)
+### Step 3 Completed: 2024-12-30 (LayerRenderer + Compositor - 277 tests passing)
+### Step 4 Completed: 2024-12-30 (HitTestOverlay - 322 tests passing)
 ### Current Milestone: 1 (In Progress)
-### Current Step: Step 3 - Basic Rendering (Next)
-### Next: Implement LayerRenderer.js and Compositor.js
+### Current Step: Step 5 - Tool System (Next)
+### Next: Implement Tool base class, BrushTool, EraserTool, PickerTool
 
 ### Step 1 Accomplishments:
 - ✅ Project structure with Vite dev server
@@ -529,7 +587,8 @@ class Tool {
 - ✅ StateManager.js with comprehensive tests (46 tests)
 - ✅ constants.js with 14 glyph categories (15 tests)
 - ✅ Testing infrastructure (Vitest + Node 20)
-- ✅ **179 tests passing** (all modules complete)
+- ✅ integration.test.js (18 tests)
+- ✅ **197 tests passing** (all modules complete)
 
 **Files Created:**
 - `src/core/Cell.js` + `tests/Cell.test.js`
@@ -537,6 +596,7 @@ class Tool {
 - `src/core/constants.js` + `tests/constants.test.js`
 - `src/core/Scene.js` + `tests/Scene.test.js`
 - `src/core/StateManager.js` + `tests/StateManager.test.js`
+- `tests/integration.test.js`
 
 **Key Decisions:**
 - Use palettes.json as single source of truth (not duplicated in constants)
@@ -545,6 +605,52 @@ class Tool {
 - StateManager returns unsubscribe function from on() for convenience
 - 14 glyph categories: Box styles, Shading, Math, Arrows, Currency, etc.
 - Test-driven development approach working well
+
+### Step 3 Progress (100% Complete):
+**Completed:**
+- ✅ LayerRenderer.js with comprehensive tests (43 tests)
+- ✅ Compositor.js with full coverage (37 tests)
+- ✅ Scene-based rendering integrated into app.js
+- ✅ **277 tests passing** (197 previous + 80 new)
+
+**Files Created:**
+- `src/rendering/LayerRenderer.js` + `tests/LayerRenderer.test.js`
+- `src/rendering/Compositor.js` + `tests/Compositor.test.js`
+- `STEP-3-COMPLETION.md`
+
+**Key Decisions:**
+- Visual compositing via CSS z-index (not JavaScript)
+- Compositor for logical compositing (export only)
+- Row-based DOM structure with grid-row divs
+- WeakMap for container tracking (no memory leaks)
+- JSDOM for testing DOM rendering
+- Export utilities: text and ANSI colored text
+
+### Step 4 Progress (100% Complete):
+**Completed:**
+- ✅ HitTestOverlay.js with comprehensive tests (45 tests)
+- ✅ Mouse → cell coordinate conversion with scale support
+- ✅ Event emission via StateManager
+- ✅ Visual hover feedback (yellow highlight)
+- ✅ Status bar integration
+- ✅ Dynamic overlay sizing to match rendered grid
+- ✅ Separate width/height measurement for accurate tracking
+- ✅ **322 tests passing** (277 previous + 45 new)
+
+**Files Created:**
+- `src/input/HitTestOverlay.js` + `tests/HitTestOverlay.test.js`
+- `STEP-4-COMPLETION.md`
+
+**Key Decisions:**
+- Event-driven architecture (emit events, don't call tools)
+- Explicit scale parameter (not read from DOM)
+- Duplicate event prevention (track last coordinates)
+- Separate hover and click state
+- Visual feedback for user interaction
+- Floor coordinates (not round) for consistent selection
+- Dynamic size calculation: measure actual rendered cells
+- Separate width/height: handle non-square character dimensions
+- CSS: use 1ch with proper font settings for accurate sizing
 
 ---
 

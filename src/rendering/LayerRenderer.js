@@ -21,32 +21,32 @@ export class LayerRenderer {
    */
   render(layer, container) {
     if (!layer || !container) {
-      console.error('LayerRenderer.render: Invalid layer or container');
+      console.error("LayerRenderer.render: Invalid layer or container");
       return;
     }
 
     // Handle visibility
     if (!layer.visible) {
-      container.classList.add('hidden');
+      container.classList.add("hidden");
       return;
     } else {
-      container.classList.remove('hidden');
+      container.classList.remove("hidden");
     }
 
     // Clear existing content
-    container.innerHTML = '';
+    container.innerHTML = "";
 
     // Add ligatures class if enabled
     if (layer.ligatures) {
-      container.classList.add('ligatures-enabled');
+      container.classList.add("ligatures-enabled");
     } else {
-      container.classList.remove('ligatures-enabled');
+      container.classList.remove("ligatures-enabled");
     }
 
     // Render all rows
     for (let y = 0; y < layer.height; y++) {
-      const rowDiv = document.createElement('div');
-      rowDiv.className = 'grid-row';
+      const rowDiv = document.createElement("div");
+      rowDiv.className = "grid-row";
       rowDiv.dataset.row = y;
 
       for (let x = 0; x < layer.width; x++) {
@@ -62,7 +62,7 @@ export class LayerRenderer {
     this.renderedContainers.set(container, {
       layerId: layer.id,
       width: layer.width,
-      height: layer.height
+      height: layer.height,
     });
   }
 
@@ -74,8 +74,8 @@ export class LayerRenderer {
    * @returns {HTMLElement} Span element for the cell
    */
   createCellElement(cell, x, y) {
-    const span = document.createElement('span');
-    span.className = 'cell';
+    const span = document.createElement("span");
+    span.className = "cell";
     span.dataset.x = x;
     span.dataset.y = y;
 
@@ -133,7 +133,7 @@ export class LayerRenderer {
     cellSpan.textContent = cell.ch;
 
     // Remove old color classes
-    cellSpan.className = 'cell';
+    cellSpan.className = "cell";
 
     // Apply new color classes
     cellSpan.classList.add(`fg-${cell.fg}`);
@@ -153,9 +153,9 @@ export class LayerRenderer {
     }
 
     if (layer.visible) {
-      container.classList.remove('hidden');
+      container.classList.remove("hidden");
     } else {
-      container.classList.add('hidden');
+      container.classList.add("hidden");
     }
   }
 
@@ -170,9 +170,9 @@ export class LayerRenderer {
     }
 
     if (layer.ligatures) {
-      container.classList.add('ligatures-enabled');
+      container.classList.add("ligatures-enabled");
     } else {
-      container.classList.remove('ligatures-enabled');
+      container.classList.remove("ligatures-enabled");
     }
   }
 
@@ -182,7 +182,7 @@ export class LayerRenderer {
    */
   clear(container) {
     if (container) {
-      container.innerHTML = '';
+      container.innerHTML = "";
       this.renderedContainers.delete(container);
     }
   }

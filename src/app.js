@@ -7,6 +7,8 @@ import palettes from "./palettes.json";
 import { Scene } from "./core/Scene.js";
 import { Cell } from "./core/Cell.js";
 import { LayerRenderer } from "./rendering/LayerRenderer.js";
+import { StateManager } from "./core/StateManager.js";
+import { HitTestOverlay } from "./input/HitTestOverlay.js";
 import { LAYER_BG, LAYER_MID, LAYER_FG } from "./core/constants.js";
 
 // =============================================================================
@@ -22,6 +24,11 @@ let currentScale = 100;
 // Scene and Renderer
 let scene = null;
 let renderer = null;
+let stateManager = null;
+let hitTestOverlay = null;
+
+// Hover state for visual feedback
+let hoverCell = null;
 
 // =============================================================================
 // Scene Management
@@ -75,7 +82,9 @@ function initScene() {
   // Render all layers
   renderScene();
 
-  updateStatus(`Ready • Grid: ${GRID_WIDTH}×${GRID_HEIGHT} • Step 3 Complete`);
+  updateStatus(
+    `Ready • Grid: ${GRID_WIDTH}×${GRID_HEIGHT} • Hover over grid to test`,
+  );
 }
 
 /**
@@ -96,6 +105,111 @@ function renderScene() {
   renderer.render(scene.getLayer(LAYER_BG), bgContainer);
   renderer.render(scene.getLayer(LAYER_MID), midContainer);
   renderer.render(scene.getLayer(LAYER_FG), fgContainer);
+
+  // Update overlay size to match rendered grid
+  if (hitTestOverlay) {
+    hitTestOverlay.updateOverlaySize();
+  }
+}
+
+/**
+ * Initialize hit test overlay and input handling
+ */
+function initInput() {
+  const hitTestElement = document.getElementById("hit-test-layer");
+  if (!hitTestElement) {
+    console.error("❌ Hit test layer not found");
+    return;
+  }
+
+  // Create state manager
+  stateManager = new StateManager();
+
+  // Create hit test overlay
+  hitTestOverlay = new HitTestOverlay(
+    hitTestElement,
+    scene,
+    stateManager,
+    currentScale,
+  );
+
+  // Listen to hover events for visual feedback
+  stateManager.on("cell:hover", handleCellHover);
+}
+
+/**
+ * Handle cell hover events - update status and visual feedback
+ */
+function handleCellHover(data) {
+  if (data.x !== null && data.y !== null) {
+    // Update status bar with coordinates
+    updateStatus(
+      `Cell: (${data.x}, ${data.y}) • Grid: ${GRID_WIDTH}×${GRID_HEIGHT} • Scale: ${currentScale}%`,
+    );
+
+    // Update hover visual feedback
+    updateHoverHighlight(data.x, data.y);
+  } else {
+    // Mouse left grid
+    updateStatus(
+      `Ready • Grid: ${GRID_WIDTH}×${GRID_HEIGHT} • Scale: ${currentScale}%`,
+    );
+    clearHoverHighlight();
+  }
+}
+
+/**
+ * Update visual highlight for hovered cell
+ */
+function updateHoverHighlight(x, y) {
+  // Clear previous hover if it's a different cell
+  if (hoverCell && (hoverCell.x !== x || hoverCell.y !== y)) {
+    clearHoverHighlight();
+  }
+
+  // Don't re-highlight if we're already on this cell
+  if (hoverCell && hoverCell.x === x && hoverCell.y === y) {
+    return;
+  }
+
+  // Always highlight on FG layer (all layers render identically)
+  const fgLayer = scene.getLayer(LAYER_FG);
+  const cell = fgLayer.getCell(x, y);
+
+  if (!cell) {
+    return;
+  }
+
+  // Store hover position and original cell
+  hoverCell = {
+    x,
+    y,
+    originalCell: cell.clone(),
+  };
+
+  // Create highlight cell (yellow background)
+  const highlightCell = new Cell(cell.ch, cell.fg, 3); // 3 = yellow
+  fgLayer.setCell(x, y, highlightCell);
+
+  // Re-render just this cell
+  const fgContainer = document.getElementById("layer-fg");
+  renderer.updateCell(fgLayer, fgContainer, x, y);
+}
+
+/**
+ * Clear hover highlight
+ */
+function clearHoverHighlight() {
+  if (hoverCell && hoverCell.originalCell) {
+    const fgLayer = scene.getLayer(LAYER_FG);
+    const fgContainer = document.getElementById("layer-fg");
+
+    // Restore original cell
+    fgLayer.setCell(hoverCell.x, hoverCell.y, hoverCell.originalCell);
+    renderer.updateCell(fgLayer, fgContainer, hoverCell.x, hoverCell.y);
+  }
+
+  hoverCell = null;
 }
 
 /**
@@ -103,9 +217,9 @@ function renderScene() {
  */
 function init() {
   initScene();
+  initInput();
   initScaleControls();
   initPaletteSelector();
-  console.log("✓ Terminal Draw initialized (Step 3 Complete)");
 }
 
 // =============================================================================
@@ -121,6 +235,11 @@ function applyScale(scale) {
 
   currentScale = scale;
   container.style.transform = `scale(${scale / 100})`;
+
+  // Update hit test overlay scale
+  if (hitTestOverlay) {
+    hitTestOverlay.updateScale(scale);
+  }
 
   // Update UI
   const scaleValue = document.getElementById("scale-value");

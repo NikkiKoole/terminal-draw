@@ -23,16 +23,28 @@
   - ✅ Scene-based rendering integrated into app.js
   - ✅ All 3 layers rendering with proper z-index compositing
 
+- **Step 4: Hit Test Overlay** - 100% complete ✅
+  - ✅ HitTestOverlay.js (45 tests passing)
+  - ✅ Mouse → cell coordinate conversion with scale support
+  - ✅ Separate width/height measurement for accurate tracking
+  - ✅ Dynamic overlay sizing to match rendered grid
+  - ✅ Event emission via StateManager (cell:hover, cell:down, cell:drag, cell:up)
+  - ✅ Visual hover feedback (yellow highlight - accurate across entire grid)
+  - ✅ Status bar showing cell coordinates
+  - ✅ Integrated into app.js with scale synchronization
+  - ✅ Clean production code (debug logging removed)
+
 ### 🚧 Next Tasks
 
-**Begin Step 4: Hit Test Overlay**
-1. Create `src/input/HitTestOverlay.js` - Mouse event handling
-2. Convert mouse coordinates to cell coordinates
-3. Handle mouse down/drag/up events
-4. Prepare for tool integration in Step 5
+**Begin Step 5: Tool System**
+1. Create base Tool.js class
+2. Create BrushTool.js - Paint cells
+3. Create EraserTool.js - Clear cells
+4. Create PickerTool.js - Eyedropper
+5. Integrate tools with HitTestOverlay events
 
 ### 📊 Test Status
-- **277 tests passing** across 8 files ✅
+- **322 tests passing** across 9 files ✅
 - Test command: `npm test` (watch mode) or `npm run test:run` (once)
 - **IMPORTANT:** Use Node 20 (see .nvmrc)
 - Command prefix: `source ~/.nvm/nvm.sh && nvm use 20 && <command>`
@@ -48,6 +60,12 @@
 8. **Rendering separation:** LayerRenderer handles DOM, Compositor handles logic
 9. **Visual compositing:** CSS z-index handles layer stacking, not JavaScript
 10. **Export utilities:** Compositor provides text and ANSI export functions
+11. **Coordinate conversion:** Accounts for scale transform via getBoundingClientRect
+12. **Event-driven input:** HitTestOverlay emits events, doesn't call tools directly
+13. **Duplicate prevention:** Only emit events when cell coordinates change
+14. **Hover feedback:** Visual highlight (yellow bg) shows current cell
+15. **Dynamic overlay sizing:** Measures actual cell dimensions and sets overlay size
+16. **Separate dimensions:** Width (1ch) and height (16px) measured independently
 
 ### 📁 Project Structure
 ```
@@ -61,9 +79,11 @@ terminal-draw/
 │   │   ├── constants.js       ✅ Complete (15 tests)
 │   │   ├── Scene.js           ✅ Complete (53 tests)
 │   │   └── StateManager.js    ✅ Complete (46 tests)
-│   └── rendering/
-│       ├── LayerRenderer.js   ✅ Complete (43 tests)
-│       └── Compositor.js      ✅ Complete (37 tests)
+│   ├── rendering/
+│   │   ├── LayerRenderer.js   ✅ Complete (43 tests)
+│   │   └── Compositor.js      ✅ Complete (37 tests)
+│   └── input/
+│       └── HitTestOverlay.js  ✅ Complete (45 tests)
 ├── tests/
 │   ├── Cell.test.js           ✅ 23 passing
 │   ├── Layer.test.js          ✅ 42 passing
@@ -72,8 +92,8 @@ terminal-draw/
 │   ├── StateManager.test.js   ✅ 46 passing
 │   ├── integration.test.js    ✅ 18 passing
 │   ├── LayerRenderer.test.js  ✅ 43 passing
-│   └── Compositor.test.js     ✅ 37 passing
-│   └── integration.test.js    ✅ 18 passing
+│   ├── Compositor.test.js     ✅ 37 passing
+│   └── HitTestOverlay.test.js ✅ 45 passing
 ├── styles/
 │   ├── main.css               # Global styles, CSS vars, layout
 │   ├── grid.css               # Cell rendering
@@ -83,7 +103,7 @@ terminal-draw/
 ├── .nvmrc                     # Node 20
 └── package.json               # Vite + Vitest
 
-Total: 277 tests passing ✅
+Total: 322 tests passing ✅
 ```
 
 ### 🎯 Step 3 Acceptance Criteria ✅ COMPLETE
@@ -97,6 +117,19 @@ Total: 277 tests passing ✅
 - ✅ Scene integrated into app.js
 - ✅ All 277 tests passing
 - ✅ Visual rendering verified
+
+### 🎯 Step 4 Acceptance Criteria ✅ COMPLETE
+- ✅ HitTestOverlay converts mouse coordinates to cell coordinates
+- ✅ Accounts for scale/zoom transforms correctly (10%-1000%)
+- ✅ Emits cell:hover, cell:down, cell:drag, cell:up events
+- ✅ Prevents duplicate events for same cell
+- ✅ Visual hover feedback with yellow highlight (accurate across entire grid)
+- ✅ Status bar shows current cell coordinates
+- ✅ getCellDimensions() measures actual width/height separately
+- ✅ updateOverlaySize() sets exact pixel dimensions after rendering
+- ✅ All 322 tests passing
+- ✅ Verified with multiple zoom levels and edge cases
+- ✅ Clean production code (no debug logging)
 
 ### 🎯 Step 2 Acceptance Criteria ✅ COMPLETE
 - ✅ Can create Scene with 3 layers
@@ -117,6 +150,7 @@ Total: 277 tests passing ✅
 - `src/core/StateManager.js` - Event emitter for reactive updates
 - `src/rendering/LayerRenderer.js` - DOM rendering for layers
 - `src/rendering/Compositor.js` - Logical compositing and export
+- `src/input/HitTestOverlay.js` - Mouse input and coordinate conversion
 
 ### 🔧 Common Commands
 ```bash
@@ -134,32 +168,44 @@ source ~/.nvm/nvm.sh && nvm use 20 && npm run test:ui
 ```
 
 ### 💡 Notes for Next Session
-- Step 3 is now complete with 277 tests passing!
-- Next up: Step 4 - Hit Test Overlay
-  - HitTestOverlay.js - Mouse coordinate to cell coordinate conversion
-  - Handle mouse events (down/drag/up)
-  - Prepare foundation for tool system
-- Rendering system complete:
-  - LayerRenderer handles all DOM rendering
-  - Compositor provides logical compositing for export
-  - Scene renders properly to all 3 layers with z-index
-- App.js now uses Scene instead of manual DOM manipulation
+- Step 4 is now complete with 322 tests passing!
+- Next up: Step 5 - Tool System
+  - Tool.js base class
+  - BrushTool.js - Paint with current cell
+  - EraserTool.js - Clear cells
+  - PickerTool.js - Eyedropper
+- Input system complete and production-ready:
+  - HitTestOverlay handles all mouse events
+  - Converts pixel coords to cell coords with scale support
+  - Measures actual cell dimensions (width/height separately)
+  - Dynamic overlay sizing ensures accurate tracking
+  - Emits events via StateManager
+  - Visual hover feedback shows current cell accurately
+  - Clean code with no debug logging
+- Try it: Hover over the grid and see yellow highlight + coordinates in status bar!
+- Works perfectly across entire grid at all zoom levels
 
 ### 📈 Progress Tracking
 - **Milestone 1 Total:** 9 steps
 - **Step 1:** ✅ Complete (100%)
 - **Step 2:** ✅ Complete (100% - 4/4 modules)
-- **Step 3:** ✅ Complete (100% - 2/2 modules, 277 tests total)
-- **Steps 4-9:** ⏳ Not started
-- **Overall:** ~33% complete (3/9 steps)
+- **Step 3:** ✅ Complete (100% - 2/2 modules)
+- **Step 4:** ✅ Complete (100% - HitTestOverlay, 322 tests total)
+- **Steps 5-9:** ⏳ Not started
+- **Overall:** ~44% complete (4/9 steps)
 
 ### 🎨 Current Visual State
-The app now uses Scene-based rendering:
+The app now has full mouse input:
 - Border box rendered on BG layer
 - "TERMINAL DRAW - STEP 3 COMPLETE" text on MID layer
 - Box-drawing characters on FG layer
+- **NEW:** Hover over grid → yellow highlight on current cell (accurate tracking!)
+- **NEW:** Status bar shows cell coordinates (x, y) and scale
+- **NEW:** Works across entire grid, even at edges
+- **NEW:** Handles all zoom levels correctly (10%-1000%)
 - All rendered through LayerRenderer from Scene data model
 - Proper z-index compositing (BG → MID → FG)
 - Scales correctly with controls in sidebar
 - 10 palettes switchable via dropdown
-- Ready for mouse input handling in Step 4
+- Production-ready code with clean output
+- Ready for tool system in Step 5

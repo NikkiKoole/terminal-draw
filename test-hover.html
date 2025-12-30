@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hover Test - Terminal Draw</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #e0e0e0;
+        }
+        #status {
+            margin-bottom: 20px;
+            padding: 10px;
+            background: #2a2a2a;
+            border: 1px solid #444;
+        }
+        .grid-container {
+            position: relative;
+            display: inline-block;
+            background: #000;
+            border: 2px solid #444;
+        }
+        .hit-test-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            cursor: crosshair;
+            background: transparent;
+        }
+        .visual-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            font-family: Monaco, monospace;
+            font-size: 0;
+            line-height: 0;
+            pointer-events: none;
+        }
+        .grid-row {
+            display: block;
+            line-height: 0;
+            font-size: 0;
+            white-space: nowrap;
+        }
+        .cell {
+            display: inline-block;
+            font-family: Monaco, monospace;
+            font-size: 16px;
+            line-height: 16px;
+            text-align: center;
+            white-space: pre;
+            background: transparent;
+            width: 16px;
+            height: 16px;
+        }
+        .fg-7 { color: #cccccc; }
+        .bg-3 { background-color: #cccc00; }
+        .bg--1 { background-color: transparent; }
+    </style>
+</head>
+<body>
+    <h1>Hover Test - Debug</h1>
+    <div id="status">Hover not detected yet...</div>
+
+    <div class="grid-container">
+        <div class="hit-test-layer" id="hit-test-layer"></div>
+        <div class="visual-layer" id="layer-fg"></div>
+    </div>
+
+    <div style="margin-top: 20px;">
+        <h3>Debug Log:</h3>
+        <div id="log" style="font-family: monospace; font-size: 12px;"></div>
+    </div>
+
+    <script type="module">
+        import { Scene } from './src/core/Scene.js';
+        import { Cell } from './src/core/Cell.js';
+        import { StateManager } from './src/core/StateManager.js';
+        import { LayerRenderer } from './src/rendering/LayerRenderer.js';
+        import { HitTestOverlay } from './src/input/HitTestOverlay.js';
+        import { LAYER_FG } from './src/core/constants.js';
+
+        const log = (msg) => {
+            const logDiv = document.getElementById('log');
+            const time = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `[${time}] ${msg}<br>`;
+            console.log(msg);
+        };
+
+        log('Initializing...');
+
+        // Create scene (small 10x5 for testing)
+        const scene = new Scene(10, 5);
+        log('Scene created: ' + scene.w + 'x' + scene.h);
+
+        // Render some cells
+        const renderer = new LayerRenderer();
+        const fgLayer = scene.getLayer(LAYER_FG);
+
+        // Draw a border
+        for (let x = 0; x < 10; x++) {
+            fgLayer.setCell(x, 0, new Cell('─', 7, -1));
+            fgLayer.setCell(x, 4, new Cell('─', 7, -1));
+        }
+        for (let y = 0; y < 5; y++) {
+            fgLayer.setCell(0, y, new Cell('│', 7, -1));
+            fgLayer.setCell(9, y, new Cell('│', 7, -1));
+        }
+        fgLayer.setCell(0, 0, new Cell('┌', 7, -1));
+        fgLayer.setCell(9, 0, new Cell('┐', 7, -1));
+        fgLayer.setCell(0, 4, new Cell('└', 7, -1));
+        fgLayer.setCell(9, 4, new Cell('┘', 7, -1));
+
+        const container = document.getElementById('layer-fg');
+        renderer.render(fgLayer, container);
+        log('Layer rendered with ' + container.querySelectorAll('.cell').length + ' cells');
+
+        // Create state manager and hit test overlay
+        const stateManager = new StateManager();
+        const hitTestElement = document.getElementById('hit-test-layer');
+        const overlay = new HitTestOverlay(hitTestElement, scene, stateManager, 100);
+
+        log('HitTestOverlay created');
+
+        // Track hover state
+        let hoverCell = null;
+
+        stateManager.on('cell:hover', (data) => {
+            if (data.x !== null && data.y !== null) {
+                document.getElementById('status').textContent =
+                    `Hover: Cell (${data.x}, ${data.y})`;
+                log(`Hover: (${data.x}, ${data.y})`);
+
+                // Clear previous hover
+                if (hoverCell && hoverCell.originalCell) {
+                    fgLayer.setCell(hoverCell.x, hoverCell.y, hoverCell.originalCell);
+                    renderer.updateCell(fgLayer, container, hoverCell.x, hoverCell.y);
+                }
+
+                // Set new hover
+                const cell = fgLayer.getCell(data.x, data.y);
+                if (cell) {
+                    hoverCell = {
+                        x: data.x,
+                        y: data.y,
+                        originalCell: cell.clone()
+                    };
+
+                    const highlightCell = new Cell(cell.ch, cell.fg, 3); // Yellow bg
+                    fgLayer.setCell(data.x, data.y, highlightCell);
+                    renderer.updateCell(fgLayer, container, data.x, data.y);
+                    log(`Highlighted cell (${data.x}, ${data.y})`);
+                }
+            } else {
+                document.getElementById('status').textContent = 'Hover: Outside grid';
+
+                // Clear hover
+                if (hoverCell && hoverCell.originalCell) {
+                    fgLayer.setCell(hoverCell.x, hoverCell.y, hoverCell.originalCell);
+                    renderer.updateCell(fgLayer, container, hoverCell.x, hoverCell.y);
+                    log('Cleared hover highlight');
+                    hoverCell = null;
+                }
+            }
+        });
+
+        stateManager.on('cell:down', (data) => {
+            log(`Click: (${data.x}, ${data.y})`);
+        });
+
+        log('Event listeners attached. Try hovering over the grid!');
+    </script>
+</body>
+</html>

@@ -103,8 +103,16 @@ terminal-draw/
 ├── styles/
 │   ├── main.css              # Global styles & layout
 │   ├── grid.css              # Grid rendering
-│   └── ui.css                # UI components
-├── tests/                    # 432 tests
+│   └── ui.css                # UI component styles
+├── tests/                    # 481 tests
+├── docs/                     # Documentation
+│   ├── IMPLEMENTATION-PLAN.md
+│   ├── STEP-*-COMPLETION.md
+│   └── design-document.md
+├── test-pages/               # Test HTML pages
+│   ├── test-ansi.html
+│   ├── diagnose-cells.html
+│   └── verify-rendering.html
 └── index.html                # Application shell
 ```
 
@@ -319,10 +327,16 @@ Colors are defined as CSS variables for easy theming:
 
 ## Design Documents
 
-- [design-document.md](./design-document.md) - Full feature specification
-- [IMPLEMENTATION-PLAN.md](./IMPLEMENTATION-PLAN.md) - Development roadmap
-- [STEP-8-COMPLETION.md](./STEP-8-COMPLETION.md) - Latest completion details
-- [HANDOFF-NEXT-SESSION.md](./HANDOFF-NEXT-SESSION.md) - Next session guide
+All documentation has been moved to the `docs/` folder:
+
+- [design-document.md](./docs/design-document.md) - Full feature specification
+- [IMPLEMENTATION-PLAN.md](./docs/IMPLEMENTATION-PLAN.md) - Development roadmap
+- [STEP-8-COMPLETION.md](./docs/STEP-8-COMPLETION.md) - Latest completion details
+- [STEP-9-PROGRESS.md](./docs/STEP-9-PROGRESS.md) - Current progress
+- [HANDOFF-NEXT-SESSION.md](./docs/HANDOFF-NEXT-SESSION.md) - Next session guide
+
+Test pages are in `test-pages/`:
+- [test-ansi.html](./test-pages/test-ansi.html) - ANSI output viewer
 
 ## Progress
 

@@ -301,7 +301,7 @@ DOM structure:
 
 ---
 
-### Step 5: Tool System (2-3 hours)
+### Step 5: Tool System ✅ COMPLETE (2-3 hours)
 
 #### Tool.js (Base Class)
 ```javascript
@@ -317,34 +317,34 @@ class Tool {
 }
 ```
 
-#### BrushTool.js
-- [ ] Properties: `currentCell = {ch, fg, bg}`
-- [ ] `onCellDown()` + `onCellDrag()`: 
+#### BrushTool.js ✅ COMPLETE
+- [x] Properties: `currentCell = {ch, fg, bg}`
+- [x] `onCellDown()` + `onCellDrag()`: 
   - Get active layer from scene
   - Check if locked → return early
   - `layer.setCell(x, y, currentCell)`
   - Emit `'cell:changed'` event
   - Track dirty cells for undo (later)
-- [ ] `getCursor()`: return `'crosshair'`
+- [x] `getCursor()`: return `'crosshair'`
 
-#### EraserTool.js
-- [ ] `onCellDown()` + `onCellDrag()`:
+#### EraserTool.js ✅ COMPLETE
+- [x] `onCellDown()` + `onCellDrag()`:
   - Get active layer
   - Check if locked → return early
   - Set cell to defaults: `{ch: ' ', fg: 7, bg: -1}`
   - Emit `'cell:changed'` event
-- [ ] `getCursor()`: return `'not-allowed'`
+- [x] `getCursor()`: return `'not-allowed'`
 
-#### PickerTool.js
-- [ ] `onCellDown()`:
+#### PickerTool.js ✅ COMPLETE
+- [x] `onCellDown()`:
   - Get active layer
   - Read cell at (x, y)
   - Update brush tool's `currentCell`
   - Emit `'tool:picked'` event
   - Auto-switch back to brush tool
-- [ ] `getCursor()`: return `'crosshair'`
+- [x] `getCursor()`: return `'copy'` (changed from crosshair for better UX)
 
-**Deliverable:** Can switch tools and paint on grid
+**Deliverable:** ✅ Can switch tools and paint on grid
 
 ---
 
@@ -532,9 +532,10 @@ class Tool {
 ### Step 2 Completed: 2024-12-30 (All 4 modules complete - 197 tests passing)
 ### Step 3 Completed: 2024-12-30 (LayerRenderer + Compositor - 277 tests passing)
 ### Step 4 Completed: 2024-12-30 (HitTestOverlay - 322 tests passing)
+### Step 5 Completed: 2024-12-30 (Tool System - 398 tests passing)
 ### Current Milestone: 1 (In Progress)
-### Current Step: Step 5 - Tool System (Next)
-### Next: Implement Tool base class, BrushTool, EraserTool, PickerTool
+### Current Step: Step 6 - Basic UI (Next)
+### Next: Implement ColorPalette, LayerPanel, GlyphPicker components
 
 ### Step 1 Accomplishments:
 - ✅ Project structure with Vite dev server
@@ -627,6 +628,27 @@ class Tool {
 - Export utilities: text and ANSI colored text
 
 ### Step 4 Progress (100% Complete):
+- ✅ HitTestOverlay.js - 45 tests passing
+- ✅ Mouse → cell coordinate conversion with scale support
+- ✅ Event emission: cell:hover, cell:down, cell:drag, cell:up, cell:leave
+- ✅ Visual hover feedback (yellow highlight)
+- ✅ Status bar integration
+- ✅ Dynamic overlay sizing
+- ✅ Total: 322 tests passing
+
+### Step 5 Progress (100% Complete):
+- ✅ Tool.js - Base class with interface (12 tests)
+- ✅ BrushTool.js - Paint cells (24 tests)
+- ✅ EraserTool.js - Clear cells (20 tests)
+- ✅ PickerTool.js - Sample colors (20 tests)
+- ✅ Integration in app.js with event handlers
+- ✅ Tool buttons in sidebar with active state
+- ✅ Cursor changes per tool
+- ✅ Picker auto-switches to brush
+- ✅ DOM updates on cell changes
+- ✅ Total: 398 tests passing (76 new tests)
+
+### Step 4 Archived Progress:
 **Completed:**
 - ✅ HitTestOverlay.js with comprehensive tests (45 tests)
 - ✅ Mouse → cell coordinate conversion with scale support

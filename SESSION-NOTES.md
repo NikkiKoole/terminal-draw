@@ -34,17 +34,28 @@
   - ✅ Integrated into app.js with scale synchronization
   - ✅ Clean production code (debug logging removed)
 
+- **Step 5: Tool System** - 100% complete ✅ (4/4 tools)
+  - ✅ Tool.js (12 tests passing)
+  - ✅ BrushTool.js (24 tests passing)
+  - ✅ EraserTool.js (20 tests passing)
+  - ✅ PickerTool.js (20 tests passing)
+  - ✅ Event-driven architecture via StateManager
+  - ✅ Tool buttons in sidebar with active state
+  - ✅ Cursor changes per tool
+  - ✅ Picker auto-switches to brush after sampling
+  - ✅ Immediate DOM updates on cell changes
+
 ### 🚧 Next Tasks
 
-**Begin Step 5: Tool System**
-1. Create base Tool.js class
-2. Create BrushTool.js - Paint cells
-3. Create EraserTool.js - Clear cells
-4. Create PickerTool.js - Eyedropper
-5. Integrate tools with HitTestOverlay events
+**Begin Step 6: Basic UI**
+1. Create ColorPalette.js - Interactive fg/bg color selection
+2. Create LayerPanel.js - Layer visibility/lock/active controls
+3. Create GlyphPicker.js - Character selection from categories
+4. Integrate UI components into app.js
+5. Add UI sections to sidebar
 
 ### 📊 Test Status
-- **322 tests passing** across 9 files ✅
+- **398 tests passing** across 13 files ✅
 - Test command: `npm test` (watch mode) or `npm run test:run` (once)
 - **IMPORTANT:** Use Node 20 (see .nvmrc)
 - Command prefix: `source ~/.nvm/nvm.sh && nvm use 20 && <command>`
@@ -65,7 +76,11 @@
 13. **Duplicate prevention:** Only emit events when cell coordinates change
 14. **Hover feedback:** Visual highlight (yellow bg) shows current cell
 15. **Dynamic overlay sizing:** Measures actual cell dimensions and sets overlay size
-16. **Separate dimensions:** Width (1ch) and height (16px) measured independently
+16. **Separate dimensions:** Width (1ch) and height (21px) measured independently
+17. **Tool pattern:** Base class with consistent interface for all tools
+18. **Layer lock protection:** All modification tools check layer.locked
+19. **Picker workflow:** Auto-switch to brush after picking for intuitive UX
+20. **Immediate updates:** DOM reflects cell changes instantly via renderer.updateCell()
 
 ### 📁 Project Structure
 ```
@@ -82,8 +97,13 @@ terminal-draw/
 │   ├── rendering/
 │   │   ├── LayerRenderer.js   ✅ Complete (43 tests)
 │   │   └── Compositor.js      ✅ Complete (37 tests)
-│   └── input/
-│       └── HitTestOverlay.js  ✅ Complete (45 tests)
+│   ├── input/
+│   │   └── HitTestOverlay.js  ✅ Complete (45 tests)
+│   └── tools/
+│       ├── Tool.js            ✅ Complete (12 tests)
+│       ├── BrushTool.js       ✅ Complete (24 tests)
+│       ├── EraserTool.js      ✅ Complete (20 tests)
+│       └── PickerTool.js      ✅ Complete (20 tests)
 ├── tests/
 │   ├── Cell.test.js           ✅ 23 passing
 │   ├── Layer.test.js          ✅ 42 passing
@@ -93,7 +113,11 @@ terminal-draw/
 │   ├── integration.test.js    ✅ 18 passing
 │   ├── LayerRenderer.test.js  ✅ 43 passing
 │   ├── Compositor.test.js     ✅ 37 passing
-│   └── HitTestOverlay.test.js ✅ 45 passing
+│   ├── HitTestOverlay.test.js ✅ 45 passing
+│   ├── Tool.test.js           ✅ 12 passing
+│   ├── BrushTool.test.js      ✅ 24 passing
+│   ├── EraserTool.test.js     ✅ 20 passing
+│   └── PickerTool.test.js     ✅ 20 passing
 ├── styles/
 │   ├── main.css               # Global styles, CSS vars, layout
 │   ├── grid.css               # Cell rendering
@@ -103,7 +127,7 @@ terminal-draw/
 ├── .nvmrc                     # Node 20
 └── package.json               # Vite + Vitest
 
-Total: 322 tests passing ✅
+Total: 398 tests passing ✅
 ```
 
 ### 🎯 Step 3 Acceptance Criteria ✅ COMPLETE
@@ -131,6 +155,21 @@ Total: 322 tests passing ✅
 - ✅ Verified with multiple zoom levels and edge cases
 - ✅ Clean production code (no debug logging)
 
+### 🎯 Step 5 Acceptance Criteria ✅ COMPLETE
+- ✅ Base Tool class provides consistent interface
+- ✅ BrushTool paints cells with current character and colors
+- ✅ EraserTool clears cells to default state
+- ✅ PickerTool samples cell data from active layer
+- ✅ Tools respect layer lock state (brush and eraser)
+- ✅ Tools emit appropriate events (cell:changed, tool:picked)
+- ✅ DOM updates immediately reflect cell changes
+- ✅ Tool buttons in sidebar with active state indicators
+- ✅ Cursor changes per tool (crosshair/not-allowed/copy)
+- ✅ Picker auto-switches to brush after sampling
+- ✅ All 398 tests passing (76 new tests)
+- ✅ Event-driven architecture via StateManager
+- ✅ Clean, documented code following project patterns
+
 ### 🎯 Step 2 Acceptance Criteria ✅ COMPLETE
 - ✅ Can create Scene with 3 layers
 - ✅ Can get/set active layer
@@ -151,6 +190,10 @@ Total: 322 tests passing ✅
 - `src/rendering/LayerRenderer.js` - DOM rendering for layers
 - `src/rendering/Compositor.js` - Logical compositing and export
 - `src/input/HitTestOverlay.js` - Mouse input and coordinate conversion
+- `src/tools/Tool.js` - Base class for all drawing tools
+- `src/tools/BrushTool.js` - Paint cells with character/colors
+- `src/tools/EraserTool.js` - Clear cells to defaults
+- `src/tools/PickerTool.js` - Sample colors with eyedropper
 
 ### 🔧 Common Commands
 ```bash
@@ -168,22 +211,21 @@ source ~/.nvm/nvm.sh && nvm use 20 && npm run test:ui
 ```
 
 ### 💡 Notes for Next Session
-- Step 4 is now complete with 322 tests passing!
-- Next up: Step 5 - Tool System
-  - Tool.js base class
-  - BrushTool.js - Paint with current cell
-  - EraserTool.js - Clear cells
-  - PickerTool.js - Eyedropper
-- Input system complete and production-ready:
-  - HitTestOverlay handles all mouse events
-  - Converts pixel coords to cell coords with scale support
-  - Measures actual cell dimensions (width/height separately)
-  - Dynamic overlay sizing ensures accurate tracking
-  - Emits events via StateManager
-  - Visual hover feedback shows current cell accurately
-  - Clean code with no debug logging
-- Try it: Hover over the grid and see yellow highlight + coordinates in status bar!
-- Works perfectly across entire grid at all zoom levels
+- Step 5 is now complete with 398 tests passing!
+- Next up: Step 6 - Basic UI
+  - ColorPalette.js - Interactive fg/bg color selection
+  - LayerPanel.js - Layer visibility/lock/active controls
+  - GlyphPicker.js - Character selection from categories
+- Tool system complete and production-ready:
+  - Three functional tools: Brush, Eraser, Picker
+  - Event-driven architecture for clean separation
+  - Layer lock protection on all modification tools
+  - Picker auto-switches to brush for intuitive workflow
+  - Immediate DOM updates on cell changes
+  - Cursor feedback per tool
+  - Tool buttons with active state indicators
+- Try it: Click a tool button, then click/drag on the grid to draw!
+- All tools respect layer state and emit proper events
 
 ### 📈 Progress Tracking
 - **Milestone 1 Total:** 9 steps
@@ -191,21 +233,26 @@ source ~/.nvm/nvm.sh && nvm use 20 && npm run test:ui
 - **Step 2:** ✅ Complete (100% - 4/4 modules)
 - **Step 3:** ✅ Complete (100% - 2/2 modules)
 - **Step 4:** ✅ Complete (100% - HitTestOverlay, 322 tests total)
-- **Steps 5-9:** ⏳ Not started
-- **Overall:** ~44% complete (4/9 steps)
+- **Step 5:** ✅ Complete (100% - Tool System, 398 tests total)
+- **Steps 6-9:** ⏳ Not started
+- **Overall:** ~56% complete (5/9 steps)
 
 ### 🎨 Current Visual State
-The app now has full mouse input:
+The app now has full drawing capabilities:
 - Border box rendered on BG layer
 - "TERMINAL DRAW - STEP 3 COMPLETE" text on MID layer
 - Box-drawing characters on FG layer
-- **NEW:** Hover over grid → yellow highlight on current cell (accurate tracking!)
-- **NEW:** Status bar shows cell coordinates (x, y) and scale
-- **NEW:** Works across entire grid, even at edges
-- **NEW:** Handles all zoom levels correctly (10%-1000%)
+- Hover over grid → yellow highlight on current cell (accurate tracking!)
+- Status bar shows tool name, cell coordinates, and scale
+- **NEW:** Three tool buttons: Brush 🖌️, Eraser 🧹, Picker 💧
+- **NEW:** Click and drag to draw with brush tool
+- **NEW:** Switch to eraser to clear cells
+- **NEW:** Use picker to sample existing cell colors/characters
+- **NEW:** Tool buttons show active state
+- **NEW:** Cursor changes per tool (crosshair/not-allowed/copy)
 - All rendered through LayerRenderer from Scene data model
 - Proper z-index compositing (BG → MID → FG)
-- Scales correctly with controls in sidebar
+- Scales correctly with controls in sidebar (10%-1000%)
 - 10 palettes switchable via dropdown
-- Production-ready code with clean output
-- Ready for tool system in Step 5
+- Production-ready code with comprehensive tests
+- Ready for UI enhancements in Step 6

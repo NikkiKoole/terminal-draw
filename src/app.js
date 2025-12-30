@@ -10,6 +10,10 @@ import { LayerRenderer } from "./rendering/LayerRenderer.js";
 import { StateManager } from "./core/StateManager.js";
 import { HitTestOverlay } from "./input/HitTestOverlay.js";
 import { LAYER_BG, LAYER_MID, LAYER_FG } from "./core/constants.js";
+import { BrushTool } from "./tools/BrushTool.js";
+import { EraserTool } from "./tools/EraserTool.js";
+import { PickerTool } from "./tools/PickerTool.js";
+import { LayerPanel } from "./ui/LayerPanel.js";
 
 // =============================================================================
 // Configuration & State
@@ -27,8 +31,17 @@ let renderer = null;
 let stateManager = null;
 let hitTestOverlay = null;
 
-// Hover state for visual feedback
-let hoverCell = null;
+// Tools
+let brushTool = null;
+let eraserTool = null;
+let pickerTool = null;
+let currentTool = null;
+
+// UI Components
+let layerPanel = null;
+
+// Hover indicator element
+let hoverIndicator = null;
 
 // =============================================================================
 // Scene Management
@@ -75,8 +88,10 @@ function initScene() {
   }
 
   // Foreground: box drawing characters
+  //const testChars = "─│┌┐└┘┬┴├┤┼━┃╔╗╚╝░▒▓█";
   for (let i = 0; i < testChars.length && i < 20; i++) {
     fgLayer.setCell(30 + i, centerY + 2, new Cell(testChars[i], 6, -1));
+    fgLayer.setCell(30 + i, centerY + 3, new Cell(testChars[i], 6, -1));
   }
 
   // Render all layers
@@ -135,6 +150,20 @@ function initInput() {
 
   // Listen to hover events for visual feedback
   stateManager.on("cell:hover", handleCellHover);
+
+  // Listen to cell interaction events for tools
+  stateManager.on("cell:down", handleCellDown);
+  stateManager.on("cell:drag", handleCellDrag);
+  stateManager.on("cell:up", handleCellUp);
+
+  // Listen to tool:picked events from picker tool
+  stateManager.on("tool:picked", handleToolPicked);
+
+  // Listen to cell:changed events to update DOM
+  stateManager.on("cell:changed", handleCellChanged);
+
+  // Initialize hover indicator
+  hoverIndicator = document.getElementById("hover-indicator");
 }
 
 /**
@@ -147,69 +176,172 @@ function handleCellHover(data) {
       `Cell: (${data.x}, ${data.y}) • Grid: ${GRID_WIDTH}×${GRID_HEIGHT} • Scale: ${currentScale}%`,
     );
 
-    // Update hover visual feedback
-    updateHoverHighlight(data.x, data.y);
+    // Update hover indicator position
+    updateHoverIndicator(data.x, data.y);
   } else {
     // Mouse left grid
     updateStatus(
       `Ready • Grid: ${GRID_WIDTH}×${GRID_HEIGHT} • Scale: ${currentScale}%`,
     );
-    clearHoverHighlight();
+    hideHoverIndicator();
   }
 }
 
 /**
- * Update visual highlight for hovered cell
+ * Handle cell:down events - call current tool
  */
-function updateHoverHighlight(x, y) {
-  // Clear previous hover if it's a different cell
-  if (hoverCell && (hoverCell.x !== x || hoverCell.y !== y)) {
-    clearHoverHighlight();
-  }
-
-  // Don't re-highlight if we're already on this cell
-  if (hoverCell && hoverCell.x === x && hoverCell.y === y) {
-    return;
-  }
-
-  // Always highlight on FG layer (all layers render identically)
-  const fgLayer = scene.getLayer(LAYER_FG);
-  const cell = fgLayer.getCell(x, y);
-
-  if (!cell) {
-    return;
-  }
-
-  // Store hover position and original cell
-  hoverCell = {
-    x,
-    y,
-    originalCell: cell.clone(),
-  };
-
-  // Create highlight cell (yellow background)
-  const highlightCell = new Cell(cell.ch, cell.fg, 3); // 3 = yellow
-  fgLayer.setCell(x, y, highlightCell);
-
-  // Re-render just this cell
-  const fgContainer = document.getElementById("layer-fg");
-  renderer.updateCell(fgLayer, fgContainer, x, y);
+function handleCellDown(data) {
+  if (!currentTool || !scene || !stateManager) return;
+  currentTool.onCellDown(data.x, data.y, scene, stateManager, data);
 }
 
 /**
- * Clear hover highlight
+ * Handle cell:drag events - call current tool
  */
-function clearHoverHighlight() {
-  if (hoverCell && hoverCell.originalCell) {
-    const fgLayer = scene.getLayer(LAYER_FG);
-    const fgContainer = document.getElementById("layer-fg");
+function handleCellDrag(data) {
+  if (!currentTool || !scene || !stateManager) return;
+  currentTool.onCellDrag(data.x, data.y, scene, stateManager, data);
+}
 
-    // Restore original cell
-    fgLayer.setCell(hoverCell.x, hoverCell.y, hoverCell.originalCell);
-    renderer.updateCell(fgLayer, fgContainer, hoverCell.x, hoverCell.y);
+/**
+ * Handle cell:up events - call current tool
+ */
+function handleCellUp(data) {
+  if (!currentTool || !scene || !stateManager) return;
+  currentTool.onCellUp(data.x, data.y, scene, stateManager, data);
+}
+
+/**
+ * Handle tool:picked events from picker tool
+ */
+function handleToolPicked(data) {
+  if (!brushTool) return;
+
+  // Update brush tool with picked cell
+  brushTool.setCurrentCell(data.cell);
+
+  // Auto-switch back to brush tool
+  setCurrentTool(brushTool);
+
+  updateStatus(
+    `Picked: '${data.cell.ch}' (fg:${data.cell.fg}, bg:${data.cell.bg}) • Switched to Brush`,
+  );
+}
+
+/**
+ * Handle cell:changed events - update DOM
+ */
+function handleCellChanged(data) {
+  if (!renderer || !scene) return;
+
+  const layer = scene.getLayer(data.layerId);
+  if (!layer) return;
+
+  // Get the container for this layer
+  const container = document.getElementById(`layer-${data.layerId}`);
+  if (!container) return;
+
+  // Update the cell in the DOM
+  renderer.updateCell(layer, container, data.x, data.y);
+}
+
+/**
+ * Update hover indicator position
+ */
+function updateHoverIndicator(x, y) {
+  if (!hoverIndicator) return;
+
+  // Get cell dimensions from hit test overlay
+  const cellDimensions = hitTestOverlay.getCellDimensions();
+
+  // Position the hover indicator
+  hoverIndicator.style.left = `${x * cellDimensions.width}px`;
+  hoverIndicator.style.top = `${y * cellDimensions.height}px`;
+  hoverIndicator.classList.add("visible");
+}
+
+/**
+ * Hide hover indicator
+ */
+function hideHoverIndicator() {
+  if (!hoverIndicator) return;
+  hoverIndicator.classList.remove("visible");
+}
+
+/**
+ * Initialize tools
+ */
+function initTools() {
+  // Create tool instances
+  brushTool = new BrushTool({ ch: "█", fg: 7, bg: -1 });
+  eraserTool = new EraserTool();
+  pickerTool = new PickerTool();
+
+  // Set initial tool
+  setCurrentTool(brushTool);
+
+  // Setup tool buttons
+  const brushBtn = document.getElementById("tool-brush");
+  const eraserBtn = document.getElementById("tool-eraser");
+  const pickerBtn = document.getElementById("tool-picker");
+
+  if (brushBtn) {
+    brushBtn.addEventListener("click", () => setCurrentTool(brushTool));
+  }
+  if (eraserBtn) {
+    eraserBtn.addEventListener("click", () => setCurrentTool(eraserTool));
+  }
+  if (pickerBtn) {
+    pickerBtn.addEventListener("click", () => setCurrentTool(pickerTool));
+  }
+}
+
+/**
+ * Set the current active tool
+ */
+function setCurrentTool(tool) {
+  currentTool = tool;
+
+  // Update cursor
+  if (hitTestOverlay) {
+    hitTestOverlay.setCursor(tool.getCursor());
   }
 
-  hoverCell = null;
+  // Update button states
+  const buttons = document.querySelectorAll('[id^="tool-"]');
+  buttons.forEach((btn) => btn.classList.remove("active"));
+
+  if (tool === brushTool) {
+    document.getElementById("tool-brush")?.classList.add("active");
+  } else if (tool === eraserTool) {
+    document.getElementById("tool-eraser")?.classList.add("active");
+  } else if (tool === pickerTool) {
+    document.getElementById("tool-picker")?.classList.add("active");
+  }
+
+  updateStatus(
+    `Tool: ${tool.name} • Grid: ${GRID_WIDTH}×${GRID_HEIGHT} • Scale: ${currentScale}%`,
+  );
+}
+
+/**
+ * Initialize layer panel UI
+ */
+function initLayerPanel() {
+  const container = document.getElementById("layer-panel");
+  if (!container) {
+    console.error("Layer panel container not found");
+    return;
+  }
+
+  layerPanel = new LayerPanel(container, scene, stateManager);
+
+  // Listen to layer active changes to update status
+  stateManager.on("layer:active", (data) => {
+    updateStatus(
+      `Layer: ${data.layerId.toUpperCase()} • Tool: ${currentTool.name} • Scale: ${currentScale}%`,
+    );
+  });
 }
 
 /**
@@ -218,6 +350,8 @@ function clearHoverHighlight() {
 function init() {
   initScene();
   initInput();
+  initTools();
+  initLayerPanel();
   initScaleControls();
   initPaletteSelector();
 }

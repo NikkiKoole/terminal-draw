@@ -19,6 +19,19 @@
             <main>
                 <!-- Sidebar: View controls and palette selector -->
                 <aside id="sidebar">
+                    <!-- Tools -->
+                    <div class="sidebar-section">
+                        <h3>Tools</h3>
+                        <button id="tool-brush" class="active">🖌️ Brush</button>
+                        <button id="tool-eraser">🧹 Eraser</button>
+                        <button id="tool-picker">💧 Picker</button>
+                    </div>
+
+                    <!-- Layers -->
+                    <div class="sidebar-section">
+                        <div id="layer-panel"></div>
+                    </div>
+
                     <!-- View Controls -->
                     <div class="sidebar-section">
                         <h3>View</h3>
@@ -108,6 +121,9 @@
 
                         <!-- Hit Test: Invisible layer for mouse events -->
                         <div id="hit-test-layer" class="hit-test-layer"></div>
+
+                        <!-- Hover Indicator: Visual feedback for hovered cell -->
+                        <div id="hover-indicator" class="hover-indicator"></div>
 
                         <!-- Text Layers: 3 layers for drawing (bg/mid/fg) -->
                         <div

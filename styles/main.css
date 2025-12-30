@@ -18,6 +18,7 @@
     --grid-w: 80;
     --grid-h: 25;
     --cell-size: 16px;
+    --cell-height: 21px;
     --cell-line-height: 1;
 
     /* Terminal color palette - Foreground */

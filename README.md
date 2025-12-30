@@ -4,19 +4,18 @@ A web-based ASCII art editor that renders true text glyphs in the DOM for creati
 
 ## Features
 
-**Step 1 Complete ✅**
-- ✅ Cell-based Rendering - 80×25 grid with seamless box-drawing characters  
-- ✅ Multi-Palette System - 10 curated color schemes with instant switching  
-- ✅ Flexible Scaling - 10-1000% zoom with auto-fit-to-viewport  
-- ✅ Clean Architecture - Organized vanilla JS with ES6 modules  
+**Steps 1-5 Complete ✅**
+- ✅ Project Setup - Cell-based rendering, palettes, scaling
+- ✅ Core Data Models - Cell, Layer, Scene, StateManager, constants
+- ✅ Basic Rendering - LayerRenderer and Compositor
+- ✅ Hit Test Overlay - Mouse input and coordinate conversion
+- ✅ Tool System - Brush, Eraser, and Picker tools
+- ✅ **398 tests passing** across 13 test files
 
-**Step 2 In Progress (50% Complete) 🚧**
-- ✅ Cell.js - Data model with 23 tests passing
-- ✅ Layer.js - Grid management with 42 tests passing
-- ✅ constants.js - Defaults and 14 glyph categories, 15 tests passing
-- 🚧 Scene.js - Coming next
-- 🚧 StateManager.js - Coming next
-- ✅ **80 tests total passing**
+**Current Status: Step 6 Next 🚧**
+- Interactive drawing with three tools working
+- Event-driven architecture fully functional
+- Ready to build UI components (ColorPalette, LayerPanel, GlyphPicker)
 
 ## Quick Start
 
@@ -107,21 +106,15 @@ terminal-draw/
 
 ## Current Status
 
-**Step 1: Complete** ✅  
-- Project setup and foundation
-- Rendering with seamless box-drawing
-- Palette management (10 color schemes)
-- View controls (scaling)
+**Steps 1-5: Complete** ✅  
+- ✅ Step 1: Project Setup (HTML/CSS, palettes, scaling)
+- ✅ Step 2: Core Data Models (Cell, Layer, Scene, StateManager, constants)
+- ✅ Step 3: Basic Rendering (LayerRenderer, Compositor)
+- ✅ Step 4: Hit Test Overlay (Mouse input, coordinate conversion)
+- ✅ Step 5: Tool System (Brush, Eraser, Picker tools)
+- **398 tests passing**
 
-**Step 2: 50% Complete** 🚧  
-- ✅ Cell.js (23 tests)
-- ✅ Layer.js (42 tests)
-- ✅ constants.js (15 tests)
-- 🚧 Scene.js (next)
-- 🚧 StateManager.js (next)
-- **80 tests passing**
-
-**Next:** Complete Scene and StateManager to finish Step 2, then move to Step 3 (Rendering)
+**Next:** Step 6 - Basic UI (ColorPalette, LayerPanel, GlyphPicker)
 
 See [IMPLEMENTATION-PLAN.md](./IMPLEMENTATION-PLAN.md) for detailed roadmap.
 
@@ -129,30 +122,27 @@ See [IMPLEMENTATION-PLAN.md](./IMPLEMENTATION-PLAN.md) for detailed roadmap.
 
 We use **Vitest** for unit and integration tests:
 
-- ✅ **Unit tests** for core data models (Cell, Layer, Scene, etc.)
+- ✅ **Unit tests** for all modules (core, rendering, input, tools)
 - ✅ **Test-driven development** - write tests as features are built
 - ✅ **Coverage tracking** - ensure code quality
 - ✅ **Fast feedback** - tests run in milliseconds
 
-**Current test status: 80 tests passing**
+**Current test status: 398 tests passing**
 
 ```bash
 ✓ tests/Cell.test.js (23)
-  ✓ Cell > constructor (4)
-  ✓ Cell > clone (2)
-  ✓ Cell > equals (6)
-  ✓ Cell > isEmpty (4)
-  ✓ Cell > clear (2)
-  ✓ Cell > fromObject (2)
-  ✓ Cell > toObject (2)
-  ✓ Cell > round-trip conversion (1)
-
 ✓ tests/Layer.test.js (42)
-  ✓ Layer > constructor, getCell, setCell, clear, fill
-  ✓ Layer > regions, clone, serialization, stats
-
 ✓ tests/constants.test.js (15)
-  ✓ Grid defaults, palette ID, glyph categories
+✓ tests/Scene.test.js (53)
+✓ tests/StateManager.test.js (46)
+✓ tests/integration.test.js (18)
+✓ tests/LayerRenderer.test.js (43)
+✓ tests/Compositor.test.js (37)
+✓ tests/HitTestOverlay.test.js (45)
+✓ tests/Tool.test.js (12)
+✓ tests/BrushTool.test.js (24)
+✓ tests/EraserTool.test.js (20)
+✓ tests/PickerTool.test.js (20)
 ```
 
 See `tests/` directory for all test suites.
@@ -193,10 +183,13 @@ See `src/core/constants.js` for complete list.
 
 - `src/app.js` - Application entry point and initialization
 - `src/core/` - Data models (Cell, Layer, Scene, StateManager)
+- `src/rendering/` - LayerRenderer and Compositor
+- `src/input/` - HitTestOverlay for mouse events
+- `src/tools/` - Tool system (Brush, Eraser, Picker)
 - `src/palettes.json` - Color scheme definitions
 - `styles/grid.css` - Grid cell rendering and color classes
 - `styles/main.css` - Layout, CSS variables, global styles
-- `tests/` - Test suites for all modules
+- `tests/` - Test suites for all modules (398 tests)
 
 ### Adding Tests
 

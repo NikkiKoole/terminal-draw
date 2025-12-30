@@ -20,7 +20,7 @@
     top: 0;
     left: 0;
     width: calc(var(--grid-w) * 1ch);
-    height: calc(var(--grid-h) * var(--cell-size));
+    height: calc(var(--grid-h) * var(--cell-height));
     z-index: 10;
     cursor: crosshair;
     /* Transparent but receives pointer events */
@@ -30,13 +30,34 @@
     font-size: var(--cell-size);
 }
 
+/* Hover Indicator - Visual feedback for hovered cell */
+.hover-indicator {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1ch;
+    height: var(--cell-height);
+    z-index: 9;
+    pointer-events: none;
+    background-color: rgba(255, 255, 0, 0.3);
+    border: 1px solid rgba(255, 255, 0, 0.6);
+    box-sizing: border-box;
+    display: none;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--cell-size);
+}
+
+.hover-indicator.visible {
+    display: block;
+}
+
 /* Background Grid - simple colored background */
 .background-grid {
     position: absolute;
     top: 0;
     left: 0;
     width: calc(var(--grid-w) * 1ch);
-    height: calc(var(--grid-h) * var(--cell-size));
+    height: calc(var(--grid-h) * var(--cell-height));
     background-color: var(--color-bg-0);
     z-index: 0;
     font-family: "JetBrains Mono", monospace;
@@ -83,7 +104,7 @@
     padding: 0;
     letter-spacing: 0;
     word-spacing: 0;
-    height: var(--cell-size);
+    height: var(--cell-height);
 }
 
 /* Individual Cells - text only, no background */
@@ -93,7 +114,7 @@
     font-size: var(--cell-size);
     line-height: var(--cell-size);
     width: 1ch;
-    height: var(--cell-size);
+    height: var(--cell-height);
     letter-spacing: 0;
     word-spacing: 0;
     text-align: center;

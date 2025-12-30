@@ -129,6 +129,104 @@
 }
 
 /* ============================================
+   Layer Panel
+   ============================================ */
+
+.layer-panel {
+    width: 100%;
+}
+
+.layer-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.layer-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-xs);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--ui-border);
+    background: var(--ui-bg);
+    transition: all 0.2s;
+}
+
+.layer-item.active {
+    border-color: var(--ui-accent);
+    background: rgba(0, 122, 204, 0.1);
+}
+
+.layer-item:hover {
+    border-color: var(--ui-text-dim);
+}
+
+.layer-select {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    margin: 0;
+    text-align: left;
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    color: var(--ui-text);
+    font-size: 12px;
+}
+
+.layer-select:hover {
+    background: transparent;
+    color: var(--ui-text);
+}
+
+.layer-name {
+    font-weight: 500;
+}
+
+.layer-badge {
+    color: var(--ui-accent);
+    font-size: 16px;
+    line-height: 1;
+}
+
+.layer-controls {
+    display: flex;
+    gap: var(--spacing-xs);
+}
+
+.layer-visibility,
+.layer-lock {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--ui-bg-light);
+    border: 1px solid var(--ui-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.layer-visibility:hover,
+.layer-lock:hover {
+    background: var(--ui-border);
+    transform: scale(1.05);
+}
+
+.layer-visibility.layer-hidden,
+.layer-lock.locked {
+    background: rgba(204, 0, 0, 0.1);
+    border-color: rgba(204, 0, 0, 0.3);
+}
+
+/* ============================================
    Status Bar
    ============================================ */
 

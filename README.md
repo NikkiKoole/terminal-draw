@@ -4,7 +4,7 @@ A web-based ASCII art editor that renders true text glyphs in the DOM for creati
 
 ## Features
 
-**Steps 1-7 Complete ✅**
+**Steps 1-8b Complete ✅**
 - ✅ Project Setup - Cell-based rendering, palettes, scaling
 - ✅ Core Data Models - Cell, Layer, Scene, StateManager, constants
 - ✅ Basic Rendering - LayerRenderer and Compositor
@@ -12,14 +12,17 @@ A web-based ASCII art editor that renders true text glyphs in the DOM for creati
 - ✅ Tool System - Brush, Eraser, and Picker tools
 - ✅ Basic UI - LayerPanel, GlyphPicker, interactive color palette
 - ✅ Copy to Clipboard - Export as plain text, ANSI, or single layer
-- ✅ **432 tests passing** across 14 test files
+- ✅ Integration & App Setup - All components wired together
+- ✅ Save/Load Projects - JSON file persistence with drag-and-drop
+- ✅ **481 tests passing** across 15 test files
 
-**Current Status: Step 8 Next 🚧**
+**Current Status: Step 9 - Testing & Polish 🚧**
 - Fully functional ASCII art editor
 - Complete UI with layer management, color selection, and character picking
 - Clipboard export in multiple formats (text, ANSI, single layer)
+- Project save/load with drag-and-drop support
 - 23 glyph categories with 500+ characters
-- Ready to implement save/load project functionality
+- All functionality tests passed - working on performance and polish
 
 ## Quick Start
 
@@ -93,8 +96,10 @@ terminal-draw/
 │   ├── ui/                   # UI components
 │   │   ├── LayerPanel.js
 │   │   └── GlyphPicker.js
-│   └── export/               # Export functionality
-│       └── ClipboardManager.js
+│   ├── export/               # Export functionality
+│   │   └── ClipboardManager.js
+│   └── io/                   # File I/O
+│       └── ProjectManager.js
 ├── styles/
 │   ├── main.css              # Global styles & layout
 │   ├── grid.css              # Grid rendering
@@ -139,7 +144,7 @@ terminal-draw/
 
 ## Current Status
 
-**Steps 1-7: Complete** ✅  
+**Steps 1-8b: Complete** ✅  
 - ✅ Step 1: Project Setup (HTML/CSS, palettes, scaling)
 - ✅ Step 2: Core Data Models (Cell, Layer, Scene, StateManager, constants)
 - ✅ Step 3: Basic Rendering (LayerRenderer, Compositor)
@@ -147,9 +152,11 @@ terminal-draw/
 - ✅ Step 5: Tool System (Brush, Eraser, Picker tools)
 - ✅ Step 6: Basic UI (LayerPanel, GlyphPicker, color palette)
 - ✅ Step 7: Copy to Clipboard (export as text/ANSI/layer)
-- **432 tests passing (100%)**
+- ✅ Step 8: Integration & App Setup (all components wired together)
+- ✅ Step 8b: Save/Load Projects (JSON file persistence with drag-and-drop)
+- **481 tests passing (100%)**
 
-**Next:** Step 8 - Save/Load Projects (JSON file persistence)
+**Next:** Step 9 - Testing & Polish (performance check, visual polish, optional features)
 
 See [IMPLEMENTATION-PLAN.md](./IMPLEMENTATION-PLAN.md) for detailed roadmap.
 
@@ -180,11 +187,14 @@ See [IMPLEMENTATION-PLAN.md](./IMPLEMENTATION-PLAN.md) for detailed roadmap.
 - **Trigger button** showing current character
 - **Auto-updates** when using picker tool
 
-### Export
+### Export & Projects
 - **📋 Copy as Text** - Export artwork as plain text
 - **🎨 Copy as ANSI** - Export with terminal color codes
 - **📄 Copy Layer Only** - Export active layer only
-- **Status feedback** - Shows character/line count on success
+- **💾 Save Project** - Download complete project as JSON (~540 KB)
+- **📂 Load Project** - Restore any saved project
+- **Drag & Drop** - Drop JSON files to load projects
+- **Status feedback** - Shows character/line count or file size on success
 - **Layer visibility** - Hidden layers excluded from export
 
 ### View Controls
@@ -201,7 +211,7 @@ We use **Vitest** for unit and integration tests:
 - ✅ **Coverage tracking** - ensure code quality
 - ✅ **Fast feedback** - tests run in milliseconds
 
-**Current test status: 432 tests passing (100%)**
+**Current test status: 481 tests passing (100%)**
 
 ```bash
 ✓ tests/Cell.test.js (23)
@@ -218,6 +228,7 @@ We use **Vitest** for unit and integration tests:
 ✓ tests/EraserTool.test.js (20)
 ✓ tests/PickerTool.test.js (20)
 ✓ tests/ClipboardManager.test.js (34)
+✓ tests/ProjectManager.test.js (49)
 ```
 
 See `tests/` directory for all test suites.
@@ -270,11 +281,12 @@ See `src/core/constants.js` for complete list.
 - `src/tools/` - Tool system (Brush, Eraser, Picker)
 - `src/ui/` - UI components (LayerPanel, GlyphPicker)
 - `src/export/` - Export functionality (ClipboardManager)
+- `src/io/` - File I/O (ProjectManager)
 - `src/palettes.json` - Color scheme definitions
 - `styles/grid.css` - Grid cell rendering and color classes
 - `styles/main.css` - Layout, CSS variables, global styles
 - `styles/ui.css` - UI component styles
-- `tests/` - Test suites for all modules (432 tests)
+- `tests/` - Test suites for all modules (481 tests)
 
 ### Adding Tests
 
@@ -309,16 +321,15 @@ Colors are defined as CSS variables for easy theming:
 
 - [design-document.md](./design-document.md) - Full feature specification
 - [IMPLEMENTATION-PLAN.md](./IMPLEMENTATION-PLAN.md) - Development roadmap
-- [STEP-7-COMPLETION.md](./STEP-7-COMPLETION.md) - Latest completion details
+- [STEP-8-COMPLETION.md](./STEP-8-COMPLETION.md) - Latest completion details
 - [HANDOFF-NEXT-SESSION.md](./HANDOFF-NEXT-SESSION.md) - Next session guide
 
 ## Progress
 
-**7 of 9 steps complete (~78%)**
+**8+ of 9 steps complete (~90%)**
 
-Remaining steps:
-- Step 8: Save/Load Projects
-- Step 9: Advanced Tools & Polish
+Current step:
+- Step 9: Testing & Polish (functionality tests complete, polish in progress)
 
 ## License
 

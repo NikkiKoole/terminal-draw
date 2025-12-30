@@ -117,47 +117,64 @@ DOM structure:
 
 ---
 
-### Step 2: Core Data Models (1-2 hours)
+### Step 2: Core Data Models ✅ PARTIAL (2/4 complete)
 
-#### Cell.js
-- [ ] Simple class/object with `{ch, fg, bg}`
-- [ ] Default values: `ch = ' '`, `fg = 7`, `bg = -1`
+#### Cell.js ✅ COMPLETE
+- [x] Simple class with `{ch, fg, bg}`
+- [x] Default values: `ch = ' '`, `fg = 7`, `bg = -1`
+- [x] Methods: `clone()`, `equals()`, `isEmpty()`, `clear()`, `toObject()`, `fromObject()`
+- [x] **23 tests passing** - constructor, clone, equals, isEmpty, clear, serialization
 
-#### Layer.js
-- [ ] Properties: `{id, name, visible, locked, ligatures, cells[]}`
-- [ ] Methods:
+#### Layer.js ✅ COMPLETE
+- [x] Properties: `{id, name, visible, locked, ligatures, cells[]}`
+- [x] Methods:
   - `getCell(x, y)` - returns Cell at coords
   - `setCell(x, y, cell)` - updates cell at coords
-  - `getCellIndex(x, y, width)` - converts coords to array index
+  - `getCellIndex(x, y)` - converts coords to array index
+  - `isValidCoord(x, y)` - bounds checking
   - `clear()` - resets all cells to defaults
+  - `fill(cell)` - fills layer with cell
+  - `getRegion(x, y, w, h)` - copy region
+  - `setRegion(x, y, region)` - paste region
+  - `clone()` - deep copy layer
+  - `getStats()` - layer statistics
+  - `toObject()` / `fromObject()` - serialization
+- [x] **42 tests passing** - coordinates, bounds, regions, fill, clone, serialization
 
-#### Scene.js
-- [ ] Properties: `{w, h, paletteFg[], paletteBg[], layers[], activeLayerId, options}`
+#### constants.js ✅ COMPLETE
+- [x] Default grid size: 80×25
+- [x] DEFAULT_PALETTE_ID: "default" (references palettes.json)
+- [x] Default cell values: char=' ', fg=7, bg=-1
+- [x] Layer IDs: LAYER_BG, LAYER_MID, LAYER_FG
+- [x] **14 Glyph preset categories** (100+ characters):
+  - Box Light, Box Heavy, Box Double, Box Rounded
+  - Shading, Dots, Arrows, Geometry
+  - Triangles, Math Operators, Extended Arrows
+  - Currency, Common Symbols, Common Characters
+- [x] Helper exports: ALL_GLYPHS, GLYPH_CATEGORIES
+- [x] **15 tests passing** - defaults, palette ID, layer IDs, glyph categories
+
+#### Scene.js 🚧 TODO
+- [ ] Properties: `{w, h, paletteId, layers[], activeLayerId, options}`
 - [ ] Methods:
   - `getActiveLayer()` - returns current active layer
   - `getLayer(id)` - returns layer by id
+  - `setActiveLayer(id)` - switch active layer
   - `getCellIndex(x, y)` - converts coords to index
   - `isValidCoord(x, y)` - bounds checking
+  - `toObject()` / `fromObject()` - serialization
 
-#### constants.js
-- [ ] Default grid size: 80×25
-- [ ] Default palette (classic terminal colors):
-  - FG: Black, Red, Green, Yellow, Blue, Magenta, Cyan, White
-  - BG: Same + transparent (-1)
-- [ ] Glyph presets:
-  - Box Light: `─│┌┐└┘┬┴├┤┼`
-  - Box Heavy: `━┃┏┓┗┛┳┻┣┫╋`
-  - Box Double: `═║╔╗╚╝╦╩╠╣╬`
-  - Rounded: `╭╮╰╯`
-  - Shading: `░▒▓█▀▄▌▐▁▂▃▄▅▆▇`
-  - Lights: `·•∘○◦◉◎▪▫`
-  - Arrows: `→←↑↓↔⇒⇐⇔`
-
-#### StateManager.js
+#### StateManager.js 🚧 TODO
 - [ ] Simple event emitter with `on(event, callback)`, `emit(event, data)`, `off(event, callback)`
 - [ ] Events: `'scene:updated'`, `'layer:changed'`, `'tool:changed'`, `'cell:changed'`
 
-**Deliverable:** Data models can be instantiated and manipulated
+**Deliverable:** Data models tested and ready for use (2/4 complete, 80 tests passing)
+
+**Testing Infrastructure Added:**
+- ✅ Vitest test runner with watch mode
+- ✅ 80 tests passing (23 Cell + 42 Layer + 15 constants)
+- ✅ Node 20 requirement (.nvmrc added)
+- ✅ Test commands: `npm test`, `npm run test:run`, `npm run test:ui`
 
 ---
 
@@ -440,8 +457,10 @@ class Tool {
 
 ### Date Started: 2024-12-30
 ### Step 1 Completed: 2024-12-30
-### Current Milestone: 1 ✅ Complete
-### Next Step: Step 2 - Core Data Models
+### Step 2 Started: 2024-12-30 (Partial - 2/4 modules complete)
+### Current Milestone: 1 (In Progress)
+### Current Step: Step 2 - Core Data Models (50% complete)
+### Next: Complete Scene.js and StateManager.js
 
 ### Step 1 Accomplishments:
 - ✅ Project structure with Vite dev server
@@ -486,8 +505,23 @@ class Tool {
 - `package.json` - Vite dev server setup
 - `.gitignore` - Node modules, build artifacts
 
-### Ready for Step 2:
-The foundation is solid. Next step: build the actual data models (Cell, Layer, Scene, StateManager) that will replace the test pattern with real editing functionality.
+### Step 2 Progress (50% Complete):
+**Completed:**
+- ✅ Cell.js with full test coverage (23 tests)
+- ✅ Layer.js with comprehensive tests (42 tests)
+- ✅ constants.js with 14 glyph categories (15 tests)
+- ✅ Testing infrastructure (Vitest + Node 20)
+- ✅ 80 tests passing
+
+**Remaining:**
+- 🚧 Scene.js - Top-level scene container
+- 🚧 StateManager.js - Event system for reactive updates
+
+**Key Decisions:**
+- Use palettes.json as single source of truth (not duplicated in constants)
+- DEFAULT_PALETTE_ID references palette by ID
+- 14 glyph categories: Box styles, Shading, Math, Arrows, Currency, etc.
+- Test-driven development approach working well
 
 ---
 

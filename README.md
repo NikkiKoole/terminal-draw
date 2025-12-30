@@ -2,12 +2,21 @@
 
 A web-based ASCII art editor that renders true text glyphs in the DOM for creating terminal art.
 
-## Features (Step 1 Complete)
+## Features
 
-✅ **Cell-based Rendering** - 80×25 grid with seamless box-drawing characters  
-✅ **Multi-Palette System** - 10 curated color schemes with instant switching  
-✅ **Flexible Scaling** - 10-1000% zoom with auto-fit-to-viewport  
-✅ **Clean Architecture** - Organized vanilla JS with ES6 modules  
+**Step 1 Complete ✅**
+- ✅ Cell-based Rendering - 80×25 grid with seamless box-drawing characters  
+- ✅ Multi-Palette System - 10 curated color schemes with instant switching  
+- ✅ Flexible Scaling - 10-1000% zoom with auto-fit-to-viewport  
+- ✅ Clean Architecture - Organized vanilla JS with ES6 modules  
+
+**Step 2 In Progress (50% Complete) 🚧**
+- ✅ Cell.js - Data model with 23 tests passing
+- ✅ Layer.js - Grid management with 42 tests passing
+- ✅ constants.js - Defaults and 14 glyph categories, 15 tests passing
+- 🚧 Scene.js - Coming next
+- 🚧 StateManager.js - Coming next
+- ✅ **80 tests total passing**
 
 ## Quick Start
 
@@ -101,13 +110,18 @@ terminal-draw/
 **Step 1: Complete** ✅  
 - Project setup and foundation
 - Rendering with seamless box-drawing
-- Palette management
+- Palette management (10 color schemes)
 - View controls (scaling)
 
-**Step 2: In Progress** 🚧  
-- Core data models (Cell, Layer, Scene)
-- State management
-- Event handling
+**Step 2: 50% Complete** 🚧  
+- ✅ Cell.js (23 tests)
+- ✅ Layer.js (42 tests)
+- ✅ constants.js (15 tests)
+- 🚧 Scene.js (next)
+- 🚧 StateManager.js (next)
+- **80 tests passing**
+
+**Next:** Complete Scene and StateManager to finish Step 2, then move to Step 3 (Rendering)
 
 See [IMPLEMENTATION-PLAN.md](./IMPLEMENTATION-PLAN.md) for detailed roadmap.
 
@@ -120,16 +134,25 @@ We use **Vitest** for unit and integration tests:
 - ✅ **Coverage tracking** - ensure code quality
 - ✅ **Fast feedback** - tests run in milliseconds
 
-**Example test output:**
+**Current test status: 80 tests passing**
+
 ```bash
-✓ tests/Cell.test.js (23 tests)
-  ✓ Cell > constructor (5)
+✓ tests/Cell.test.js (23)
+  ✓ Cell > constructor (4)
   ✓ Cell > clone (2)
   ✓ Cell > equals (6)
   ✓ Cell > isEmpty (4)
   ✓ Cell > clear (2)
   ✓ Cell > fromObject (2)
   ✓ Cell > toObject (2)
+  ✓ Cell > round-trip conversion (1)
+
+✓ tests/Layer.test.js (42)
+  ✓ Layer > constructor, getCell, setCell, clear, fill
+  ✓ Layer > regions, clone, serialization, stats
+
+✓ tests/constants.test.js (15)
+  ✓ Grid defaults, palette ID, glyph categories
 ```
 
 See `tests/` directory for all test suites.
@@ -137,17 +160,32 @@ See `tests/` directory for all test suites.
 ## Color Palettes
 
 - Default Terminal
-- Gruvbox Dark
-- Nord
-- Dracula
-- Monokai
-- Solarized Dark
-- Tokyo Night
-- Catppuccin Mocha
-- Anthropic Claude
-- Monet Muted
+- **Gruvbox Dark** - Warm, retro
+- **Nord** - Cool, blue-ish
+- **Dracula** - Purple/pink
+- **Monokai** - Classic
+- **Solarized Dark** - Muted
+- **Tokyo Night** - Modern blue/purple
+- **Catppuccin Mocha** - Soft pastels
+- **Anthropic Claude** - Warm browns/blues
+- **Monet Muted** - Soft artist palette
 
 Edit `src/palettes.json` to add more!
+
+## Glyph Presets (14 Categories)
+
+Over 100 useful characters organized in categories:
+- Box Drawing (Light/Heavy/Double/Rounded)
+- Shading & Blocks
+- Triangles & Pointers
+- Math Operators
+- Arrows & Extended Arrows
+- Dots & Circles
+- Geometric Shapes
+- Currency Symbols
+- Common Symbols & Characters
+
+See `src/core/constants.js` for complete list.
 
 ## Development
 

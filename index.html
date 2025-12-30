@@ -21,96 +21,112 @@
         <div id="app">
             <header>
                 <h1>Terminal Draw</h1>
-                <!-- Toolbar will be added in Step 2 -->
-                <div id="toolbar"></div>
+                <div id="toolbar">
+                    <button id="tool-brush" class="tool-btn active">
+                        🖌️ <span class="key">[B]</span>rush
+                    </button>
+                    <button id="tool-eraser" class="tool-btn">
+                        🧹 <span class="key">[E]</span>raser
+                    </button>
+                    <button id="tool-picker" class="tool-btn">
+                        💧 <span class="key">[P]</span>icker
+                    </button>
+                    <div
+                        style="
+                            margin-left: auto;
+                            display: flex;
+                            gap: 8px;
+                            align-items: center;
+                        "
+                    >
+                        <button
+                            id="scale-to-fit-btn"
+                            class="tool-btn"
+                            title="Scale to Fit"
+                        >
+                            🔍
+                        </button>
+                        <input
+                            type="range"
+                            id="scale-slider"
+                            min="10"
+                            max="1000"
+                            value="100"
+                            step="5"
+                            title="Zoom"
+                            style="width: 80px"
+                        />
+                        <span
+                            id="scale-value"
+                            style="font-size: 12px; min-width: 40px"
+                            >100%</span
+                        >
+                        <button id="io-toggle" class="tool-btn">💾 I/O</button>
+                    </div>
+                </div>
+
+                <!-- I/O Panel (collapsible) -->
+                <div id="io-panel" class="io-panel hidden">
+                    <div class="io-panel-content">
+                        <div class="io-section">
+                            <h3>Export</h3>
+                            <button id="export-text" class="io-btn">
+                                📋 Copy as Text
+                            </button>
+                            <button id="export-ansi" class="io-btn">
+                                🎨 Copy as ANSI
+                            </button>
+                            <button id="export-layer" class="io-btn">
+                                📄 Copy Layer Only
+                            </button>
+                            <div
+                                id="export-status"
+                                class="export-status hidden"
+                            >
+                                ✅ Copied!
+                            </div>
+                        </div>
+
+                        <div class="io-section">
+                            <h3>Project</h3>
+                            <button id="save-project" class="io-btn">
+                                💾 Save Project
+                            </button>
+                            <button id="load-project" class="io-btn">
+                                📂 Load Project
+                            </button>
+                            <input
+                                type="file"
+                                id="file-input"
+                                accept=".json"
+                                style="display: none"
+                            />
+                            <div id="dropzone" class="dropzone">
+                                <div class="dropzone-content">
+                                    <span class="dropzone-icon">📂</span>
+                                    <span class="dropzone-text"
+                                        >Drop .json file here</span
+                                    >
+                                </div>
+                            </div>
+                            <div
+                                id="project-status"
+                                class="project-status hidden"
+                            >
+                                ✅ Project saved!
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </header>
 
             <main>
                 <!-- Sidebar: View controls and palette selector -->
                 <aside id="sidebar">
-                    <!-- Tools -->
-                    <div class="sidebar-section">
-                        <h3>Tools</h3>
-                        <button id="tool-brush" class="active">🖌️ Brush</button>
-                        <button id="tool-eraser">🧹 Eraser</button>
-                        <button id="tool-picker">💧 Picker</button>
-                    </div>
-
                     <!-- Glyph Picker -->
                     <div class="sidebar-section">
                         <h3>Character</h3>
                         <div id="glyph-picker-trigger"></div>
-                    </div>
-
-                    <!-- Layers -->
-                    <div class="sidebar-section">
-                        <div id="layer-panel"></div>
-                    </div>
-
-                    <!-- Export -->
-                    <div class="sidebar-section">
-                        <h3>Export</h3>
-                        <button id="export-text" class="export-btn">
-                            📋 Copy as Text
-                        </button>
-                        <button id="export-ansi" class="export-btn">
-                            🎨 Copy as ANSI
-                        </button>
-                        <button id="export-layer" class="export-btn">
-                            📄 Copy Layer Only
-                        </button>
-                        <div id="export-status" class="export-status hidden">
-                            ✅ Copied!
-                        </div>
-                    </div>
-
-                    <!-- Project -->
-                    <div class="sidebar-section">
-                        <h3>Project</h3>
-                        <button id="save-project" class="project-btn">
-                            💾 Save Project
-                        </button>
-                        <button id="load-project" class="project-btn">
-                            📂 Load Project
-                        </button>
-                        <input
-                            type="file"
-                            id="file-input"
-                            accept=".json"
-                            style="display: none"
-                        />
-                        <div id="dropzone" class="dropzone">
-                            <div class="dropzone-content">
-                                <span class="dropzone-icon">📂</span>
-                                <span class="dropzone-text"
-                                    >Drop .json file here</span
-                                >
-                            </div>
-                        </div>
-                        <div id="project-status" class="project-status hidden">
-                            ✅ Project saved!
-                        </div>
-                    </div>
-
-                    <!-- View Controls -->
-                    <div class="sidebar-section">
-                        <h3>View</h3>
-                        <button id="scale-to-fit-btn" class="btn-primary">
-                            Scale to Fit
-                        </button>
-                        <div class="scale-control">
-                            <label for="scale-slider">
-                                Scale: <span id="scale-value">100</span>%
-                            </label>
-                            <input
-                                type="range"
-                                id="scale-slider"
-                                min="10"
-                                max="1000"
-                                value="100"
-                                step="5"
-                            />
-                        </div>
                     </div>
 
                     <!-- Palette Selector -->
@@ -181,6 +197,11 @@
                                 >█</span
                             >
                         </div>
+                    </div>
+
+                    <!-- Layers -->
+                    <div class="sidebar-section">
+                        <div id="layer-panel"></div>
                     </div>
                 </aside>
 

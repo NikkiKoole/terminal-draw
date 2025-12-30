@@ -16,13 +16,15 @@ A web-based ASCII art editor that renders true text glyphs in the DOM for creati
 - ✅ Save/Load Projects - JSON file persistence with drag-and-drop
 - ✅ **481 tests passing** across 15 test files
 
-**Current Status: Step 9 - Testing & Polish 🚧**
+**Current Status: Step 9 - Testing & Polish ✅ ~97% Complete**
 - Fully functional ASCII art editor
 - Complete UI with layer management, color selection, and character picking
 - Clipboard export in multiple formats (text, ANSI, single layer)
 - Project save/load with drag-and-drop support
-- 23 glyph categories with 500+ characters
-- All functionality tests passed - working on performance and polish
+- 10 glyph categories with 1,300+ characters (reorganized from 24)
+- Keyboard shortcuts: [B]rush, [E]raser, [P]icker, [L]ayer cycle
+- UX improvements: clickable layer items, cleaner palette indicators
+- All functionality tests passed - performance validation pending
 
 ## Quick Start
 
@@ -164,16 +166,16 @@ terminal-draw/
 - ✅ Step 8b: Save/Load Projects (JSON file persistence with drag-and-drop)
 - **481 tests passing (100%)**
 
-**Next:** Step 9 - Testing & Polish (performance check, visual polish, optional features)
+**Current:** Step 9 - Testing & Polish (~97% complete - performance validation pending)
 
 See [IMPLEMENTATION-PLAN.md](./IMPLEMENTATION-PLAN.md) for detailed roadmap.
 
 ## User Interface
 
-### Tools
-- **🖌️ Brush** - Paint cells with current character and colors
-- **🧹 Eraser** - Clear cells to default state
-- **💧 Picker** - Sample colors and characters from existing cells
+### Tools (Keyboard Shortcuts)
+- **[B] Brush** - Paint cells with current character and colors
+- **[E] Eraser** - Clear cells to default state
+- **[P] Picker** - Sample colors and characters from existing cells
 
 ### Color Palette
 - **8 color swatches** from current palette
@@ -183,14 +185,15 @@ See [IMPLEMENTATION-PLAN.md](./IMPLEMENTATION-PLAN.md) for detailed roadmap.
 - **Live preview** showing current color combination
 
 ### Layer Panel
+- **[L]ayers** - Press L to cycle through layers
 - **3 layers** - Background, Middle, Foreground
 - **Visibility toggle** (👁️ icon)
 - **Lock toggle** (🔒 icon)
 - **Active indicator** (● badge)
-- Click layer name to set as active
+- Click anywhere on layer item to set as active
 
 ### Glyph Picker
-- **23 categories** with 500+ characters
+- **10 categories** with 1,300+ characters
 - **Modal interface** with category filter
 - **Trigger button** showing current character
 - **Auto-updates** when using picker tool
@@ -204,6 +207,12 @@ See [IMPLEMENTATION-PLAN.md](./IMPLEMENTATION-PLAN.md) for detailed roadmap.
 - **Drag & Drop** - Drop JSON files to load projects
 - **Status feedback** - Shows character/line count or file size on success
 - **Layer visibility** - Hidden layers excluded from export
+
+### Keyboard Shortcuts
+- **B** - Switch to Brush tool
+- **E** - Switch to Eraser tool
+- **P** - Switch to Picker tool
+- **L** - Cycle through layers (Foreground → Middle → Background)
 
 ### View Controls
 - **Scale slider** (10%-1000%)
@@ -256,25 +265,19 @@ See `tests/` directory for all test suites.
 
 Edit `src/palettes.json` to add more!
 
-## Glyph Categories (23 Total)
+## Glyph Categories (10 Total)
 
-Over 500 characters organized in categories:
-- **Alphanumeric** - Uppercase, lowercase, numbers
-- **Punctuation** - Common punctuation marks
-- **Diacritics** - Accented letters (upper/lower)
-- **Greek** - Greek alphabet (upper/lower)
-- **Cyrillic** - Cyrillic alphabet (upper/lower)
-- **Currency** - Currency symbols
-- **Math Operators** - Mathematical symbols
-- **Arrows** - Arrow symbols
-- **Shapes** - Circles, diamonds, triangles
-- **APL Symbols** - APL programming language
-- **Misc Symbols** - Various symbols
-- **Double Struck** - Mathematical double-struck
-- **Blocks** - Block and shading characters (░▒▓█)
-- **Box Drawing** - Box characters (─│┌┐└┘┬┴├┤┼)
-- **Powerline** - Powerline font characters
-- **Control Codes** - Control code representations
+Over 1,300 characters organized in categories:
+- **Basic Text** - Uppercase, lowercase, numbers (A-Z, a-z, 0-9, subscripts, superscripts)
+- **Accented Letters** - All accented Latin characters for international languages
+- **Greek & Cyrillic** - Complete Greek and Cyrillic alphabets
+- **Punctuation & Currency** - Common punctuation marks and currency symbols
+- **Math & Operators** - Mathematical symbols and operators
+- **Others** - Emoji-like symbols (hearts, stars, weather, music)
+- **Arrows** - Directional arrows and pointers
+- **Shapes, Geometry and Blocks** - Geometric shapes and block drawing elements (░▒▓█●■▲)
+- **Box Drawing** - Box characters for borders and tables (─│┌┐└┘┬┴├┤┼)
+- **Special Symbols** - APL, programming, terminal, and specialized symbols
 
 See `src/core/constants.js` for complete list.
 
@@ -340,10 +343,16 @@ Test pages are in `test-pages/`:
 
 ## Progress
 
-**8+ of 9 steps complete (~90%)**
+**9 of 9 steps ~97% complete**
 
 Current step:
-- Step 9: Testing & Polish (functionality tests complete, polish in progress)
+- Step 9: Testing & Polish (functionality, UX improvements, and polish complete - performance validation pending)
+
+Recent improvements:
+- ✅ Glyph categories reorganized (24 → 10 balanced categories)
+- ✅ Keyboard shortcuts added (B, E, P, L)
+- ✅ Layer panel UX improved (clickable items, [L] shortcut)
+- ✅ Palette indicators redesigned (corner triangles)
 
 ## License
 

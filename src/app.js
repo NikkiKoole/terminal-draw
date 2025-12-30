@@ -304,6 +304,57 @@ function initTools() {
   if (pickerBtn) {
     pickerBtn.addEventListener("click", () => setCurrentTool(pickerTool));
   }
+
+  // Keyboard shortcuts
+  initKeyboardShortcuts();
+}
+
+/**
+ * Initialize keyboard shortcuts for tools
+ */
+function initKeyboardShortcuts() {
+  document.addEventListener("keydown", (e) => {
+    // Don't trigger shortcuts if user is typing in an input/textarea
+    if (e.target.matches("input, textarea")) {
+      return;
+    }
+
+    // Tool shortcuts
+    switch (e.key.toLowerCase()) {
+      case "b":
+        setCurrentTool(brushTool);
+        break;
+      case "e":
+        setCurrentTool(eraserTool);
+        break;
+      case "p":
+        setCurrentTool(pickerTool);
+        break;
+      case "l":
+        cycleLayer();
+        break;
+    }
+  });
+}
+
+/**
+ * Cycle through layers (fg -> mid -> bg -> fg)
+ */
+function cycleLayer() {
+  if (!scene) return;
+
+  const layers = ["fg", "mid", "bg"];
+  const currentIndex = layers.indexOf(scene.activeLayerId);
+  const nextIndex = (currentIndex + 1) % layers.length;
+  const nextLayerId = layers[nextIndex];
+
+  scene.setActiveLayer(nextLayerId);
+  stateManager.emit("layer:active", { layerId: nextLayerId });
+
+  // Update layer panel if it exists
+  if (layerPanel) {
+    layerPanel.render();
+  }
 }
 
 /**
@@ -762,6 +813,42 @@ function showProjectStatus(result, statusElement) {
 }
 
 /**
+ * Initialize I/O panel toggle
+ */
+function initIOPanel() {
+  const ioToggle = document.getElementById("io-toggle");
+  const ioPanel = document.getElementById("io-panel");
+
+  if (ioToggle && ioPanel) {
+    // Toggle panel on button click
+    ioToggle.addEventListener("click", () => {
+      ioPanel.classList.toggle("hidden");
+      ioToggle.classList.toggle("active");
+    });
+
+    // Close panel when clicking outside
+    document.addEventListener("click", (e) => {
+      if (
+        !ioPanel.contains(e.target) &&
+        !ioToggle.contains(e.target) &&
+        !ioPanel.classList.contains("hidden")
+      ) {
+        ioPanel.classList.add("hidden");
+        ioToggle.classList.remove("active");
+      }
+    });
+
+    // Close panel on Escape key
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !ioPanel.classList.contains("hidden")) {
+        ioPanel.classList.add("hidden");
+        ioToggle.classList.remove("active");
+      }
+    });
+  }
+}
+
+/**
  * Initialize all UI controls and apply defaults
  */
 function init() {
@@ -773,6 +860,7 @@ function init() {
   initGlyphPicker();
   initClipboard();
   initProject();
+  initIOPanel();
   initScaleControls();
   initPaletteSelector();
 }

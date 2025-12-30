@@ -5,7 +5,7 @@
  * Users can filter by category and click a character to select it for the brush.
  */
 
-import { GLYPHS } from '../core/constants.js';
+import { GLYPHS } from "../core/constants.js";
 
 export class GlyphPicker {
   /**
@@ -17,7 +17,7 @@ export class GlyphPicker {
     this.brushTool = brushTool;
     this.stateManager = stateManager;
     this.isOpen = false;
-    this.selectedCategory = 'ALL';
+    this.selectedCategory = "ALL";
 
     this.modal = null;
     this.triggerButton = null;
@@ -31,9 +31,9 @@ export class GlyphPicker {
    */
   createModal() {
     // Create modal backdrop and container
-    const modal = document.createElement('div');
-    modal.className = 'glyph-picker-modal';
-    modal.style.display = 'none';
+    const modal = document.createElement("div");
+    modal.className = "glyph-picker-modal";
+    modal.style.display = "none";
 
     modal.innerHTML = `
       <div class="glyph-picker-backdrop"></div>
@@ -47,10 +47,12 @@ export class GlyphPicker {
           <label for="glyph-category">Category:</label>
           <select id="glyph-category">
             <option value="ALL">All Characters</option>
-            <option value="COMMON">Common</option>
-            ${Object.entries(GLYPHS).map(([key, category]) =>
-              `<option value="${key}">${category.name}</option>`
-            ).join('')}
+            ${Object.entries(GLYPHS)
+              .map(
+                ([key, category]) =>
+                  `<option value="${key}">${category.name}</option>`,
+              )
+              .join("")}
           </select>
         </div>
 
@@ -68,9 +70,9 @@ export class GlyphPicker {
    * Create trigger button for sidebar
    */
   createTriggerButton() {
-    const button = document.createElement('button');
-    button.id = 'glyph-picker-trigger';
-    button.className = 'glyph-trigger-btn';
+    const button = document.createElement("button");
+    button.id = "glyph-picker-trigger";
+    button.className = "glyph-trigger-btn";
 
     this.updateTriggerButton(button);
 
@@ -85,7 +87,7 @@ export class GlyphPicker {
     if (!button) return;
 
     const currentCell = this.brushTool.getCurrentCell();
-    const char = currentCell.ch || '█';
+    const char = currentCell.ch || "█";
 
     button.innerHTML = `
       <span class="trigger-label">Character:</span>
@@ -99,16 +101,11 @@ export class GlyphPicker {
   renderGlyphs() {
     let glyphs = [];
 
-    if (this.selectedCategory === 'ALL') {
+    if (this.selectedCategory === "ALL") {
       // All glyphs from all categories
-      Object.values(GLYPHS).forEach(category => {
+      Object.values(GLYPHS).forEach((category) => {
         glyphs.push(...category.chars);
       });
-    } else if (this.selectedCategory === 'COMMON') {
-      // Common characters
-      glyphs = ['█', '▀', '▄', '▌', '▐', '░', '▒', '▓', '■', '□', '▪', '▫',
-                '─', '│', '┌', '┐', '└', '┘', '┬', '┴', '├', '┤', '┼',
-                '━', '┃', '┏', '┓', '┗', '┛', '╋', ' '];
     } else {
       // Specific category
       const category = GLYPHS[this.selectedCategory];
@@ -117,9 +114,12 @@ export class GlyphPicker {
       }
     }
 
-    return glyphs.map(char =>
-      `<button class="glyph-item" data-char="${char}" title="${char}">${char}</button>`
-    ).join('');
+    return glyphs
+      .map(
+        (char) =>
+          `<button class="glyph-item" data-char="${char}" title="${char}">${char}</button>`,
+      )
+      .join("");
   }
 
   /**
@@ -129,10 +129,10 @@ export class GlyphPicker {
     if (this.isOpen) return;
 
     this.isOpen = true;
-    this.modal.style.display = 'block';
+    this.modal.style.display = "block";
 
     // Focus on category dropdown
-    const dropdown = document.getElementById('glyph-category');
+    const dropdown = document.getElementById("glyph-category");
     if (dropdown) dropdown.focus();
   }
 
@@ -143,7 +143,7 @@ export class GlyphPicker {
     if (!this.isOpen) return;
 
     this.isOpen = false;
-    this.modal.style.display = 'none';
+    this.modal.style.display = "none";
   }
 
   /**
@@ -153,7 +153,7 @@ export class GlyphPicker {
     this.selectedCategory = category;
 
     // Re-render the grid
-    const grid = document.getElementById('glyph-grid');
+    const grid = document.getElementById("glyph-grid");
     if (grid) {
       grid.innerHTML = this.renderGlyphs();
     }
@@ -167,14 +167,14 @@ export class GlyphPicker {
     const currentCell = this.brushTool.getCurrentCell();
     this.brushTool.setCurrentCell({
       ...currentCell,
-      ch: char
+      ch: char,
     });
 
     // Update trigger button
     this.updateTriggerButton();
 
     // Emit event
-    this.stateManager.emit('glyph:selected', { char });
+    this.stateManager.emit("glyph:selected", { char });
 
     // Close modal
     this.close();
@@ -185,30 +185,30 @@ export class GlyphPicker {
    */
   attachEventListeners() {
     // Close button
-    const closeBtn = this.modal.querySelector('.glyph-picker-close');
-    closeBtn.addEventListener('click', () => this.close());
+    const closeBtn = this.modal.querySelector(".glyph-picker-close");
+    closeBtn.addEventListener("click", () => this.close());
 
     // Backdrop click
-    const backdrop = this.modal.querySelector('.glyph-picker-backdrop');
-    backdrop.addEventListener('click', () => this.close());
+    const backdrop = this.modal.querySelector(".glyph-picker-backdrop");
+    backdrop.addEventListener("click", () => this.close());
 
     // Escape key
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && this.isOpen) {
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && this.isOpen) {
         this.close();
       }
     });
 
     // Category dropdown
-    const categorySelect = document.getElementById('glyph-category');
-    categorySelect.addEventListener('change', (e) => {
+    const categorySelect = document.getElementById("glyph-category");
+    categorySelect.addEventListener("change", (e) => {
       this.handleCategoryChange(e.target.value);
     });
 
     // Glyph selection (event delegation)
-    const grid = document.getElementById('glyph-grid');
-    grid.addEventListener('click', (e) => {
-      const glyphItem = e.target.closest('.glyph-item');
+    const grid = document.getElementById("glyph-grid");
+    grid.addEventListener("click", (e) => {
+      const glyphItem = e.target.closest(".glyph-item");
       if (glyphItem) {
         const char = glyphItem.dataset.char;
         this.selectGlyph(char);
@@ -216,7 +216,7 @@ export class GlyphPicker {
     });
 
     // Listen to picker tool events to update trigger button
-    this.stateManager.on('tool:picked', (data) => {
+    this.stateManager.on("tool:picked", (data) => {
       if (data.cell && data.cell.ch) {
         this.updateTriggerButton();
       }

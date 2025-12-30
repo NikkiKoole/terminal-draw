@@ -39,7 +39,7 @@ export class LayerPanel {
 
     const html = `
       <div class="layer-panel">
-        <h3>Layers</h3>
+        <h3>[L]ayers</h3>
         <div class="layer-list">
           ${layerIds
             .map((layerId) => {
@@ -48,10 +48,10 @@ export class LayerPanel {
 
               return `
               <div class="layer-item ${isActive ? "active" : ""}" data-layer-id="${layerId}">
-                <button class="layer-select" data-layer-id="${layerId}" title="Set as active layer">
+                <div class="layer-select" data-layer-id="${layerId}" title="Set as active layer">
                   <span class="layer-name">${layerNames[layerId]}</span>
                   ${isActive ? '<span class="layer-badge">●</span>' : ""}
-                </button>
+                </div>
                 <div class="layer-controls">
                   <button
                     class="layer-visibility ${layer.visible ? "layer-visible" : "layer-hidden"}"
@@ -83,20 +83,30 @@ export class LayerPanel {
    * Attach event listeners to layer controls
    */
   attachEventListeners() {
-    // Use event delegation for all buttons
+    // Use event delegation for all clicks
     this.container.addEventListener("click", (e) => {
-      const target = e.target.closest("button");
-      if (!target) return;
+      // Check if clicking on visibility or lock buttons
+      const button = e.target.closest("button");
+      if (button) {
+        const layerId = button.dataset.layerId;
+        if (!layerId) return;
 
-      const layerId = target.dataset.layerId;
-      if (!layerId) return;
+        if (button.classList.contains("layer-visibility")) {
+          this.toggleVisibility(layerId);
+          return;
+        } else if (button.classList.contains("layer-lock")) {
+          this.toggleLock(layerId);
+          return;
+        }
+      }
 
-      if (target.classList.contains("layer-select")) {
-        this.setActiveLayer(layerId);
-      } else if (target.classList.contains("layer-visibility")) {
-        this.toggleVisibility(layerId);
-      } else if (target.classList.contains("layer-lock")) {
-        this.toggleLock(layerId);
+      // Otherwise, check if clicking on layer item or layer-select
+      const layerItem = e.target.closest(".layer-item");
+      if (layerItem) {
+        const layerId = layerItem.dataset.layerId;
+        if (layerId) {
+          this.setActiveLayer(layerId);
+        }
       }
     });
   }

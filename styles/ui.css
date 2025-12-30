@@ -133,6 +133,7 @@
     border: 1px solid var(--ui-border);
     background: var(--ui-bg);
     transition: all 0.2s;
+    cursor: pointer;
 }
 
 .layer-item.active {
@@ -151,17 +152,8 @@
     justify-content: space-between;
     padding: var(--spacing-xs) var(--spacing-sm);
     margin: 0;
-    text-align: left;
-    cursor: pointer;
-    background: transparent;
-    border: none;
     color: var(--ui-text);
     font-size: 12px;
-}
-
-.layer-select:hover {
-    background: transparent;
-    color: var(--ui-text);
 }
 
 .layer-name {

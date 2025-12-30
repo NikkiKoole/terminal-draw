@@ -46,29 +46,16 @@ describe("constants", () => {
 
   describe("GLYPHS", () => {
     it("should have all expected categories", () => {
-      expect(GLYPHS.ALPHANUMERIC_UPPER).toBeDefined();
-      expect(GLYPHS.ALPHANUMERIC_LOWER).toBeDefined();
-      expect(GLYPHS.NUMBERS).toBeDefined();
-      expect(GLYPHS.PUNCTUATION).toBeDefined();
-      expect(GLYPHS.DIACRITICS_UPPER).toBeDefined();
-      expect(GLYPHS.DIACRITICS_LOWER).toBeDefined();
-      expect(GLYPHS.GREEK_UPPER).toBeDefined();
-      expect(GLYPHS.GREEK_LOWER).toBeDefined();
-      expect(GLYPHS.CYRILLIC_UPPER).toBeDefined();
-      expect(GLYPHS.CYRILLIC_LOWER).toBeDefined();
-      expect(GLYPHS.CURRENCY).toBeDefined();
+      expect(GLYPHS.BASIC_TEXT).toBeDefined();
+      expect(GLYPHS.ACCENTED_LETTERS).toBeDefined();
+      expect(GLYPHS.GREEK_CYRILLIC).toBeDefined();
+      expect(GLYPHS.PUNCTUATION_CURRENCY).toBeDefined();
       expect(GLYPHS.MATH_OPERATORS).toBeDefined();
+      expect(GLYPHS.OTHERS).toBeDefined();
       expect(GLYPHS.ARROWS).toBeDefined();
-      expect(GLYPHS.SHAPES_CIRCLES).toBeDefined();
-      expect(GLYPHS.SHAPES_DIAMONDS).toBeDefined();
-      expect(GLYPHS.SHAPES_TRIANGLES).toBeDefined();
-      expect(GLYPHS.APL_SYMBOLS).toBeDefined();
-      expect(GLYPHS.MISC_SYMBOLS).toBeDefined();
-      expect(GLYPHS.DOUBLE_STRUCK).toBeDefined();
-      expect(GLYPHS.BLOCKS).toBeDefined();
-      expect(GLYPHS.BOX_ALL).toBeDefined();
-      expect(GLYPHS.POWERLINE).toBeDefined();
-      expect(GLYPHS.CONTROL_CODES).toBeDefined();
+      expect(GLYPHS.SHAPES_GEOMETRY).toBeDefined();
+      expect(GLYPHS.BOX_DRAWING).toBeDefined();
+      expect(GLYPHS.SPECIAL_SYMBOLS).toBeDefined();
     });
 
     it("should have name and chars for each category", () => {
@@ -80,17 +67,17 @@ describe("constants", () => {
     });
 
     it("should contain expected box drawing characters", () => {
-      expect(GLYPHS.BOX_ALL.chars).toContain("─");
-      expect(GLYPHS.BOX_ALL.chars).toContain("│");
-      expect(GLYPHS.BOX_ALL.chars).toContain("┌");
-      expect(GLYPHS.BOX_ALL.chars).toContain("┐");
+      expect(GLYPHS.BOX_DRAWING.chars).toContain("─");
+      expect(GLYPHS.BOX_DRAWING.chars).toContain("│");
+      expect(GLYPHS.BOX_DRAWING.chars).toContain("┌");
+      expect(GLYPHS.BOX_DRAWING.chars).toContain("┐");
     });
 
     it("should contain expected block characters", () => {
-      expect(GLYPHS.BLOCKS.chars).toContain("░");
-      expect(GLYPHS.BLOCKS.chars).toContain("▒");
-      expect(GLYPHS.BLOCKS.chars).toContain("▓");
-      expect(GLYPHS.BLOCKS.chars).toContain("█");
+      expect(GLYPHS.SHAPES_GEOMETRY.chars).toContain("░");
+      expect(GLYPHS.SHAPES_GEOMETRY.chars).toContain("▒");
+      expect(GLYPHS.SHAPES_GEOMETRY.chars).toContain("▓");
+      expect(GLYPHS.SHAPES_GEOMETRY.chars).toContain("█");
     });
 
     it("should contain expected arrow characters", () => {
@@ -108,22 +95,22 @@ describe("constants", () => {
 
     it("should contain glyphs from all categories", () => {
       expect(ALL_GLYPHS.length).toBeGreaterThan(0);
-      expect(ALL_GLYPHS).toContain("A"); // from ALPHANUMERIC_UPPER
-      expect(ALL_GLYPHS).toContain("─"); // from BOX_ALL
-      expect(ALL_GLYPHS).toContain("░"); // from BLOCKS
+      expect(ALL_GLYPHS).toContain("A"); // from BASIC_TEXT
+      expect(ALL_GLYPHS).toContain("─"); // from BOX_DRAWING
+      expect(ALL_GLYPHS).toContain("░"); // from SHAPES_GEOMETRY
       expect(ALL_GLYPHS).toContain("→"); // from ARROWS
     });
 
     it("should have many characters", () => {
-      // With 23 categories, we should have hundreds of characters
-      expect(ALL_GLYPHS.length).toBeGreaterThan(100);
+      // With 10 categories, we should have over a thousand characters
+      expect(ALL_GLYPHS.length).toBeGreaterThan(1000);
     });
   });
 
   describe("GLYPH_CATEGORIES", () => {
     it("should be an array of category objects", () => {
       expect(GLYPH_CATEGORIES).toBeInstanceOf(Array);
-      expect(GLYPH_CATEGORIES.length).toBe(23);
+      expect(GLYPH_CATEGORIES.length).toBe(10);
     });
 
     it("should have id, name, and chars for each category", () => {
@@ -134,9 +121,9 @@ describe("constants", () => {
       }
     });
 
-    it("should have ALPHANUMERIC_UPPER as first category", () => {
-      expect(GLYPH_CATEGORIES[0].id).toBe("ALPHANUMERIC_UPPER");
-      expect(GLYPH_CATEGORIES[0].name).toBe("Uppercase Letters");
+    it("should have BASIC_TEXT as first category", () => {
+      expect(GLYPH_CATEGORIES[0].id).toBe("BASIC_TEXT");
+      expect(GLYPH_CATEGORIES[0].name).toBe("Basic Text (A-Z, a-z, 0-9)");
     });
   });
 });

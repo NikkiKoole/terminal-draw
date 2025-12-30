@@ -1,0 +1,78 @@
+feat: UX improvements - glyph categories, layer panel, and palette indicators
+
+## Glyph Category Reorganization
+- Reduced from 24 fragmented categories to 10 balanced categories
+- Preserved all 1,318 glyphs (0 lost)
+- Removed hardcoded "COMMON" category from GlyphPicker
+- Updated category names for better clarity:
+  * BASIC_TEXT (88 chars) - A-Z, a-z, 0-9
+  * ACCENTED_LETTERS (316 chars) - International characters
+  * GREEK_CYRILLIC (197 chars) - Greek & Cyrillic alphabets
+  * PUNCTUATION_CURRENCY (72 chars) - Punctuation & currency
+  * MATH_OPERATORS (161 chars) - Mathematical symbols
+  * OTHERS (55 chars) - Emoji-like decorative symbols
+  * ARROWS (41 chars) - Directional arrows
+  * SHAPES_GEOMETRY (52 chars) - Shapes, geometry, and blocks
+  * BOX_DRAWING (128 chars) - Box-drawing characters
+  * SPECIAL_SYMBOLS (208 chars) - APL, programming, terminal
+
+## Layer Panel Enhancements
+- Made entire layer item clickable (not just text)
+- Added [L] keyboard shortcut to cycle through layers (fg → mid → bg)
+- Updated header to show "[L]ayers" to indicate shortcut availability
+- Improved event delegation for better click handling
+- Larger click target improves usability
+
+## Color Palette Improvements
+- Replaced colored borders with subtle corner triangles
+- FG indicator: semi-transparent white triangle in top-left corner
+- BG indicator: semi-transparent white triangle in bottom-right corner
+- Cleaner design with less visual clutter
+- Special handling for transparent swatch (darker indicators)
+- Works better with different color palettes
+
+## Keyboard Shortcuts
+All shortcuts now implemented:
+- [B] - Brush tool
+- [E] - Eraser tool
+- [P] - Picker tool
+- [L] - Cycle layers (new!)
+
+## Files Modified
+- src/core/constants.js - reorganized GLYPHS structure (24→10 categories)
+- src/ui/LayerPanel.js - clickable items, [L]ayers title
+- src/ui/GlyphPicker.js - removed COMMON category
+- src/app.js - added cycleLayer() and [L] shortcut
+- styles/main.css - corner triangle indicators for palette
+- styles/ui.css - layer item styling improvements
+- tests/constants.test.js - updated for 10 categories
+- README.md - updated to reflect 10 categories, 1,300+ glyphs, shortcuts
+- docs/GLYPH-CATEGORY-REORGANIZATION.md - new detailed documentation
+- docs/UX-IMPROVEMENTS.md - new detailed documentation
+- docs/STEP-9-PROGRESS.md - updated progress tracking
+- docs/IMPLEMENTATION-PLAN.md - updated with completed improvements
+
+## Testing
+✅ All 481 tests passing
+✅ Build successful
+✅ No regressions detected
+✅ All functionality tests passing
+
+## Benefits
+- Cleaner, less cluttered UI
+- Faster layer switching (keyboard + larger click targets)
+- Better organized glyph categories (easier to find characters)
+- More intuitive interactions (whole layer item clickable)
+- Improved accessibility (keyboard shortcuts for all main actions)
+- Better visual design (subtle indicators vs bright colored borders)
+
+## Step 9 Status
+Step 9 (Testing & Polish) is now ~97% complete:
+- ✅ Functionality tests complete
+- ✅ UX improvements complete
+- ✅ Keyboard shortcuts complete
+- ✅ Glyph reorganization complete
+- ✅ Visual polish complete (minor transparency swatch issue deferred)
+- ⏳ Performance validation pending
+
+Closes Step 9 UX improvement tasks.

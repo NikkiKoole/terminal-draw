@@ -6,6 +6,45 @@
 
 ---
 
+## 🎨 Recent Updates
+
+### UX Improvements (2024-12-30) ✅ COMPLETE
+
+**Glyph Category Reorganization:**
+- ✅ Reduced from 24 categories to 10 balanced categories
+- ✅ Preserved all 1,318 glyphs (0 lost)
+- ✅ Removed hardcoded "COMMON" category
+- ✅ Updated tests and documentation
+- ✅ All 481 tests passing
+
+**Layer Panel Enhancements:**
+- ✅ Made entire layer item clickable (not just text)
+- ✅ Added [L] keyboard shortcut to cycle through layers
+- ✅ Updated header to show "[L]ayers"
+- ✅ Improved click handling and event delegation
+
+**Color Palette Improvements:**
+- ✅ Replaced colored borders with subtle corner triangles
+- ✅ FG indicator: white triangle in top-left corner
+- ✅ BG indicator: white triangle in bottom-right corner
+- ✅ Less visual clutter, cleaner design
+- ✅ Special handling for transparent swatch
+
+**Files Modified:**
+- `src/core/constants.js` - Reorganized glyph categories
+- `src/ui/LayerPanel.js` - Made items clickable, added [L]ayers title
+- `src/ui/GlyphPicker.js` - Removed COMMON category
+- `src/app.js` - Added cycleLayer() and [L] keyboard shortcut
+- `styles/main.css` - New corner triangle indicators
+- `styles/ui.css` - Updated layer item styling
+- `tests/constants.test.js` - Updated for 10 categories
+- `docs/GLYPH-CATEGORY-REORGANIZATION.md` - New documentation
+- `docs/UX-IMPROVEMENTS.md` - New documentation
+
+**See:** [UX-IMPROVEMENTS.md](./UX-IMPROVEMENTS.md) and [GLYPH-CATEGORY-REORGANIZATION.md](./GLYPH-CATEGORY-REORGANIZATION.md)
+
+---
+
 ## 🎯 Goal
 
 Final testing, performance validation, visual polish, and optional enhancements to complete Milestone 1.
@@ -74,16 +113,17 @@ All manual tests have been performed and passed:
 - Dropzone appearance
 - Export button styling
 
-### Optional Enhancements (Not Started)
+### Optional Enhancements (Partially Complete)
 
-**Nice-to-Have Features:**
-- [ ] Keyboard shortcuts:
-  - B = Brush tool
-  - E = Eraser tool
-  - I = Picker tool
-  - [ / ] = Switch layers
-  - Ctrl+Z = Undo (future)
-  - Ctrl+C = Copy (future)
+**Keyboard Shortcuts:** ✅ COMPLETE
+- ✅ B = Brush tool
+- ✅ E = Eraser tool
+- ✅ P = Picker tool
+- ✅ L = Cycle layers (fg → mid → bg)
+- [ ] Ctrl+Z = Undo (future milestone)
+- [ ] Ctrl+C = Copy (future milestone)
+
+**Additional Features (Not Started):**
 - [ ] Clear canvas button
   - Confirmation dialog
   - Clear all layers or just active layer?
@@ -102,16 +142,18 @@ All manual tests have been performed and passed:
 ✅ Multi-layer compositing  
 ✅ Layer management (visibility, lock, active)  
 ✅ Color palette with 10 schemes  
-✅ Glyph picker with 23 categories (500+ characters)  
+✅ Glyph picker with 10 categories (1,300+ characters)  
 ✅ Clipboard export (text, ANSI, single layer)  
 ✅ Project save/load with drag-and-drop  
 ✅ All automated tests passing (481/481)  
 ✅ All manual functionality tests passing  
+✅ Keyboard shortcuts (B, E, P, L)  
+✅ UX improvements (clickable layers, cleaner palette indicators)  
 
 ### What's Left:
 ⏳ Performance validation  
 ⏳ Visual polish pass  
-⏳ Optional enhancements (keyboard shortcuts, etc.)  
+⏳ Optional enhancements (clear canvas, grid display)
 
 ---
 
@@ -165,9 +207,11 @@ Many "optional" features could be saved for future milestones:
 | Save Project | ✅ Pass | Downloads JSON correctly |
 | Load Project | ✅ Pass | Restores all state correctly |
 | Drag & Drop | ✅ Pass | File loading works |
+| Glyph Categories | ✅ Pass | Reorganized to 10 balanced categories |
+| Keyboard Shortcuts | ✅ Pass | B, E, P, L all working |
+| UX Improvements | ✅ Pass | Clickable layers, corner indicators |
 | Performance | ⏳ Pending | Need to test rapid drawing |
-| Visual Polish | ⏳ Pending | Need to review UI consistency |
-| Shortcuts | ⏳ Pending | Optional feature |
+| Visual Polish | ⏳ Pending | Minor transparency swatch issue |
 
 ---
 
@@ -205,8 +249,10 @@ Many "optional" features could be saved for future milestones:
 ✅ Layer visibility toggles work correctly  
 ✅ Layer compositing works correctly  
 ✅ Copy to clipboard produces correct output  
+✅ Keyboard shortcuts implemented (B, E, P, L)  
+✅ Glyph categories reorganized and balanced  
 ⏳ Performance is smooth (needs verification)  
-⏳ UI is polished (needs review)  
+⏳ UI is polished (needs minor fixes)
 
 **Almost there!** Just need to verify performance and do a visual polish pass.
 
@@ -214,18 +260,20 @@ Many "optional" features could be saved for future milestones:
 
 ## 📊 Progress Tracking
 
-**Milestone 1 Completion: ~95%**
+**Milestone 1 Completion: ~97%**
 
 - Core functionality: 100% ✅
 - Testing: 100% (automated), 100% (manual functionality) ✅
+- Glyph categories: 100% (reorganized to 10 balanced categories) ✅
+- Keyboard shortcuts: 100% (B, E, P, L implemented) ✅
+- UX improvements: 100% (clickable layers, corner indicators) ✅
 - Performance: 0% (not tested yet) ⏳
-- Polish: 50% (UI exists but needs consistency review) ⏳
-- Optional features: 0% (not started) ⏳
+- Polish: 80% (mostly complete, minor transparency swatch issue) ⏳
+- Optional features: 50% (keyboard shortcuts done, other features deferred) ✅
 
-**Estimated time to complete:** 30 minutes - 1 hour
+**Estimated time to complete:** 15-30 minutes
 - Performance check: 10-15 minutes
-- Visual polish: 20-30 minutes
-- Optional features: 30+ minutes (can be deferred)
+- Visual polish: 5-15 minutes (minor transparency swatch fix)
 
 ---
 

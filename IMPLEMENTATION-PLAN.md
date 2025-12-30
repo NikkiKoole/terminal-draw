@@ -388,20 +388,21 @@ class Tool {
 
 ---
 
-### Step 7: Copy to Clipboard (1 hour)
+### Step 7: Copy to Clipboard ✅ COMPLETE (1 hour)
 
-#### clipboard.js
-- [ ] `copyCompositedText(scene)` function:
-  - Loop through each row (0 to h-1)
-  - For each cell in row, use `Compositor.getVisibleCell(x, y, scene)`
-  - Build string: `row.map(cell => cell.ch).join('')`
-  - Join rows with `\n`
-  - Ensure each row is exactly `w` characters (include trailing spaces)
-  - Use `navigator.clipboard.writeText(text)` with fallback
-- [ ] Add "Copy" button to UI
-- [ ] Show success/error feedback
+#### ClipboardManager.js ✅ COMPLETE
+- [x] Export as plain text (uses Compositor.exportAsText)
+- [x] Export as ANSI with color codes (uses Compositor.exportAsANSI)
+- [x] Export single layer
+- [x] Clipboard API integration with error handling
+- [x] Event emission (export:success, export:error)
+- [x] Statistics tracking (character count, line count)
+- [x] Three export buttons in UI (Text, ANSI, Layer)
+- [x] Success/error feedback messages
+- [x] Auto-hide status after 3 seconds
+- [x] 34 comprehensive tests
 
-**Deliverable:** Copy button produces correct plain text output
+**Deliverable:** Full clipboard export functionality with multiple formats
 
 ---
 
@@ -537,8 +538,9 @@ class Tool {
 ### Step 5 Completed: 2024-12-30 (Tool System - 398 tests passing)
 ### Current Milestone: 1 (In Progress)
 ### Step 6 Completed: 2024-12-30 (UI Components - 398 tests passing)
-### Current Step: Step 7 - Copy to Clipboard (Next)
-### Next: Implement ClipboardManager for export functionality
+### Step 7 Completed: 2024-12-30 (Clipboard Export - 432 tests passing)
+### Current Step: Step 8 - Save/Load Projects (Next)
+### Next: Implement ProjectManager for JSON save/load functionality
 
 ### Step 1 Accomplishments:
 - ✅ Project structure with Vite dev server
@@ -663,6 +665,20 @@ class Tool {
 - ✅ Layer visibility/lock/active controls
 - ✅ Auto-updates when picker tool samples
 - ✅ Total: 398 tests passing (all tests updated)
+
+### Step 7 Progress (100% Complete):
+- ✅ ClipboardManager.js - Clipboard export management
+- ✅ Export as plain text (all visible layers composited)
+- ✅ Export as ANSI with color codes for terminals
+- ✅ Export single layer
+- ✅ Clipboard API integration with error handling
+- ✅ Event emission (export:success, export:error)
+- ✅ Three export buttons in sidebar UI
+- ✅ Success/error status messages with auto-hide
+- ✅ Character and line count display
+- ✅ 34 comprehensive tests for ClipboardManager
+- ✅ Layer visibility respected during export
+- ✅ Total: 432 tests passing (34 new tests)
 
 ### Step 4 Archived Progress:
 **Completed:**

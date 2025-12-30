@@ -15,6 +15,7 @@ import { EraserTool } from "./tools/EraserTool.js";
 import { PickerTool } from "./tools/PickerTool.js";
 import { LayerPanel } from "./ui/LayerPanel.js";
 import { GlyphPicker } from "./ui/GlyphPicker.js";
+import { ClipboardManager } from "./export/ClipboardManager.js";
 
 // =============================================================================
 // Configuration & State
@@ -41,6 +42,7 @@ let currentTool = null;
 // UI Components
 let layerPanel = null;
 let glyphPicker = null;
+let clipboardManager = null;
 
 // Color selection state
 let selectedFg = 7;
@@ -502,6 +504,75 @@ function initGlyphPicker() {
 }
 
 /**
+ * Initialize clipboard export functionality
+ */
+function initClipboard() {
+  clipboardManager = new ClipboardManager(scene, stateManager);
+
+  const exportTextBtn = document.getElementById("export-text");
+  const exportAnsiBtn = document.getElementById("export-ansi");
+  const exportLayerBtn = document.getElementById("export-layer");
+  const exportStatus = document.getElementById("export-status");
+
+  // Copy as plain text
+  if (exportTextBtn) {
+    exportTextBtn.addEventListener("click", async () => {
+      const result = await clipboardManager.copyPlainText();
+      showExportStatus(result, exportStatus);
+    });
+  }
+
+  // Copy as ANSI
+  if (exportAnsiBtn) {
+    exportAnsiBtn.addEventListener("click", async () => {
+      const result = await clipboardManager.copyAnsi();
+      showExportStatus(result, exportStatus);
+    });
+  }
+
+  // Copy current layer only
+  if (exportLayerBtn) {
+    exportLayerBtn.addEventListener("click", async () => {
+      const layerId = scene.activeLayerId;
+      const result = await clipboardManager.copyLayerText(layerId);
+      showExportStatus(result, exportStatus, layerId);
+    });
+  }
+
+  // Listen to export events for additional feedback
+  stateManager.on("export:success", (data) => {
+    console.log("Export successful:", data);
+  });
+
+  stateManager.on("export:error", (data) => {
+    console.error("Export failed:", data.error);
+  });
+}
+
+/**
+ * Show export status message
+ */
+function showExportStatus(result, statusElement, layerId = null) {
+  if (!statusElement) return;
+
+  statusElement.classList.remove("hidden", "error");
+
+  if (result.success) {
+    const format = layerId ? `Layer ${layerId.toUpperCase()}` : "Artwork";
+    statusElement.textContent = `✅ Copied ${format}! (${result.charCount} chars, ${result.lineCount} lines)`;
+    statusElement.classList.remove("error");
+  } else {
+    statusElement.textContent = `❌ Error: ${result.error}`;
+    statusElement.classList.add("error");
+  }
+
+  // Hide after 3 seconds
+  setTimeout(() => {
+    statusElement.classList.add("hidden");
+  }, 3000);
+}
+
+/**
  * Initialize all UI controls and apply defaults
  */
 function init() {
@@ -511,6 +582,7 @@ function init() {
   initLayerPanel();
   initInteractivePalette();
   initGlyphPicker();
+  initClipboard();
   initScaleControls();
   initPaletteSelector();
 }

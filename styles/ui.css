@@ -473,6 +473,70 @@
 }
 
 /* ============================================
+   Export Buttons
+   ============================================ */
+
+.export-btn {
+    width: 100%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    margin-bottom: var(--spacing-sm);
+    background: var(--ui-accent);
+    border: 1px solid var(--ui-accent);
+    border-radius: var(--radius-sm);
+    color: white;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-xs);
+}
+
+.export-btn:hover {
+    background: rgba(0, 122, 204, 0.8);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 122, 204, 0.3);
+}
+
+.export-btn:active {
+    transform: translateY(0);
+}
+
+.export-status {
+    padding: var(--spacing-sm);
+    background: rgba(0, 200, 0, 0.1);
+    border: 1px solid rgba(0, 200, 0, 0.3);
+    border-radius: var(--radius-sm);
+    color: var(--ui-text);
+    font-size: 12px;
+    text-align: center;
+    margin-top: var(--spacing-sm);
+    animation: fadeIn 0.3s ease;
+}
+
+.export-status.hidden {
+    display: none;
+}
+
+.export-status.error {
+    background: rgba(200, 0, 0, 0.1);
+    border-color: rgba(200, 0, 0, 0.3);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ============================================
    Status Bar
    ============================================ */
 

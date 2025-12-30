@@ -1,9 +1,9 @@
 # Handoff Document - Next Session
 
 **Date:** 2024-12-30  
-**Current State:** Step 6 Complete  
-**Next Step:** Step 7 - Copy to Clipboard  
-**Tests Passing:** 398/398 (100%)
+**Current State:** Step 7 Complete  
+**Next Step:** Step 8 - Save/Load Projects  
+**Tests Passing:** 432/432 (100%)
 
 ---
 
@@ -55,6 +55,17 @@
 - Full UI integration in app.js
 - 23 comprehensive glyph categories (500+ characters)
 
+### Step 7: Copy to Clipboard ✅
+- **ClipboardManager.js** (34 tests) - Clipboard export management
+- Export as plain text (all visible layers composited)
+- Export as ANSI with color codes for terminals
+- Export single layer only
+- Clipboard API integration with error handling
+- Three export buttons in sidebar (Text, ANSI, Layer)
+- Success/error status messages with auto-hide
+- Character and line count display
+- Event emission (export:success, export:error)
+
 ---
 
 ## 🎯 Current Functionality
@@ -69,9 +80,11 @@
 - **Color palette:** Left-click for foreground, right-click for background
 - **Character picker:** Modal with 23 categories (A-Z, Greek, Cyrillic, Math, Arrows, Blocks, Box Drawing, etc.)
 - **Layer panel:** Toggle visibility 👁️, lock 🔒, and active layer selection
+- **Export buttons:** 📋 Copy as Text, 🎨 Copy as ANSI, 📄 Copy Layer Only
 - Click/drag to draw with brush tool
 - Switch to eraser to clear cells
 - Use picker to sample cell colors/characters
+- Export artwork to clipboard in multiple formats
 - Status bar shows: "Tool: [name] • Layer: [id] • Scale: [%]"
 - Zoom controls work (10%-1000%)
 - Palette selector switches between 10 color schemes
@@ -89,69 +102,98 @@
 
 ---
 
-## 🚀 Next Step: Step 7 - Copy to Clipboard
+## 🚀 Next Step: Step 8 - Save/Load Projects
 
-**Goal:** Enable users to export their artwork to clipboard as plain text or ANSI
+**Goal:** Persist entire projects as JSON files for later editing
 
 **Files to Create:**
-1. `src/export/ClipboardManager.js` - Main clipboard integration
-2. `tests/ClipboardManager.test.js` - Tests for clipboard operations
+1. `src/io/ProjectManager.js` - Save/load JSON files
+2. `tests/ProjectManager.test.js` - Tests for save/load operations
 
 **Core Requirements:**
 
-### Export Formats:
-1. **Plain Text** - Composite all visible layers, no color codes
-2. **ANSI** - Include ANSI color escape codes for terminal display
-3. **Single Layer** - Export only the active layer
+### Save Format:
+1. **JSON Structure** - Complete scene state including:
+   - Scene dimensions (width, height)
+   - Palette ID
+   - All layers with full cell data
+   - Layer states (visible, locked)
+   - Active layer ID
+   - Metadata (version, timestamp, name)
 
-### ClipboardManager Class:
+### ProjectManager Class:
 ```javascript
-class ClipboardManager {
-  constructor(scene, compositor, stateManager)
+class ProjectManager {
+  constructor(scene, stateManager)
   
   // Export Methods
-  exportPlainText() → string
-  exportAnsi() → string
-  exportLayer(layerId) → string
+  exportToJSON() → object
+  serializeScene() → string (JSON string)
   
-  // Clipboard Methods
-  copyToClipboard(text) → Promise
+  // Import Methods
+  importFromJSON(json) → Scene
+  parseProject(jsonString) → object
+  
+  // File Operations
+  saveToFile(filename) → downloads JSON file
+  loadFromFile(file) → Promise<Scene>
   
   // Event Emission
-  emit('export:success', { format, charCount })
-  emit('export:error', { error })
+  emit('project:saved', { filename, size })
+  emit('project:loaded', { filename, scene })
+  emit('project:error', { error })
 }
 ```
 
 ### UI Integration:
-- Add "Export" section to sidebar
-- Button: "Copy as Text" → plain text to clipboard
-- Button: "Copy as ANSI" → ANSI codes to clipboard
-- Button: "Copy Layer" → current layer only
+- Add "Project" section to sidebar
+- Button: "💾 Save Project" → download JSON file
+- Button: "📂 Load Project" → file picker
 - Show success/error notifications
-- Display character count after export
+- Display project name/stats
+- Confirm before loading (warns about losing unsaved work)
 
-### Compositor Integration:
-The `Compositor.js` class already has:
-- `compositeToText(scene)` - Returns plain text with newlines
-- `compositeToAnsi(scene, palette)` - Returns ANSI color codes
-- Both methods respect layer visibility
+### JSON Format:
+```json
+{
+  "version": "1.0",
+  "name": "My Artwork",
+  "timestamp": "2024-12-30T...",
+  "scene": {
+    "width": 80,
+    "height": 25,
+    "paletteId": "default",
+    "activeLayerId": "mid",
+    "layers": [
+      {
+        "id": "bg",
+        "name": "Background",
+        "visible": true,
+        "locked": false,
+        "cells": [...] // Cell objects
+      }
+    ]
+  }
+}
+```
 
 **Implementation Strategy:**
-1. Create ClipboardManager with scene and compositor references
-2. Use existing Compositor methods for text generation
-3. Use Clipboard API (`navigator.clipboard.writeText()`)
-4. Add export buttons to sidebar
-5. Show toast notifications for success/error
-6. Update status bar with export statistics
+1. Create ProjectManager with scene and state manager
+2. Use Scene.toObject() for serialization (already exists!)
+3. Use Scene.fromObject() for deserialization (need to create)
+4. Use File API for download (create Blob, download link)
+5. Use FileReader API for upload
+6. Add project buttons to sidebar
+7. Show notifications for success/error
 
 **Testing Strategy:**
-- Mock Clipboard API in tests
-- Verify text format correctness
-- Test ANSI escape code generation
-- Test layer filtering
-- Test error handling
-- Integration test with Scene → Compositor → Clipboard
+- Test JSON serialization/deserialization
+- Test round-trip (save → load → same state)
+- Test file generation (Blob creation)
+- Test file reading (FileReader mock)
+- Test error handling (invalid JSON, wrong version)
+- Test layer preservation (all properties)
+- Integration test with complete Scene
 
 ---
 
@@ -206,7 +248,8 @@ terminal-draw/
 │   ├── input/                 # HitTestOverlay ✅
 │   ├── tools/                 # Tool, BrushTool, EraserTool, PickerTool ✅
 │   ├── ui/                    # LayerPanel, GlyphPicker ✅
-│   └── export/                # ClipboardManager (Step 7)
+│   ├── export/                # ClipboardManager ✅
+│   └── io/                    # ProjectManager (Step 8)
 ├── tests/                     # All test files (398 tests)
 ├── styles/                    # CSS (main.css, grid.css, ui.css)
 └── index.html                 # Entry point
@@ -238,6 +281,10 @@ terminal-draw/
    - Works in dev server (localhost:5173)
    - Will need HTTPS in production
 
+8. **File API:** Browser downloads work everywhere
+   - FileReader API for loading files
+   - Blob + URL.createObjectURL for saving
+
 ---
 
 ## 💡 Key Insights
@@ -255,30 +302,44 @@ terminal-draw/
 
 ---
 
-## 📝 Important Files for Step 7
+## 📝 Important Files for Step 8
 
 **Reference these:**
-- `src/rendering/Compositor.js` - Already has compositeToText() and compositeToAnsi()
-- `src/core/Scene.js` - How to access layers and dimensions
+- `src/core/Scene.js` - Has toObject() method for serialization
+- `src/core/Layer.js` - Has toObject() method for serialization
+- `src/core/Cell.js` - Has toObject() method for serialization
 - `src/core/StateManager.js` - How to emit/listen to events
 - `src/app.js` - How to integrate new components
-- `src/palettes.json` - Palette data for ANSI color codes
-- `tests/Compositor.test.js` - Existing export logic tests
+- `tests/Scene.test.js` - Tests for Scene serialization
 
 **UI Patterns:**
+- `src/export/ClipboardManager.js` - Export/import pattern
 - `src/ui/LayerPanel.js` - Event handling pattern
-- `src/ui/GlyphPicker.js` - Modal and trigger button pattern
 - `styles/ui.css` - Existing UI styles for consistency
 
-**Clipboard API Example:**
+**File Download Example:**
 ```javascript
-async function copyToClipboard(text) {
-  try {
-    await navigator.clipboard.writeText(text);
-    return { success: true };
-  } catch (err) {
-    return { success: false, error: err.message };
-  }
+function downloadJSON(data, filename) {
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+```
+
+**File Upload Example:**
+```javascript
+async function loadJSON(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => resolve(JSON.parse(e.target.result));
+    reader.onerror = (e) => reject(e);
+    reader.readAsText(file);
+  });
 }
 ```
 
@@ -298,50 +359,49 @@ async function copyToClipboard(text) {
 
 ---
 
-## 🎯 Session Goals for Step 7
+## 🎯 Session Goals for Step 8
 
-1. Create ClipboardManager class with export methods
-2. Integrate Clipboard API for copy operations
-3. Add export buttons to sidebar UI
-4. Implement success/error notifications (toast or status bar)
-5. Write comprehensive tests (~20-30 tests)
-6. Handle browser compatibility (fallback for older browsers)
-7. Add character count display after export
-8. Test with actual artwork export
-9. Verify ANSI codes display correctly in terminal
-10. Update documentation
+1. Create ProjectManager class with save/load methods
+2. Implement JSON serialization (use existing Scene.toObject())
+3. Create Scene.fromObject() for deserialization
+4. Add file download functionality (Blob + URL.createObjectURL)
+5. Add file upload functionality (FileReader API)
+6. Add project buttons to sidebar UI
+7. Implement success/error notifications
+8. Write comprehensive tests (~25-35 tests)
+9. Test round-trip (save → load → verify same state)
+10. Handle errors (invalid JSON, version mismatch)
+11. Update documentation
 
 **Estimated Time:** 1-2 hours
 
 **Success Criteria:**
-- Can export plain text to clipboard
-- Can export ANSI with colors to clipboard
-- Can export single layer to clipboard
+- Can save project as JSON file
+- Can load project from JSON file
+- All scene state preserved (layers, colors, visibility, lock)
 - Success/error feedback shown to user
-- Character count displayed
-- All tests passing (~418-428 total tests)
-- ANSI output displays correctly when pasted in terminal
+- File name handling
+- All tests passing (~457-467 total tests)
+- Round-trip test passes (save → load → identical state)
 
 ---
 
-## 🎨 Proposed Export UI
+## 🎨 Proposed Project UI
 
-Add to sidebar after Layers section:
+Add to sidebar after Export section:
 
 ```html
 <div class="sidebar-section">
-  <h3>Export</h3>
-  <button id="export-text" class="export-btn">
-    📋 Copy as Text
+  <h3>Project</h3>
+  <button id="save-project" class="project-btn">
+    💾 Save Project
   </button>
-  <button id="export-ansi" class="export-btn">
-    🎨 Copy as ANSI
+  <button id="load-project" class="project-btn">
+    📂 Load Project
   </button>
-  <button id="export-layer" class="export-btn">
-    📄 Copy Layer Only
-  </button>
-  <div id="export-status" class="export-status hidden">
-    ✅ Copied 1234 characters!
+  <input type="file" id="file-input" accept=".json" style="display: none;">
+  <div id="project-status" class="project-status hidden">
+    ✅ Project saved!
   </div>
 </div>
 ```
@@ -352,7 +412,7 @@ Add to sidebar after Layers section:
 
 - `IMPLEMENTATION-PLAN.md` - Full 9-step roadmap
 - `SESSION-NOTES.md` - Current state summary
-- `STEP-6-COMPLETION.md` - Details of what was just completed
+- `STEP-7-COMPLETION.md` - Details of what was just completed
 - `design-document.md` - Original design specification
 - `README.md` - Quick start guide
 
@@ -360,7 +420,7 @@ Add to sidebar after Layers section:
 
 ## 🎉 Progress Tracking
 
-**Steps Completed:** 6/9 (67%)
+**Steps Completed:** 7/9 (78%)
 
 - ✅ Step 1: Project Setup
 - ✅ Step 2: Core Data Models
@@ -368,10 +428,10 @@ Add to sidebar after Layers section:
 - ✅ Step 4: Hit Test Overlay
 - ✅ Step 5: Tool System
 - ✅ Step 6: Basic UI
-- ⏭️ Step 7: Copy to Clipboard (NEXT)
-- 🔜 Step 8: Save/Load Projects
+- ✅ Step 7: Copy to Clipboard
+- ⏭️ Step 8: Save/Load Projects (NEXT)
 - 🔜 Step 9: Advanced Tools & Polish
 
-**Ready to implement clipboard export!** 📋✨
+**Ready to implement project save/load!** 💾✨
 
-The hard work is already done - Compositor has the export logic. Step 7 is mostly about wiring up the Clipboard API and adding nice UI feedback. After this, users will be able to create ASCII art and immediately share it!
+The serialization logic already exists - Scene.toObject() and Layer.toObject() are ready to use. Step 8 is about wiring up the File API for downloads/uploads and creating the deserialization logic. After this, users will be able to save their work and continue editing later!

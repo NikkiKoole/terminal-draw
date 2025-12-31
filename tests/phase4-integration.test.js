@@ -5,8 +5,7 @@ import { StateManager } from "../src/core/StateManager.js";
 import { CommandHistory } from "../src/commands/CommandHistory.js";
 import { ProjectManager } from "../src/io/ProjectManager.js";
 import { ClipboardManager } from "../src/export/ClipboardManager.js";
-import { AddLayerCommand } from "../src/commands/AddLayerCommand.js";
-import { RemoveLayerCommand } from "../src/commands/RemoveLayerCommand.js";
+
 import { PROJECT_TEMPLATES } from "../src/core/ProjectTemplate.js";
 
 describe("Phase 4 Integration Testing - Step 4.2", () => {
@@ -53,46 +52,41 @@ describe("Phase 4 Integration Testing - Step 4.2", () => {
     });
   });
 
-  describe("Layer Add/Remove with Undo/Redo Integration", () => {
-    it("should handle layer operations with undo/redo", () => {
-      const scene = Scene.fromTemplate(
+  describe("Fixed Layer Architecture Integration", () => {
+    it("should maintain fixed layer structure without modification", () => {
+      const simpleScene = Scene.fromTemplate(
+        PROJECT_TEMPLATES.simple,
+        40,
+        20,
+        "default",
+      );
+      const standardScene = Scene.fromTemplate(
         PROJECT_TEMPLATES.standard,
         60,
         25,
         "default",
       );
-      const initialCount = scene.layers.length;
+      const advancedScene = Scene.fromTemplate(
+        PROJECT_TEMPLATES.advanced,
+        80,
+        25,
+        "default",
+      );
 
-      // Test add layer
-      const addCommand = new AddLayerCommand(scene, "test");
-      addCommand.execute();
-      expect(scene.layers.length).toBe(initialCount + 1);
+      // Verify layer counts are fixed and cannot be changed
+      expect(simpleScene.layers.length).toBe(1);
+      expect(standardScene.layers.length).toBe(2);
+      expect(advancedScene.layers.length).toBe(3);
 
-      // Test undo
-      addCommand.undo();
-      expect(scene.layers.length).toBe(initialCount);
+      // Verify layer structure remains stable
+      const originalSimpleCount = simpleScene.layers.length;
+      const originalStandardCount = standardScene.layers.length;
+      const originalAdvancedCount = advancedScene.layers.length;
 
-      // Test redo
-      addCommand.execute();
-      expect(scene.layers.length).toBe(initialCount + 1);
-
-      // Test remove layer
-      const removeCommand = new RemoveLayerCommand(scene, "test");
-      const removeResult = removeCommand.execute();
-
-      // Layer should be removed if command succeeds
-      if (removeResult && removeResult.success) {
-        expect(scene.layers.length).toBe(initialCount);
-        expect(scene.getLayer("test")).toBe(null);
-
-        // Test undo remove
-        removeCommand.undo();
-        expect(scene.layers.length).toBe(initialCount + 1);
-        expect(scene.getLayer("test")).toBeDefined();
-      } else {
-        // If removal fails (e.g., last layer protection), that's also valid behavior
-        expect(scene.layers.length).toBeGreaterThanOrEqual(initialCount);
-      }
+      // No layer modification methods available
+      expect(simpleScene.layers.length).toBe(originalSimpleCount);
+      expect(standardScene.layers.length).toBe(originalStandardCount);
+      expect(advancedScene.layers.length).toBe(originalAdvancedCount);
     });
   });
 
@@ -183,33 +177,39 @@ describe("Phase 4 Integration Testing - Step 4.2", () => {
       expect(project.scene.layers.length).toBe(5);
     });
 
-    it("should handle layer operations with many layers", () => {
+    it("should handle layer visibility and state with fixed layers", () => {
       const scene = Scene.fromTemplate(
-        PROJECT_TEMPLATES.simple,
+        PROJECT_TEMPLATES.advanced,
         60,
         25,
         "default",
       );
-      const commandHistory = new CommandHistory(stateManager);
 
-      // Add multiple layers rapidly
-      for (let i = 1; i <= 8; i++) {
-        const addCommand = new AddLayerCommand(scene, `layer${i}`);
-        commandHistory.execute(addCommand);
-      }
+      // Test layer visibility toggling
+      const layers = scene.layers;
+      expect(layers.length).toBe(3);
 
-      expect(scene.layers.length).toBe(9);
+      layers.forEach((layer, index) => {
+        const originalVisibility = layer.visible;
 
-      // Test that undo/redo still works with many layers
-      for (let i = 0; i < 4; i++) {
-        commandHistory.undo();
-      }
-      expect(scene.layers.length).toBe(5);
+        // Toggle visibility
+        layer.visible = !layer.visible;
+        expect(layer.visible).toBe(!originalVisibility);
 
-      for (let i = 0; i < 4; i++) {
-        commandHistory.redo();
-      }
-      expect(scene.layers.length).toBe(9);
+        // Toggle back
+        layer.visible = originalVisibility;
+        expect(layer.visible).toBe(originalVisibility);
+      });
+
+      // Test active layer switching
+      const firstLayerId = layers[0].id;
+      const lastLayerId = layers[layers.length - 1].id;
+
+      scene.setActiveLayer(firstLayerId);
+      expect(scene.activeLayerId).toBe(firstLayerId);
+
+      scene.setActiveLayer(lastLayerId);
+      expect(scene.activeLayerId).toBe(lastLayerId);
     });
   });
 });

@@ -29,9 +29,7 @@ import { ClearCommand } from "./commands/ClearCommand.js";
 import { GridResizer } from "./core/GridResizer.js";
 import { StartupDialog } from "./ui/StartupDialog.js";
 import { PROJECT_TEMPLATES, getTemplate } from "./core/ProjectTemplate.js";
-import { AddLayerCommand } from "./commands/AddLayerCommand.js";
-import { RemoveLayerCommand } from "./commands/RemoveLayerCommand.js";
-import { ReorderLayersCommand } from "./commands/ReorderLayersCommand.js";
+
 import { addBorderToScene, isValidBorderStyle } from "./core/BorderUtils.js";
 
 // =============================================================================
@@ -591,7 +589,7 @@ function initLayerPanel() {
     return;
   }
 
-  layerPanel = new LayerPanel(container, scene, stateManager, commandHistory);
+  layerPanel = new LayerPanel(container, scene, stateManager);
 
   // Listen to layer active changes to update status
   stateManager.on("layer:active", (data) => {
@@ -1139,7 +1137,6 @@ function initUIComponents() {
   initTools();
   initKeyboardShortcuts();
   initLayerPanel();
-  updateLayerPanelCommandHistory();
   initInteractivePalette();
   initGlyphPicker();
   initClipboard();
@@ -1382,7 +1379,7 @@ function initCommandHistory() {
   });
 
   stateManager.on("history:merged", (data) => {
-    console.log("Commands merged:", data.command.description);
+    // Commands merged - could add UI feedback here if needed
   });
 }
 
@@ -1425,11 +1422,6 @@ function initUndoRedoButtons() {
 /**
  * Update layer panel with command history reference
  */
-function updateLayerPanelCommandHistory() {
-  if (layerPanel && commandHistory) {
-    layerPanel.setCommandHistory(commandHistory);
-  }
-}
 
 function updateUndoRedoButtons() {
   const undoBtn = document.getElementById("undo-btn");

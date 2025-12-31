@@ -19,6 +19,9 @@ import { GlyphPicker } from "./ui/GlyphPicker.js";
 import { ClipboardManager } from "./export/ClipboardManager.js";
 import { ProjectManager } from "./io/ProjectManager.js";
 import { CommandHistory } from "./commands/CommandHistory.js";
+import { ResizeCommand } from "./commands/ResizeCommand.js";
+import { ClearCommand } from "./commands/ClearCommand.js";
+import { GridResizer } from "./core/GridResizer.js";
 
 // =============================================================================
 // Configuration & State
@@ -911,6 +914,8 @@ function init() {
   initClipboard();
   initProject();
   initIOPanel();
+  initGridResize();
+  initClearOperations();
   initScaleControls();
   initPaletteSelector();
 }
@@ -1177,6 +1182,263 @@ function updateUndoRedoButtons() {
       redoBtn.title = "Redo (Ctrl+Y)";
     }
   }
+}
+
+/**
+ * Initialize grid resize functionality
+ */
+function initGridResize() {
+  const resizeGridBtn = document.getElementById("resize-grid");
+  const resizeModal = document.getElementById("resize-modal");
+  const resizeModalClose = document.getElementById("resize-modal-close");
+  const resizeCancel = document.getElementById("resize-cancel");
+  const resizeApply = document.getElementById("resize-apply");
+  const widthInput = document.getElementById("resize-width");
+  const heightInput = document.getElementById("resize-height");
+  const currentDimensions = document.getElementById("current-dimensions");
+  const previewText = document.getElementById("resize-preview-text");
+  const warningText = document.getElementById("resize-warning");
+  const memoryInfo = document.getElementById("memory-impact");
+
+  if (!resizeGridBtn || !resizeModal) return;
+
+  // Open resize modal
+  resizeGridBtn.addEventListener("click", () => {
+    updateCurrentDimensions();
+    updateResizePreview();
+    resizeModal.classList.remove("hidden");
+    widthInput.focus();
+  });
+
+  // Close modal handlers
+  const closeModal = () => {
+    resizeModal.classList.add("hidden");
+  };
+
+  resizeModalClose.addEventListener("click", closeModal);
+  resizeCancel.addEventListener("click", closeModal);
+
+  // Close on backdrop click
+  resizeModal
+    .querySelector(".modal-backdrop")
+    .addEventListener("click", closeModal);
+
+  // Close on Escape key
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !resizeModal.classList.contains("hidden")) {
+      closeModal();
+    }
+  });
+
+  // Update preview when inputs change
+  const updatePreview = () => updateResizePreview();
+  widthInput.addEventListener("input", updatePreview);
+  heightInput.addEventListener("input", updatePreview);
+
+  // Update preview when strategy changes
+  document
+    .querySelectorAll('input[name="resize-strategy"]')
+    .forEach((radio) => {
+      radio.addEventListener("change", updatePreview);
+    });
+
+  // Apply resize
+  resizeApply.addEventListener("click", () => {
+    applyGridResize();
+  });
+
+  function updateCurrentDimensions() {
+    if (scene && currentDimensions) {
+      currentDimensions.textContent = `${scene.w}×${scene.h}`;
+      widthInput.value = scene.w;
+      heightInput.value = scene.h;
+    }
+  }
+
+  function updateResizePreview() {
+    if (!scene || !widthInput || !heightInput) return;
+
+    const newWidth = parseInt(widthInput.value) || 0;
+    const newHeight = parseInt(heightInput.value) || 0;
+    const strategy =
+      document.querySelector('input[name="resize-strategy"]:checked')?.value ||
+      "pad";
+
+    // Validate dimensions
+    const validation = ResizeCommand.validateResize(scene, newWidth, newHeight);
+    const preview = GridResizer.getResizePreview(
+      scene.w,
+      scene.h,
+      newWidth,
+      newHeight,
+      strategy,
+    );
+
+    // Update preview text
+    previewText.textContent = preview.description;
+
+    // Show/hide warning
+    if (preview.warning) {
+      warningText.textContent = `⚠️ ${preview.warning}`;
+      warningText.classList.remove("hidden");
+    } else {
+      warningText.classList.add("hidden");
+    }
+
+    // Update memory info
+    const memoryMB = (preview.memoryImpact.newMemory / (1024 * 1024)).toFixed(
+      2,
+    );
+    const deltaKB = (preview.memoryImpact.memoryDelta / 1024).toFixed(1);
+    const deltaSign = preview.memoryImpact.memoryDelta >= 0 ? "+" : "";
+    memoryInfo.textContent = `Memory: ${memoryMB} MB (${deltaSign}${deltaKB} KB)`;
+
+    // Enable/disable apply button
+    resizeApply.disabled = !validation.valid;
+
+    if (!validation.valid && validation.errors.length > 0) {
+      previewText.textContent = validation.errors[0];
+      previewText.style.color = "rgba(220, 38, 127, 0.9)";
+    } else {
+      previewText.style.color = "";
+    }
+  }
+
+  function applyGridResize() {
+    if (!scene || !commandHistory) return;
+
+    const newWidth = parseInt(widthInput.value);
+    const newHeight = parseInt(heightInput.value);
+    const strategy =
+      document.querySelector('input[name="resize-strategy"]:checked')?.value ||
+      "pad";
+
+    try {
+      const resizeCommand = ResizeCommand.create({
+        scene: scene,
+        newWidth: newWidth,
+        newHeight: newHeight,
+        strategy: strategy,
+        stateManager: stateManager,
+      });
+
+      // Execute the command through command history
+      commandHistory.execute(resizeCommand);
+
+      // Show success message
+      showGridStatus("Grid resized successfully!");
+
+      // Close modal
+      resizeModal.classList.add("hidden");
+
+      // Trigger re-render
+      renderScene();
+    } catch (error) {
+      console.error("Failed to resize grid:", error);
+      showGridStatus("Failed to resize grid: " + error.message, true);
+    }
+  }
+}
+
+/**
+ * Initialize clear operations functionality
+ */
+function initClearOperations() {
+  const clearGridBtn = document.getElementById("clear-grid");
+  const clearLayerBtn = document.getElementById("clear-layer");
+
+  if (!clearGridBtn || !clearLayerBtn) return;
+
+  // Clear entire grid
+  clearGridBtn.addEventListener("click", () => {
+    showClearConfirmation(
+      "Clear Grid",
+      "This will clear all layers and remove all content. This action can be undone.",
+      () => {
+        try {
+          const clearCommand = ClearCommand.clearAll({
+            scene: scene,
+            stateManager: stateManager,
+          });
+
+          commandHistory.execute(clearCommand);
+          showGridStatus(
+            `Cleared ${clearCommand.getAffectedCellCount()} cells from all layers`,
+          );
+        } catch (error) {
+          console.error("Failed to clear grid:", error);
+          showGridStatus("Failed to clear grid: " + error.message, true);
+        }
+      },
+    );
+  });
+
+  // Clear active layer
+  clearLayerBtn.addEventListener("click", () => {
+    const activeLayer = scene.getActiveLayer();
+    if (!activeLayer) {
+      showGridStatus("No active layer selected", true);
+      return;
+    }
+
+    // Count non-empty cells for confirmation
+    const stats = activeLayer.getStats();
+    const nonEmptyCount = stats.nonEmptyCount;
+
+    showClearConfirmation(
+      "Clear Layer",
+      `This will clear ${nonEmptyCount} cells from layer "${activeLayer.name}". This action can be undone.`,
+      () => {
+        try {
+          const clearCommand = ClearCommand.clearLayer({
+            scene: scene,
+            layer: activeLayer,
+            stateManager: stateManager,
+          });
+
+          commandHistory.execute(clearCommand);
+          showGridStatus(
+            `Cleared ${clearCommand.getAffectedCellCount()} cells from layer "${activeLayer.name}"`,
+          );
+        } catch (error) {
+          console.error("Failed to clear layer:", error);
+          showGridStatus("Failed to clear layer: " + error.message, true);
+        }
+      },
+    );
+  });
+}
+
+/**
+ * Show confirmation dialog for clear operations
+ */
+function showClearConfirmation(title, message, onConfirm) {
+  const confirmed = window.confirm(`${title}\n\n${message}\n\nContinue?`);
+  if (confirmed) {
+    onConfirm();
+  }
+}
+
+/**
+ * Show grid status message
+ */
+function showGridStatus(message, isError = false) {
+  const status = document.getElementById("grid-status");
+  if (!status) return;
+
+  status.textContent = message;
+  status.classList.remove("hidden");
+
+  if (isError) {
+    status.classList.add("error");
+  } else {
+    status.classList.remove("error");
+  }
+
+  // Auto-hide after 3 seconds
+  setTimeout(() => {
+    status.classList.add("hidden");
+  }, 3000);
 }
 
 // =============================================================================

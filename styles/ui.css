@@ -561,6 +561,51 @@
     transform: translateY(0);
 }
 
+/* ============================================
+   I/O Panel Buttons
+   ============================================ */
+
+.io-btn {
+    width: 100%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    margin-bottom: var(--spacing-sm);
+    background: var(--ui-bg);
+    border: 1px solid var(--ui-border);
+    border-radius: var(--radius-sm);
+    color: var(--ui-text);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-xs);
+}
+
+.io-btn:hover {
+    background: var(--ui-bg-light);
+    border-color: var(--ui-accent);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.io-btn:active {
+    transform: translateY(0);
+}
+
+.clear-btn {
+    background: rgba(220, 53, 69, 0.1);
+    border-color: rgba(220, 53, 69, 0.3);
+    color: #dc3545;
+}
+
+.clear-btn:hover {
+    background: rgba(220, 53, 69, 0.2);
+    border-color: #dc3545;
+    color: #dc3545;
+}
+
 .project-status {
     padding: var(--spacing-sm);
     background: rgba(0, 200, 0, 0.1);
@@ -645,6 +690,294 @@
     50% {
         transform: scale(1.1);
     }
+}
+
+/* ============================================
+   Grid Status
+   ============================================ */
+
+.grid-status {
+    padding: var(--spacing-sm);
+    background: rgba(0, 200, 0, 0.1);
+    border: 1px solid rgba(0, 200, 0, 0.3);
+    border-radius: var(--radius-sm);
+    color: var(--ui-text);
+    font-size: 12px;
+    text-align: center;
+    margin-top: var(--spacing-sm);
+    animation: fadeIn 0.3s ease;
+}
+
+.grid-status.hidden {
+    display: none;
+}
+
+.grid-status.error {
+    background: rgba(200, 0, 0, 0.1);
+    border-color: rgba(200, 0, 0, 0.3);
+}
+
+/* ============================================
+   Modal
+   ============================================ */
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+}
+
+.modal-container {
+    position: relative;
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    background: var(--ui-bg-light);
+    border: 1px solid var(--ui-border);
+    border-radius: var(--radius-md);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    z-index: 2001;
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--ui-border);
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 18px;
+    color: var(--ui-text);
+}
+
+.modal-close {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    color: var(--ui-text-dim);
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    transition: all 0.2s;
+}
+
+.modal-close:hover {
+    background: var(--ui-bg);
+    color: var(--ui-text);
+}
+
+.modal-content {
+    padding: var(--spacing-md);
+    overflow-y: auto;
+    flex: 1;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md);
+    border-top: 1px solid var(--ui-border);
+}
+
+/* ============================================
+   Form Elements
+   ============================================ */
+
+.resize-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.current-size {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm);
+    background: var(--ui-bg);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--ui-border);
+}
+
+.form-row {
+    display: flex;
+    gap: var(--spacing-md);
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    flex: 1;
+}
+
+.form-label {
+    font-size: 12px;
+    color: var(--ui-text-dim);
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.form-input {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    background: var(--ui-bg);
+    border: 1px solid var(--ui-border);
+    border-radius: var(--radius-sm);
+    color: var(--ui-text);
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--ui-accent);
+    box-shadow: 0 0 0 2px rgba(0, 122, 204, 0.2);
+}
+
+.form-input:invalid {
+    border-color: rgba(220, 38, 127, 0.8);
+}
+
+.radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.radio-option {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm);
+    background: var(--ui-bg);
+    border: 1px solid var(--ui-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.radio-option:hover {
+    border-color: var(--ui-accent);
+    background: var(--ui-bg-light);
+}
+
+.radio-option input[type="radio"] {
+    margin-top: 2px;
+}
+
+.radio-label {
+    display: flex;
+    flex-direction: column;
+    font-size: 14px;
+    color: var(--ui-text);
+}
+
+.radio-label strong {
+    color: var(--ui-text);
+    margin-bottom: 2px;
+}
+
+.resize-preview {
+    padding: var(--spacing-sm);
+    background: var(--ui-bg);
+    border: 1px solid var(--ui-border);
+    border-radius: var(--radius-sm);
+}
+
+.preview-text {
+    font-size: 14px;
+    color: var(--ui-text);
+    margin-bottom: var(--spacing-xs);
+}
+
+.preview-warning {
+    font-size: 12px;
+    color: rgba(220, 38, 127, 0.9);
+    margin-bottom: var(--spacing-xs);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.preview-warning.hidden {
+    display: none;
+}
+
+.memory-info {
+    font-size: 12px;
+    color: var(--ui-text-dim);
+}
+
+/* ============================================
+   Button Styles
+   ============================================ */
+
+.btn {
+    padding: var(--spacing-xs) var(--spacing-md);
+    border: 1px solid var(--ui-border);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.btn-primary {
+    background: var(--ui-accent);
+    border-color: var(--ui-accent);
+    color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: rgba(0, 122, 204, 0.8);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 122, 204, 0.3);
+}
+
+.btn-secondary {
+    background: var(--ui-bg);
+    border-color: var(--ui-border);
+    color: var(--ui-text);
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background: var(--ui-bg-light);
+    border-color: var(--ui-accent);
 }
 
 /* ============================================

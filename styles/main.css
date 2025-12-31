@@ -17,9 +17,12 @@
     /* Grid dimensions */
     --grid-w: 80;
     --grid-h: 25;
-    --cell-size: 16px;
-    --cell-height: 21px;
+    --cell-size: 20px;
+    --cell-height: 26px;
     --cell-line-height: 1;
+
+    /* Font sizes */
+    --font-size-base: 18px;
 
     /* Terminal color palette - Foreground */
     --color-fg-0: #000000; /* Black */
@@ -76,10 +79,8 @@ body {
 }
 
 body {
-    font-family:
-        -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-        "Ubuntu", "Cantarell", sans-serif;
-    font-size: 14px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: var(--font-size-base);
     line-height: 1.5;
     color: var(--ui-text);
     background: var(--ui-bg);
@@ -106,7 +107,7 @@ header {
 }
 
 header h1 {
-    font-size: 18px;
+    font-size: calc(var(--font-size-base) + 4px);
     font-weight: 600;
     color: var(--ui-text);
     margin: 0;
@@ -124,7 +125,7 @@ header h1 {
     border: 1px solid var(--ui-border);
     border-radius: var(--radius-sm);
     color: var(--ui-text);
-    font-size: 14px;
+    font-size: var(--font-size-base);
     cursor: pointer;
     transition: all 0.2s;
     display: flex;
@@ -209,7 +210,7 @@ header h1 {
 }
 
 .io-section h3 {
-    font-size: 12px;
+    font-size: calc(var(--font-size-base) - 3px);
     font-weight: 600;
     text-transform: uppercase;
     color: var(--ui-text-dim);
@@ -224,7 +225,7 @@ header h1 {
     border: 1px solid var(--ui-border);
     border-radius: var(--radius-sm);
     color: var(--ui-text);
-    font-size: 13px;
+    font-size: calc(var(--font-size-base) - 1px);
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
@@ -316,7 +317,7 @@ main {
 }
 
 .sidebar-section h3 {
-    font-size: 12px;
+    font-size: calc(var(--font-size-base) - 3px);
     font-weight: 600;
     text-transform: uppercase;
     color: var(--ui-text-dim);
@@ -335,7 +336,7 @@ main {
 }
 
 .scale-control label {
-    font-size: 12px;
+    font-size: calc(var(--font-size-base) - 3px);
     color: var(--ui-text);
     display: flex;
     justify-content: space-between;
@@ -353,7 +354,7 @@ main {
     border: 1px solid var(--ui-border);
     border-radius: var(--radius-sm);
     color: var(--ui-text);
-    font-size: 12px;
+    font-size: calc(var(--font-size-base) - 3px);
 }
 
 #palette-selector {
@@ -513,14 +514,14 @@ footer {
     padding: var(--spacing-sm) var(--spacing-md);
     background: var(--ui-bg-light);
     border-top: 1px solid var(--ui-border);
-    font-size: 12px;
+    font-size: calc(var(--font-size-base) - 3px);
     color: var(--ui-text-dim);
 }
 
 /* Button Styles */
 button {
     font-family: inherit;
-    font-size: 14px;
+    font-size: var(--font-size-base);
     padding: var(--spacing-sm) var(--spacing-md);
     border: 1px solid var(--ui-border);
     border-radius: var(--radius-sm);

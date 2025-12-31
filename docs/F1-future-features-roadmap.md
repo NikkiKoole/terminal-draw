@@ -72,6 +72,13 @@ This document outlines potential future development directions for Terminal Draw
   - Organic/natural variation for artistic effects
   - Custom brush sets for different art styles
 
+- **Spray Can Tool** *(inspired by Emacs artist mode)*
+  - Random character distribution in circular area around cursor
+  - Adjustable spray radius and density
+  - Configurable character sets for different textures (░▒▓, ···, ***)
+  - Variable intensity levels for layered effects
+  - Perfect for creating organic textures, clouds, or stippled effects
+
 **Estimated Effort:** 6-8 hours  
 **Dependencies:** None  
 **Impact:** High - Fundamental improvement to core drawing experience
@@ -129,6 +136,14 @@ This document outlines potential future development directions for Terminal Draw
   - Shift-constraint for perfect straight lines
   - Character selection for line drawing (─│┌┐└┘├┤┬┴┼)
   - Smart line mode with automatic neighbor detection
+
+- **Polyline Tool** *(inspired by Emacs artist mode)*
+  - Click to place connected line segments
+  - Create complex shapes with multiple points
+  - Double-click or Enter to finish polyline
+  - Support for different line styles and characters
+  - Auto-closing option to create polygons
+  - Real-time preview of next segment
 
 - **Bresenham Line Algorithm**
   - Perfect diagonal lines at any angle

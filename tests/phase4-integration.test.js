@@ -142,20 +142,18 @@ describe("Phase 4 Integration Testing - Step 4.2", () => {
     });
   });
 
-  describe("Performance Testing with Many Layers (5-10)", () => {
-    it("should handle scenes with 5+ layers efficiently", () => {
+  describe("Performance Testing with Fixed Layers", () => {
+    it("should handle advanced template (3 layers) efficiently", () => {
       const startTime = performance.now();
 
-      // Create 5-layer scene
+      // Create 3-layer scene with advanced template
       const scene = Scene.fromTemplate(
         PROJECT_TEMPLATES.advanced,
         80,
         25,
         "default",
       );
-      scene.addSmartLayer("extra1");
-      scene.addSmartLayer("extra2");
-      expect(scene.layers.length).toBe(5);
+      expect(scene.layers.length).toBe(3);
 
       // Add content to layers
       scene.layers.forEach((layer, index) => {
@@ -174,7 +172,7 @@ describe("Phase 4 Integration Testing - Step 4.2", () => {
 
       expect(totalTime).toBeLessThan(100); // Should complete quickly
       expect(textExport.length).toBeGreaterThan(0);
-      expect(project.scene.layers.length).toBe(5);
+      expect(project.scene.layers.length).toBe(3);
     });
 
     it("should handle layer visibility and state with fixed layers", () => {

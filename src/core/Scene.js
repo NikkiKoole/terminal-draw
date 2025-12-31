@@ -26,13 +26,7 @@ import {
   validateTemplate,
   createLayerTemplate,
 } from "./ProjectTemplate.js";
-import {
-  createLayerFromTemplate,
-  validateLayerTemplate,
-  layerToTemplate,
-  suggestLayerName,
-  createSmartLayerTemplate,
-} from "./LayerTemplate.js";
+// LayerTemplate system removed - using fixed layers from project templates
 
 export class Scene {
   /**
@@ -97,9 +91,17 @@ export class Scene {
     const height = h || template.defaultDimensions.h;
 
     // Create layers from template
-    const layers = template.layers.map((layerTemplate) =>
-      createLayerFromTemplate(layerTemplate, width, height),
-    );
+    const layers = template.layers.map((layerTemplate) => {
+      const layer = new Layer(
+        layerTemplate.id,
+        layerTemplate.name,
+        width,
+        height,
+      );
+      layer.visible = layerTemplate.visible !== false;
+      layer.locked = layerTemplate.locked || false;
+      return layer;
+    });
 
     // Create scene
     const scene = new Scene(width, height, paletteId, layers, template.id);
@@ -218,30 +220,7 @@ export class Scene {
     return true;
   }
 
-  /**
-   * Remove a layer by ID
-   * @param {string} id - Layer ID to remove
-   * @returns {boolean} True if layer was removed, false if not found or only layer
-   */
-  removeLayer(id) {
-    if (this.layers.length <= 1) {
-      return false; // Don't allow removing the last layer
-    }
-
-    const index = this.layers.findIndex((layer) => layer.id === id);
-    if (index === -1) {
-      return false; // Layer not found
-    }
-
-    this.layers.splice(index, 1);
-
-    // If we removed the active layer, set a new active layer
-    if (this.activeLayerId === id) {
-      this.activeLayerId = this.layers[0].id;
-    }
-
-    return true;
-  }
+  // Layer removal not supported - using fixed layers from project templates
 
   /**
    * Get all visible layers
@@ -286,86 +265,7 @@ export class Scene {
     return scene;
   }
 
-  /**
-   * Add a layer from template
-   * @param {object} layerTemplate - Layer template to add
-   * @param {number} insertAt - Position to insert layer (optional, defaults to end)
-   * @returns {Layer} The newly added layer
-   */
-  addLayerFromTemplate(layerTemplate, insertAt = null) {
-    if (!validateLayerTemplate(layerTemplate)) {
-      throw new Error(
-        `Invalid layer template: ${JSON.stringify(layerTemplate)}`,
-      );
-    }
-
-    // Check for duplicate IDs
-    if (this.getLayer(layerTemplate.id)) {
-      throw new Error(`Layer with ID '${layerTemplate.id}' already exists`);
-    }
-
-    const layer = createLayerFromTemplate(layerTemplate, this.w, this.h);
-
-    if (insertAt !== null && insertAt >= 0 && insertAt <= this.layers.length) {
-      this.layers.splice(insertAt, 0, layer);
-    } else {
-      this.layers.push(layer);
-    }
-
-    // Set as active if specified in template
-    if (layerTemplate.defaultActive) {
-      this.activeLayerId = layer.id;
-    }
-
-    return layer;
-  }
-
-  /**
-   * Add a layer with smart defaults
-   * @param {string} purpose - Layer purpose (bg, fg, detail, etc.)
-   * @param {string} customName - Custom name override (optional)
-   * @param {number} insertAt - Position to insert (optional)
-   * @returns {Layer} The newly added layer
-   */
-  addSmartLayer(purpose = "layer", customName = null, insertAt = null) {
-    const layerTemplate = createSmartLayerTemplate(purpose, customName);
-
-    // If no custom name provided, check for conflicts with existing layers
-    if (!customName) {
-      const suggestedName = suggestLayerName(
-        this.layers,
-        layerTemplate.name.toLowerCase(),
-      );
-      if (suggestedName !== layerTemplate.name) {
-        layerTemplate.name = suggestedName;
-      }
-    }
-
-    return this.addLayerFromTemplate(layerTemplate, insertAt);
-  }
-
-  /**
-   * Reorder layers
-   * @param {number} fromIndex - Source index
-   * @param {number} toIndex - Target index
-   * @returns {boolean} True if reorder was successful
-   */
-  reorderLayers(fromIndex, toIndex) {
-    if (
-      fromIndex < 0 ||
-      fromIndex >= this.layers.length ||
-      toIndex < 0 ||
-      toIndex >= this.layers.length ||
-      fromIndex === toIndex
-    ) {
-      return false;
-    }
-
-    const [removed] = this.layers.splice(fromIndex, 1);
-    this.layers.splice(toIndex, 0, removed);
-
-    return true;
-  }
+  // Layer management methods removed - using fixed layers from project templates
 
   /**
    * Get layer count
@@ -402,9 +302,7 @@ export class Scene {
     try {
       // Apply conversion based on target template
       if (conversionRules.addLayers) {
-        for (const layerToAdd of conversionRules.addLayers) {
-          this.addLayerFromTemplate(layerToAdd, layerToAdd.insertAt);
-        }
+        // Layer addition removed - using fixed layers from project templates
       }
 
       // Update template ID

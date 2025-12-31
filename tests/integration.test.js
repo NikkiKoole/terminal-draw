@@ -196,7 +196,7 @@ describe("Integration Tests", () => {
       expect(restoredScene.getActiveLayer().getCell(10, 10).ch).toBe("A");
       expect(restoredScene.getActiveLayer().getCell(11, 10).ch).toBe("B");
       expect(restoredScene.getActiveLayer().getCell(12, 10).isEmpty()).toBe(
-        true
+        true,
       );
     });
 
@@ -315,16 +315,18 @@ describe("Integration Tests", () => {
     it("should handle invalid layer operations gracefully", () => {
       expect(scene.setActiveLayer("nonexistent")).toBe(false);
       expect(scene.getLayer("nonexistent")).toBe(null);
-      expect(scene.removeLayer("nonexistent")).toBe(false);
+      // removeLayer not supported in fixed layer architecture
     });
 
-    it("should prevent removing the last layer", () => {
-      scene.removeLayer(LAYER_BG);
-      scene.removeLayer(LAYER_FG);
+    it("should maintain fixed layer architecture", () => {
+      // Layer count should remain fixed
+      const initialLayerCount = scene.layers.length;
+      expect(initialLayerCount).toBe(3);
 
-      // Should not be able to remove the last layer
-      expect(scene.removeLayer(LAYER_MID)).toBe(false);
-      expect(scene.layers.length).toBe(1);
+      // No layer modification methods available
+      expect(scene.removeLayer).toBeUndefined();
+      expect(scene.addSmartLayer).toBeUndefined();
+      expect(scene.layers.length).toBe(initialLayerCount);
     });
 
     it("should handle state manager errors without crashing", () => {

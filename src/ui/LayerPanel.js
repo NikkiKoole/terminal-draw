@@ -46,10 +46,8 @@ export class LayerPanel {
    * Attach event listeners
    */
   attachEventListeners() {
-    // Listen for layer visibility changes
-    this.stateManager.on("layer:visibility-changed", () => {
-      this.render();
-    });
+    // Listen for layer visibility changes - don't re-render, just update specific button
+    // (visibility is handled by updateVisibilityButton in toggleLayerVisibility)
 
     // Listen for active layer changes
     this.stateManager.on("layer:activated", () => {
@@ -66,11 +64,14 @@ export class LayerPanel {
    * Render the layer list
    */
   render() {
+    console.log(`🎨 RENDER START - LayerPanel`);
+
     if (!this.scene) {
       console.warn("No scene available for layer panel");
       return;
     }
 
+    console.log(`🗑️ Clearing layer list and buttons map`);
     this.layerList.innerHTML = "";
     this.layerButtons.clear();
 
@@ -78,10 +79,13 @@ export class LayerPanel {
     const layers = [...this.scene.layers].reverse();
 
     layers.forEach((layer, index) => {
+      console.log(`🔨 Creating button for layer: ${layer.id} (${layer.name})`);
       const button = this.createLayerButton(layer, layers.length - 1 - index);
       this.layerList.appendChild(button);
       this.layerButtons.set(layer.id, button);
     });
+
+    console.log(`✅ RENDER COMPLETE - Created ${layers.length} layer buttons`);
   }
 
   /**
@@ -102,11 +106,11 @@ export class LayerPanel {
     button.innerHTML = `
       <div class="layer-controls">
         <button
-          class="visibility-toggle ${layer.visible ? "visible" : "hidden"}"
+          class="visibility-toggle ${layer.visible ? "layer-visible" : "layer-hidden"}"
           title="${layer.visible ? "Hide layer" : "Show layer"}"
           data-layer-id="${layer.id}"
         >
-          ${layer.visible ? "👁️" : "👁️‍🗨️"}
+          ${layer.visible ? "👁️" : "➖"}
         </button>
       </div>
       <div class="layer-info">
@@ -127,6 +131,7 @@ export class LayerPanel {
     // Add visibility toggle handler
     const visibilityButton = button.querySelector(".visibility-toggle");
     visibilityButton.addEventListener("click", (e) => {
+      console.log(`🖱️ VISIBILITY BUTTON CLICKED - Layer: ${layer.id}`);
       e.stopPropagation();
       this.toggleLayerVisibility(layer.id);
     });
@@ -157,16 +162,69 @@ export class LayerPanel {
    * @param {string} layerId - ID of layer to toggle
    */
   toggleLayerVisibility(layerId) {
-    const layer = this.scene.getLayer(layerId);
-    if (!layer) return;
+    console.log(`🔍 VISIBILITY TOGGLE START - Layer: ${layerId}`);
 
+    const layer = this.scene.getLayer(layerId);
+    if (!layer) {
+      console.log(`❌ Layer ${layerId} not found`);
+      return;
+    }
+
+    const oldVisibility = layer.visible;
     layer.visible = !layer.visible;
+
+    console.log(`👁️ Visibility changed: ${oldVisibility} → ${layer.visible}`);
+
     this.stateManager.emit("layer:visibility-changed", {
       layerId,
       visible: layer.visible,
     });
 
-    this.render();
+    console.log(`📡 Emitted layer:visibility-changed event`);
+
+    // Update just this specific button instead of full re-render
+    console.log(`🔄 Calling updateVisibilityButton...`);
+    this.updateVisibilityButton(layerId, layer.visible);
+    console.log(`✅ VISIBILITY TOGGLE COMPLETE`);
+  }
+
+  /**
+   * Update a specific visibility button
+   * @param {string} layerId - ID of layer to update
+   * @param {boolean} visible - New visibility state
+   */
+  updateVisibilityButton(layerId, visible) {
+    console.log(
+      `🎯 updateVisibilityButton - Layer: ${layerId}, Visible: ${visible}`,
+    );
+
+    const layerButton = this.layerButtons.get(layerId);
+    console.log(`🔘 Layer button found:`, layerButton ? "YES" : "NO");
+    if (!layerButton) return;
+
+    const visibilityButton = layerButton.querySelector(".visibility-toggle");
+    console.log(`👆 Visibility button found:`, visibilityButton ? "YES" : "NO");
+    if (!visibilityButton) return;
+
+    console.log(`📝 Before update - Classes:`, visibilityButton.className);
+    console.log(`📝 Before update - HTML:`, visibilityButton.innerHTML);
+
+    // Update button class
+    if (visible) {
+      visibilityButton.classList.remove("layer-hidden");
+      visibilityButton.classList.add("layer-visible");
+    } else {
+      visibilityButton.classList.remove("layer-visible");
+      visibilityButton.classList.add("layer-hidden");
+    }
+
+    // Update icon and title
+    visibilityButton.innerHTML = visible ? "👁️" : "➖";
+    visibilityButton.title = visible ? "Hide layer" : "Show layer";
+
+    console.log(`📝 After update - Classes:`, visibilityButton.className);
+    console.log(`📝 After update - HTML:`, visibilityButton.innerHTML);
+    console.log(`✨ updateVisibilityButton COMPLETE`);
   }
 
   /**

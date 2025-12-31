@@ -212,56 +212,7 @@ describe("Scene", () => {
     });
   });
 
-  describe("removeLayer", () => {
-    it("should remove a layer by ID", () => {
-      const result = scene.removeLayer(LAYER_FG);
-
-      expect(result).toBe(true);
-      expect(scene.layers.length).toBe(2);
-      expect(scene.getLayer(LAYER_FG)).toBe(null);
-    });
-
-    it("should return false if layer not found", () => {
-      const result = scene.removeLayer("nonexistent");
-
-      expect(result).toBe(false);
-      expect(scene.layers.length).toBe(3);
-    });
-
-    it("should not remove the last layer", () => {
-      // Remove two layers, leaving only one
-      scene.removeLayer(LAYER_FG);
-      scene.removeLayer(LAYER_MID);
-
-      // Try to remove the last layer
-      const result = scene.removeLayer(LAYER_BG);
-
-      expect(result).toBe(false);
-      expect(scene.layers.length).toBe(1);
-    });
-
-    it("should change active layer if removing active layer", () => {
-      scene.setActiveLayer(LAYER_FG);
-      scene.removeLayer(LAYER_FG);
-
-      expect(scene.activeLayerId).not.toBe(LAYER_FG);
-      expect(scene.getActiveLayer()).not.toBe(null);
-    });
-
-    it("should set first layer as active when removing active layer", () => {
-      scene.setActiveLayer(LAYER_FG);
-      scene.removeLayer(LAYER_FG);
-
-      expect(scene.activeLayerId).toBe(scene.layers[0].id);
-    });
-
-    it("should not change active layer if removing non-active layer", () => {
-      scene.setActiveLayer(LAYER_MID);
-      scene.removeLayer(LAYER_FG);
-
-      expect(scene.activeLayerId).toBe(LAYER_MID);
-    });
-  });
+  // removeLayer functionality removed - using fixed layers from project templates
 
   describe("getVisibleLayers", () => {
     it("should return all layers when all are visible", () => {
@@ -445,21 +396,18 @@ describe("Scene", () => {
       expect(visible[0].id).toBe(LAYER_MID);
     });
 
-    it("should maintain data integrity after multiple operations", () => {
-      // Add layer
-      const newLayer = new Layer("extra", "Extra", 80, 25);
-      scene.addLayer(newLayer);
+    it("should maintain data integrity with fixed layer operations", () => {
+      // Test layer visibility toggles
+      const bgLayer = scene.getLayer(LAYER_BG);
+      const originalVisibility = bgLayer.visible;
 
-      // Set it as active
-      scene.setActiveLayer("extra");
-      expect(scene.getActiveLayer().id).toBe("extra");
+      bgLayer.visible = !originalVisibility;
+      expect(bgLayer.visible).toBe(!originalVisibility);
 
-      // Remove original middle layer
-      scene.removeLayer(LAYER_MID);
+      // Test active layer switching
+      scene.setActiveLayer(LAYER_BG);
       expect(scene.layers.length).toBe(3);
-
-      // Active layer should still be "extra"
-      expect(scene.activeLayerId).toBe("extra");
+      expect(scene.activeLayerId).toBe(LAYER_BG);
     });
   });
 });

@@ -220,8 +220,10 @@
     background: var(--ui-bg);
 }
 
-.visibility-toggle.hidden {
-    opacity: 0.5;
+.visibility-toggle.layer-hidden {
+    opacity: 1;
+    color: #888;
+    background: rgba(0, 0, 0, 0.1);
 }
 
 .layer-item.active {

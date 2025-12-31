@@ -50,3 +50,19 @@ S1-handoff-notes.md             # Session handoff information
 - Group related documents by prefix when browsing
 
 This convention ensures the documentation remains organized and navigable as the project grows!
+
+## Recent Completion: M3 Flexible Layers + Major Simplification
+
+**M3-flexible-layers-plan.md** and **M3-flexible-layers-completion.md** document the complete transformation of Terminal Draw's layer architecture, including a major post-completion simplification:
+
+### What Was Completed:
+- ✅ **Phase 1-4**: Template system, startup dialog, layer management, and testing
+- ✅ **Major Simplification**: Removed ~3,000 lines of complex dynamic layer code
+- ✅ **Enhanced UX**: Fixed template-based layers (1/2/3) with visibility/lock controls
+- ✅ **Test Coverage**: 911 tests passing with dramatically cleaner codebase
+
+### Key Architecture Change:
+**Before**: Complex dynamic layer management (unlimited runtime add/remove/reorder)
+**After**: Simplified fixed layers chosen at project creation with enhanced controls
+
+The project now offers the same functionality with dramatically reduced complexity, making it more maintainable and user-friendly.

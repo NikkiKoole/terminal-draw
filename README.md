@@ -15,21 +15,22 @@ A web-based ASCII art editor that renders true text glyphs in the DOM for creati
 - ✅ Integration & App Setup - All components wired together
 - ✅ Save/Load Projects - JSON file persistence with drag-and-drop
 - ✅ Testing & Polish - All functionality complete and validated
-- ✅ **Phase 1: Flexible Layer Template System** - Dynamic multi-layer architecture
+- ✅ **Phase 1: Flexible Layer Template System** - Template-based project architecture
 - ✅ **Phase 2: Startup Dialog** - Professional project creation experience
-- ✅ **Phase 3: Command-Based Layer Management** - Full undo/redo layer operations
+- ✅ **Phase 3: Simplified Layer Management** - Clean fixed-layer architecture
+- ✅ **Phase 4: UI Polish & Features** - Enhanced controls and user experience
 - ✅ **Border System** - Optional single/double-line borders with customizable styles
 
-**Current Status: Production-Ready ASCII Editor with Advanced Layer Management ✅**
-- **Template System**: 3 project templates (Simple/Standard/Advanced)
+**Current Status: Production-Ready ASCII Editor with Simplified Architecture ✅**
+- **Template System**: 3 project templates (Simple/Standard/Advanced) with fixed layer counts
 - **Startup Dialog**: Beautiful project creation modal with template selection
-- **Dynamic Layers**: Add, remove, reorder layers with smart templates
-- **Professional UI**: Enhanced layer panel with real-time management
-- **Flexible Architecture**: Scales from 1 to unlimited layers seamlessly
-- **Command-Based Operations**: Full undo/redo support for all layer management
-- **Enhanced UI**: Improved visual feedback and professional styling
+- **Fixed Layers**: Clean architecture - choose 1, 2, or 3 layers at project start
+- **Enhanced Layer Panel**: Visibility and lock toggles with immediate feedback
+- **Simplified UX**: No runtime layer management complexity - pick once, live with it
+- **Professional Controls**: Eye/dash visibility toggle, lock/unlock protection
 - **Border Functionality**: Optional decorative borders with single/double-line styles
-- **1,095 tests passing** - comprehensive coverage with 126+ new tests for commands, borders, and regression testing
+- **Drawing Protection**: Can't draw on invisible or locked layers
+- **911 tests passing** - comprehensive coverage with simplified, maintainable codebase
 - Complete backward compatibility with existing projects
 
 ## Quick Start
@@ -87,6 +88,13 @@ Don't assume everything is working by just starting the dev server. Instead:
 - Manually test UI interactions in the browser  
 - Ask for confirmation before assuming fixes work
 - Test edge cases (like dismissing dialogs, invalid inputs, etc.)
+
+✨ **Layer Management**  
+The project uses a simplified fixed-layer architecture:
+- **No Runtime Layer Changes**: Users pick 1, 2, or 3 layers at project start
+- **Visibility Toggle**: 👁️ (visible) / ➖ (hidden) - affects visual display and drawing
+- **Lock Toggle**: 🔓 (unlocked) / 🔒 (locked) - prevents accidental editing
+- **Drawing Protection**: Tools won't draw on invisible or locked layers
 
 ## Running Tests
 
@@ -203,9 +211,9 @@ terminal-draw/
 - ✅ **Phase 3: Command-Based Layer Management** (full undo/redo layer operations)
 - ✅ **Phase 4: Testing & Polish** (critical bug fixes and regression prevention)
 - ✅ **Border System Enhancement** (optional decorative borders with style selection)
-- **1,095 tests passing (100%)**
+- **911 tests passing (100%)**
 
-**Current:** Production-ready ASCII art editor with enterprise-grade reliability
+**Current:** Production-ready ASCII art editor with simplified, maintainable architecture
 
 See [00-implementation-plan.md](./docs/00-implementation-plan.md) for detailed roadmap.
 

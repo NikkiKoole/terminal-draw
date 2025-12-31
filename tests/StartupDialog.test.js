@@ -645,4 +645,91 @@ describe("StartupDialog", () => {
       expect(standardCard.classList.contains("selected")).toBe(false);
     });
   });
+
+  describe("Dialog Dismissal Handling (Regression Tests)", () => {
+    it("should create default project when dismissed without selection", () => {
+      let projectCreated = false;
+      let projectConfig = null;
+
+      dialog.setOnTemplateSelect((config) => {
+        projectCreated = true;
+        projectConfig = config;
+      });
+
+      // Show dialog
+      dialog.show();
+      expect(dialog.isVisible()).toBe(true);
+      expect(projectCreated).toBe(false);
+
+      // Dismiss dialog without creating project (simulate backdrop click)
+      dialog.hide();
+
+      // Should have created default project
+      expect(projectCreated).toBe(true);
+      expect(projectConfig).toBeDefined();
+      expect(projectConfig.template).toBe("standard");
+      expect(projectConfig.dimensions.w).toBe(60);
+      expect(projectConfig.dimensions.h).toBe(25);
+      expect(projectConfig.palette).toBe("default");
+      expect(projectConfig.border.enabled).toBe(false);
+    });
+
+    it("should not create duplicate projects if already created", () => {
+      let projectCount = 0;
+
+      dialog.setOnTemplateSelect(() => {
+        projectCount++;
+      });
+
+      // Show dialog and create project normally
+      dialog.show();
+      dialog.quickStart();
+      expect(projectCount).toBe(1);
+
+      // Hide dialog again - should not create another project
+      dialog.hide();
+      expect(projectCount).toBe(1);
+    });
+
+    it("should reset project creation flag on each show", () => {
+      let projectCount = 0;
+
+      dialog.setOnTemplateSelect(() => {
+        projectCount++;
+      });
+
+      // First cycle: show and dismiss
+      dialog.show();
+      dialog.hide();
+      expect(projectCount).toBe(1);
+
+      // Second cycle: show and dismiss again
+      dialog.show();
+      dialog.hide();
+      expect(projectCount).toBe(2);
+
+      // Third cycle: show and create normally
+      dialog.show();
+      dialog.customStart();
+      expect(projectCount).toBe(3);
+
+      // Fourth cycle: dismiss again
+      dialog.hide();
+      expect(projectCount).toBe(3); // No additional project since one was already created
+    });
+
+    it("should handle edge case of hide without show", () => {
+      let projectCreated = false;
+
+      dialog.setOnTemplateSelect(() => {
+        projectCreated = true;
+      });
+
+      // Try to hide without showing first
+      dialog.hide();
+
+      // Should not create project since projectCreated flag starts undefined/false
+      expect(projectCreated).toBe(false);
+    });
+  });
 });

@@ -71,6 +71,23 @@ source ~/.nvm/nvm.sh && nvm use 20 && npm test -- --run
 - Use `npm run build` to create production build
 - Use `npm run preview` to test production build locally
 
+**Important Development Notes:**
+
+⚠️ **Property Naming Consistency Issue**  
+The codebase has an inconsistency between `width`/`height` and `w`/`h` property names:
+- Templates use `defaultDimensions: { w: 60, h: 25 }`
+- Some UI components expect `{ width: 60, height: 25 }`
+- Config objects for `initSceneFromTemplate()` require `dimensions: { w, h }`
+
+When debugging dimension-related issues, always check which naming convention the specific component expects.
+
+⚠️ **Dev Server Testing Workflow**  
+Don't assume everything is working by just starting the dev server. Instead:
+- Keep the dev server running during development
+- Manually test UI interactions in the browser  
+- Ask for confirmation before assuming fixes work
+- Test edge cases (like dismissing dialogs, invalid inputs, etc.)
+
 ## Running Tests
 
 ```bash

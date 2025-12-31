@@ -22,6 +22,8 @@ export class StartupDialog {
     this.borderEnabled = false; // Default border setting
     this.borderStyle = "single"; // single or double
     this.onTemplateSelect = null; // Callback for template selection
+    this.projectCreated = false; // Track if project was created
+    this.dialogWasShown = false; // Track if dialog was actually shown
 
     this.init();
   }
@@ -390,6 +392,8 @@ export class StartupDialog {
    * Create project with given configuration
    */
   createProject(config) {
+    this.projectCreated = true;
+
     if (this.onTemplateSelect) {
       this.onTemplateSelect(config);
     }
@@ -521,6 +525,8 @@ export class StartupDialog {
    * Show the dialog
    */
   show() {
+    this.projectCreated = false; // Reset project creation flag
+    this.dialogWasShown = true; // Track that dialog was actually shown
     this.loadLastUsed();
     this.dialog.style.display = "flex";
     document.body.classList.add("modal-open");
@@ -538,6 +544,32 @@ export class StartupDialog {
   hide() {
     this.dialog.style.display = "none";
     document.body.classList.remove("modal-open");
+
+    // If dialog was shown and dismissed without creating a project, create default project
+    if (this.dialogWasShown && !this.projectCreated) {
+      this.createDefaultProject();
+    }
+  }
+
+  /**
+   * Create default project when dialog is dismissed without selection
+   */
+  createDefaultProject() {
+    // Use defensive programming in case PROJECT_TEMPLATES is not available
+    const standardTemplate = PROJECT_TEMPLATES?.standard;
+    const defaultDimensions = standardTemplate?.defaultDimensions || {
+      w: 60,
+      h: 25,
+    };
+
+    const defaultConfig = {
+      template: standardTemplate ? standardTemplate.id : "standard",
+      dimensions: defaultDimensions,
+      palette: "default",
+      border: { enabled: false },
+    };
+
+    this.createProject(defaultConfig);
   }
 
   /**

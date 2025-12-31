@@ -27,13 +27,15 @@ import { CommandHistory } from "./commands/CommandHistory.js";
 import { ResizeCommand } from "./commands/ResizeCommand.js";
 import { ClearCommand } from "./commands/ClearCommand.js";
 import { GridResizer } from "./core/GridResizer.js";
+import { StartupDialog } from "./ui/StartupDialog.js";
+import { PROJECT_TEMPLATES, getTemplate } from "./core/ProjectTemplate.js";
 
 // =============================================================================
 // Configuration & State
 // =============================================================================
 
-const GRID_WIDTH = 80;
-const GRID_HEIGHT = 25;
+let GRID_WIDTH = 80;
+let GRID_HEIGHT = 25;
 
 let currentPalette = "default";
 let currentScale = 100;
@@ -52,6 +54,9 @@ let brushTool = null;
 let eraserTool = null;
 let pickerTool = null;
 let currentTool = null;
+
+// Startup Dialog
+let startupDialog = null;
 
 // UI Components
 let layerPanel = null;
@@ -85,6 +90,39 @@ function initScene() {
   createTestPattern();
 
   console.log(`Scene initialized with ${scene.layers.length} layers`);
+}
+
+/**
+ * Initialize scene from template configuration
+ */
+function initSceneFromTemplate(config) {
+  const { template, dimensions, palette } = config;
+
+  // Update global dimensions
+  GRID_WIDTH = dimensions.w;
+  GRID_HEIGHT = dimensions.h;
+  currentPalette = palette;
+
+  // Get template object
+  const templateObj = getTemplate(template);
+  if (!templateObj) {
+    console.error(`Template not found: ${template}`);
+    return;
+  }
+
+  // Create scene from template
+  scene = Scene.fromTemplate(templateObj, dimensions.w, dimensions.h, palette);
+  renderer = new LayerRenderer();
+
+  // Create dynamic layer containers
+  createLayerContainers();
+
+  // Apply palette
+  applyPalette(palette);
+
+  console.log(
+    `Scene created from template '${template}' with ${scene.layers.length} layers (${dimensions.w}×${dimensions.h})`,
+  );
 }
 
 /**
@@ -776,11 +814,19 @@ function showExportStatus(result, statusElement, layerId = null) {
 function initProject() {
   projectManager = new ProjectManager(scene, stateManager);
 
+  const newBtn = document.getElementById("new-project");
   const saveBtn = document.getElementById("save-project");
   const loadBtn = document.getElementById("load-project");
   const fileInput = document.getElementById("file-input");
   const dropzone = document.getElementById("dropzone");
   const projectStatus = document.getElementById("project-status");
+
+  // New project
+  if (newBtn) {
+    newBtn.addEventListener("click", () => {
+      newProject();
+    });
+  }
 
   // Save project
   if (saveBtn) {
@@ -1013,7 +1059,23 @@ function initIOPanel() {
  * Initialize all UI controls and apply defaults
  */
 function init() {
-  initScene();
+  // Initialize startup dialog first
+  initStartupDialog();
+
+  // Check if we should show startup dialog or use last project
+  if (shouldShowStartupDialog()) {
+    showStartupDialog();
+  } else {
+    // Initialize with default scene for now (will be replaced by startup dialog flow)
+    initScene();
+    initUIComponents();
+  }
+}
+
+/**
+ * Initialize UI components after scene is created
+ */
+function initUIComponents() {
   initInput();
   initCommandHistory();
   initTools();
@@ -1028,6 +1090,44 @@ function init() {
   initClearOperations();
   initScaleControls();
   initPaletteSelector();
+
+  // Mark body as loaded to prevent FOUC
+  document.body.classList.add("loaded");
+}
+
+/**
+ * Initialize startup dialog
+ */
+function initStartupDialog() {
+  startupDialog = new StartupDialog();
+  startupDialog.setOnTemplateSelect((config) => {
+    initSceneFromTemplate(config);
+    initUIComponents();
+  });
+}
+
+/**
+ * Show startup dialog
+ */
+function showStartupDialog() {
+  startupDialog.show();
+}
+
+/**
+ * Determine if we should show startup dialog
+ */
+function shouldShowStartupDialog() {
+  // Always show startup dialog for now - can add logic for recent projects later
+  return true;
+}
+
+/**
+ * Create new project (show startup dialog)
+ */
+function newProject() {
+  if (startupDialog) {
+    startupDialog.show();
+  }
 }
 
 // =============================================================================

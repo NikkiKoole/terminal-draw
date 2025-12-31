@@ -4,7 +4,7 @@ A web-based ASCII art editor that renders true text glyphs in the DOM for creati
 
 ## Features
 
-**Steps 1-9 Complete ✅ + Phase 1: Flexible Layer System ✅**
+**Steps 1-9 Complete ✅ + Phase 1 & 2: Advanced Template System ✅**
 - ✅ Project Setup - Cell-based rendering, palettes, scaling
 - ✅ Core Data Models - Cell, Layer, Scene, StateManager, constants
 - ✅ Basic Rendering - LayerRenderer and Compositor
@@ -16,13 +16,16 @@ A web-based ASCII art editor that renders true text glyphs in the DOM for creati
 - ✅ Save/Load Projects - JSON file persistence with drag-and-drop
 - ✅ Testing & Polish - All functionality complete and validated
 - ✅ **Phase 1: Flexible Layer Template System** - Dynamic multi-layer architecture
+- ✅ **Phase 2: Startup Dialog** - Professional project creation experience
 
-**Current Status: Professional ASCII Editor with Dynamic Layer System ✅**
+**Current Status: Professional ASCII Editor with Template-Driven Workflow ✅**
 - **Template System**: 3 project templates (Simple/Standard/Advanced)
+- **Startup Dialog**: Beautiful project creation modal with template selection
 - **Dynamic Layers**: Add, remove, reorder layers with smart templates
 - **Professional UI**: Enhanced layer panel with real-time management
 - **Flexible Architecture**: Scales from 1 to unlimited layers seamlessly
-- **939 tests passing** - comprehensive coverage with 178 new tests
+- **Custom Configuration**: Canvas dimensions, color palettes, smart defaults
+- **973 tests passing** - comprehensive coverage with 34 new StartupDialog tests
 - Complete backward compatibility with existing projects
 
 ## Quick Start
@@ -31,11 +34,13 @@ A web-based ASCII art editor that renders true text glyphs in the DOM for creati
 # Install dependencies
 npm install
 
-# Start dev server
+# Start dev server (runs in watch mode - keep terminal open)
 npm run dev
 ```
 
 Open `http://localhost:5173` in your browser.
+
+**Note:** The dev server runs continuously and watches for file changes. Keep it running in a separate terminal window during development.
 
 ## Node Version
 
@@ -55,6 +60,12 @@ Example:
 ```bash
 source ~/.nvm/nvm.sh && nvm use 20 && npm test -- --run
 ```
+
+**Development Workflow:**
+- Run `npm run dev` in one terminal (keep it running)
+- Run tests and other commands in a separate terminal
+- Use `npm run build` to create production build
+- Use `npm run preview` to test production build locally
 
 ## Running Tests
 
@@ -155,7 +166,7 @@ terminal-draw/
 
 ## Current Status
 
-**Steps 1-8b: Complete** ✅  
+**Steps 1-9 Complete ✅ + Phase 1 & 2 Complete ✅**  
 - ✅ Step 1: Project Setup (HTML/CSS, palettes, scaling)
 - ✅ Step 2: Core Data Models (Cell, Layer, Scene, StateManager, constants)
 - ✅ Step 3: Basic Rendering (LayerRenderer, Compositor)
@@ -165,9 +176,12 @@ terminal-draw/
 - ✅ Step 7: Copy to Clipboard (export as text/ANSI/layer)
 - ✅ Step 8: Integration & App Setup (all components wired together)
 - ✅ Step 8b: Save/Load Projects (JSON file persistence with drag-and-drop)
-- **481 tests passing (100%)**
+- ✅ Step 9: Testing & Polish (complete functionality validation)
+- ✅ **Phase 1: Flexible Layer Template System** (dynamic multi-layer architecture)
+- ✅ **Phase 2: Startup Dialog** (professional project creation experience)
+- **973 tests passing (100%)**
 
-**Current:** Step 9 - Testing & Polish (~97% complete - performance validation pending)
+**Current:** Production-ready ASCII art editor with professional template workflow
 
 See [00-implementation-plan.md](./docs/00-implementation-plan.md) for detailed roadmap.
 
@@ -355,7 +369,7 @@ Test pages are in `test-pages/`:
 
 ## Progress
 
-**Original 9 steps complete ✅ + Phase 1: Flexible Layer System ✅**
+**Original 9 steps complete ✅ + Phase 1 & 2: Template System ✅**
 
 **Phase 1 Achievements:**
 - ✅ **Template System Foundation** - 3 project templates with smart defaults
@@ -363,11 +377,20 @@ Test pages are in `test-pages/`:
 - ✅ **Tools & Systems Integration** - All systems verified to work with flexible layers
 - ✅ **178 new tests added** - Comprehensive coverage of template system
 
+**Phase 2 Achievements:**
+- ✅ **Startup Dialog Component** - Beautiful modal for project creation
+- ✅ **Template Selection UI** - Interactive cards with descriptions and recommendations
+- ✅ **Custom Configuration** - Dimension inputs, palette selection, validation
+- ✅ **User Experience** - Quick start, keyboard shortcuts, settings persistence
+- ✅ **34 new tests added** - Full StartupDialog functionality coverage
+
 **Recent Major Features:**
+- ✅ **Professional Startup Experience** - Template-driven project creation workflow
 - ✅ **Flexible Layer Templates** - Simple (1), Standard (2), Advanced (3) layer configurations
 - ✅ **Dynamic Layer Management** - Add, remove, reorder layers in real-time
 - ✅ **Enhanced Layer Panel** - Professional UI with template-based layer addition
-- ✅ **Smart Layer Types** - 6 intelligent layer templates (Background, Detail, Effect, etc.)
+- ✅ **Smart Configuration** - Canvas sizing, palette selection with smart defaults
+- ✅ **Complete Test Coverage** - 973 tests ensuring quality and reliability
 - ✅ **Backward Compatibility** - Existing projects work seamlessly
 
 ## License

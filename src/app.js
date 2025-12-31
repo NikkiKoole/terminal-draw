@@ -1325,6 +1325,23 @@ function initPaletteSelector() {
   const selector = document.getElementById("palette-selector");
 
   if (selector) {
+    // Clear existing options
+    selector.innerHTML = "";
+
+    // Populate options dynamically from palettes.json
+    Object.keys(palettes).forEach((paletteId) => {
+      const option = document.createElement("option");
+      option.value = paletteId;
+      option.textContent = palettes[paletteId].name;
+
+      // Mark default palette as selected
+      if (paletteId === currentPalette) {
+        option.selected = true;
+      }
+
+      selector.appendChild(option);
+    });
+
     selector.addEventListener("change", (e) => {
       applyPalette(e.target.value);
     });

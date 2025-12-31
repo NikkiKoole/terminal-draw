@@ -429,7 +429,7 @@ export class StartupDialog {
       if (saved) {
         const config = JSON.parse(saved);
         this.selectedTemplate = config.template || "standard";
-        this.selectedPalette = config.palette || "default";
+        this.selectedPalette = "default"; // Always use default terminal palette
         // Use template dimensions as fallback
         const template = getTemplate(this.selectedTemplate);
         this.customDimensions =

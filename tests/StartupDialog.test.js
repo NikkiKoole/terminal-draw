@@ -146,6 +146,30 @@ describe("StartupDialog", () => {
 
       expect(dialog.selectedPalette).toBe("gruvbox");
     });
+
+    it("should update border settings when controls change", () => {
+      const borderCheckbox = document.getElementById("enable-border");
+      const borderRadios = document.querySelectorAll(
+        'input[name="border-style"]',
+      );
+
+      // Initially disabled
+      expect(dialog.borderEnabled).toBe(false);
+      expect(dialog.borderStyle).toBe("single");
+
+      // Enable border
+      borderCheckbox.checked = true;
+      borderCheckbox.dispatchEvent(new dom.window.Event("change"));
+      expect(dialog.borderEnabled).toBe(true);
+
+      // Change style
+      const doubleRadio = Array.from(borderRadios).find(
+        (r) => r.value === "double",
+      );
+      doubleRadio.checked = true;
+      doubleRadio.dispatchEvent(new dom.window.Event("change"));
+      expect(dialog.borderStyle).toBe("double");
+    });
   });
 
   describe("Quick Start", () => {
@@ -159,6 +183,10 @@ describe("StartupDialog", () => {
         template: "standard",
         dimensions: PROJECT_TEMPLATES.standard.defaultDimensions,
         palette: "default",
+        border: {
+          enabled: false,
+          style: "single",
+        },
       });
     });
 
@@ -203,7 +231,42 @@ describe("StartupDialog", () => {
         template: "advanced",
         dimensions: { w: 120, h: 40 },
         palette: "gruvbox",
+        border: {
+          enabled: dialog.borderEnabled,
+          style: dialog.borderStyle,
+        },
       });
+    });
+
+    it("should include border settings in configuration", () => {
+      dialog.setOnTemplateSelect(mockCallback);
+
+      // Enable border and set style
+      const borderCheckbox = document.getElementById("enable-border");
+      const borderRadios = document.querySelectorAll(
+        'input[name="border-style"]',
+      );
+
+      borderCheckbox.checked = true;
+      borderCheckbox.dispatchEvent(new dom.window.Event("change"));
+
+      const doubleRadio = Array.from(borderRadios).find(
+        (r) => r.value === "double",
+      );
+      doubleRadio.checked = true;
+      doubleRadio.dispatchEvent(new dom.window.Event("change"));
+
+      const customStartBtn = document.getElementById("custom-start-btn");
+      customStartBtn.click();
+
+      expect(mockCallback).toHaveBeenCalledWith(
+        expect.objectContaining({
+          border: {
+            enabled: true,
+            style: "double",
+          },
+        }),
+      );
     });
 
     it("should validate dimensions before creating project", () => {
@@ -334,6 +397,10 @@ describe("StartupDialog", () => {
         template: "standard",
         dimensions: PROJECT_TEMPLATES.standard.defaultDimensions,
         palette: "default",
+        border: {
+          enabled: false,
+          style: "single",
+        },
       });
     });
 
@@ -355,6 +422,10 @@ describe("StartupDialog", () => {
         template: "advanced",
         dimensions: { w: 100, h: 30 },
         palette: "gruvbox",
+        border: {
+          enabled: true,
+          style: "double",
+        },
       };
 
       dialog.saveLastUsed(config);
@@ -370,6 +441,10 @@ describe("StartupDialog", () => {
         template: "advanced",
         dimensions: { w: 100, h: 30 },
         palette: "gruvbox",
+        border: {
+          enabled: true,
+          style: "double",
+        },
       };
 
       localStorageMock.getItem.mockReturnValue(JSON.stringify(config));
@@ -379,6 +454,8 @@ describe("StartupDialog", () => {
       expect(dialog.selectedTemplate).toBe("advanced");
       expect(dialog.customDimensions).toEqual({ w: 100, h: 30 });
       expect(dialog.selectedPalette).toBe("gruvbox");
+      expect(dialog.borderEnabled).toBe(true);
+      expect(dialog.borderStyle).toBe("double");
     });
 
     it("should handle missing localStorage data gracefully", () => {

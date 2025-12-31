@@ -32,6 +32,7 @@ import { PROJECT_TEMPLATES, getTemplate } from "./core/ProjectTemplate.js";
 import { AddLayerCommand } from "./commands/AddLayerCommand.js";
 import { RemoveLayerCommand } from "./commands/RemoveLayerCommand.js";
 import { ReorderLayersCommand } from "./commands/ReorderLayersCommand.js";
+import { addBorderToScene, isValidBorderStyle } from "./core/BorderUtils.js";
 
 // =============================================================================
 // Configuration & State
@@ -99,7 +100,7 @@ function initScene() {
  * Initialize scene from template configuration
  */
 function initSceneFromTemplate(config) {
-  const { template, dimensions, palette } = config;
+  const { template, dimensions, palette, border } = config;
 
   // Update global dimensions
   GRID_WIDTH = dimensions.w;
@@ -117,6 +118,19 @@ function initSceneFromTemplate(config) {
   scene = Scene.fromTemplate(templateObj, dimensions.w, dimensions.h, palette);
   renderer = new LayerRenderer();
 
+  // Add border if enabled
+  if (border && border.enabled) {
+    const borderStyle = isValidBorderStyle(border.style)
+      ? border.style
+      : "single";
+    try {
+      addBorderToScene(scene, borderStyle, 7, -1);
+      console.log(`Added ${borderStyle} border to scene`);
+    } catch (error) {
+      console.error("Failed to add border:", error);
+    }
+  }
+
   // Create dynamic layer containers
   createLayerContainers();
 
@@ -124,7 +138,7 @@ function initSceneFromTemplate(config) {
   applyPalette(palette);
 
   console.log(
-    `Scene created from template '${template}' with ${scene.layers.length} layers (${dimensions.w}×${dimensions.h})`,
+    `Scene created from template '${template}' with ${scene.layers.length} layers (${dimensions.w}×${dimensions.h})${border?.enabled ? " with border" : ""}`,
   );
 }
 

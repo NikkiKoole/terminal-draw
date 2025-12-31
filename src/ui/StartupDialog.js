@@ -19,6 +19,8 @@ export class StartupDialog {
     this.selectedTemplate = "standard"; // Default selection
     this.selectedPalette = "default";
     this.customDimensions = { w: 80, h: 25 };
+    this.borderEnabled = false; // Default border setting
+    this.borderStyle = "single"; // single or double
     this.onTemplateSelect = null; // Callback for template selection
 
     this.init();
@@ -71,6 +73,37 @@ export class StartupDialog {
                 <select id="initial-palette">
                   ${this.renderPaletteOptions()}
                 </select>
+              </div>
+            </div>
+
+            <div class="border-section">
+              <h4>Border Options</h4>
+              <div class="border-controls">
+                <div class="setting-group checkbox-group">
+                  <label class="checkbox-label">
+                    <input type="checkbox" id="enable-border" ${this.borderEnabled ? "checked" : ""}>
+                    <span class="checkmark"></span>
+                    Add border around canvas
+                  </label>
+                </div>
+
+                <div class="setting-group border-style-group ${this.borderEnabled ? "" : "disabled"}">
+                  <label>Border Style</label>
+                  <div class="radio-group">
+                    <label class="radio-label">
+                      <input type="radio" name="border-style" value="single" ${this.borderStyle === "single" ? "checked" : ""}>
+                      <span class="radio-mark"></span>
+                      <span class="border-preview">┌─┐<br>│ │<br>└─┘</span>
+                      Single Line
+                    </label>
+                    <label class="radio-label">
+                      <input type="radio" name="border-style" value="double" ${this.borderStyle === "double" ? "checked" : ""}>
+                      <span class="radio-mark"></span>
+                      <span class="border-preview">╔═╗<br>║ ║<br>╚═╝</span>
+                      Double Line
+                    </label>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -179,6 +212,30 @@ export class StartupDialog {
       this.selectedPalette = e.target.value;
     });
 
+    // Border controls
+    const borderCheckbox = this.dialog.querySelector("#enable-border");
+    const borderStyleGroup = this.dialog.querySelector(".border-style-group");
+    const borderRadios = this.dialog.querySelectorAll(
+      'input[name="border-style"]',
+    );
+
+    borderCheckbox.addEventListener("change", (e) => {
+      this.borderEnabled = e.target.checked;
+      if (this.borderEnabled) {
+        borderStyleGroup.classList.remove("disabled");
+      } else {
+        borderStyleGroup.classList.add("disabled");
+      }
+    });
+
+    borderRadios.forEach((radio) => {
+      radio.addEventListener("change", (e) => {
+        if (e.target.checked) {
+          this.borderStyle = e.target.value;
+        }
+      });
+    });
+
     // Template selection updates dimensions
     try {
       StateManager.on("template-selected", (templateId) => {
@@ -248,6 +305,10 @@ export class StartupDialog {
       template: "standard",
       dimensions: template.defaultDimensions,
       palette: "default",
+      border: {
+        enabled: false,
+        style: "single",
+      },
     };
 
     this.saveLastUsed(config);
@@ -262,6 +323,10 @@ export class StartupDialog {
       template: this.selectedTemplate,
       dimensions: this.customDimensions,
       palette: this.selectedPalette,
+      border: {
+        enabled: this.borderEnabled,
+        style: this.borderStyle,
+      },
     };
 
     this.validateAndCreateProject(config);
@@ -340,6 +405,8 @@ export class StartupDialog {
         this.selectedTemplate = config.template || "standard";
         this.selectedPalette = config.palette || "default";
         this.customDimensions = config.dimensions || { w: 80, h: 25 };
+        this.borderEnabled = config.border?.enabled || false;
+        this.borderStyle = config.border?.style || "single";
 
         // Update UI to reflect loaded values
         this.updateUIFromConfig(config);
@@ -365,6 +432,27 @@ export class StartupDialog {
     // Update palette selection
     const paletteSelect = this.dialog.querySelector("#initial-palette");
     if (paletteSelect) paletteSelect.value = config.palette;
+
+    // Update border settings
+    const borderCheckbox = this.dialog.querySelector("#enable-border");
+    const borderStyleGroup = this.dialog.querySelector(".border-style-group");
+    if (borderCheckbox) {
+      borderCheckbox.checked = config.border?.enabled || false;
+      if (config.border?.enabled) {
+        borderStyleGroup?.classList.remove("disabled");
+      } else {
+        borderStyleGroup?.classList.add("disabled");
+      }
+    }
+
+    const borderRadios = this.dialog.querySelectorAll(
+      'input[name="border-style"]',
+    );
+    borderRadios.forEach((radio) => {
+      if (radio.value === (config.border?.style || "single")) {
+        radio.checked = true;
+      }
+    });
   }
 
   /**

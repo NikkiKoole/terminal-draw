@@ -215,6 +215,30 @@ const PROJECT_TEMPLATES = {
 - ✅ 100% coverage of all layer management operations
 - ✅ Integration testing with existing command system
 
+### Border System Enhancement ✅ COMPLETE
+
+#### Border Functionality Implementation ✅ COMPLETE
+**Files Created:**
+- ✅ `src/core/BorderUtils.js` - Comprehensive border utility system (163 lines)
+- ✅ `tests/BorderUtils.test.js` - Complete border functionality tests (360 lines, 32 tests)
+
+**Files Enhanced:**
+- ✅ `src/ui/StartupDialog.js` - Border options with visual previews
+- ✅ `styles/startup-dialog.css` - Professional border option styling
+- ✅ `src/app.js` - Border integration with template-based scene creation
+
+**Features Implemented:**
+- ✅ **Single & Double-Line Borders** - Complete box-drawing character support
+- ✅ **Visual Border Previews** - Interactive style selection with live previews
+- ✅ **Template Integration** - Automatic border application during scene creation
+- ✅ **Startup Dialog Options** - Enable/disable toggle with style selection
+- ✅ **Settings Persistence** - Border preferences saved with other configuration
+
+**Testing:**
+- ✅ 32 comprehensive border tests added
+- ✅ 1069 total tests passing (↑34 from Phase 3)
+- ✅ 100% coverage of border functionality and integration
+
 ### Phase 4: Testing and Polish (3-4 hours)
 
 #### Step 4.1: Test Suite Updates

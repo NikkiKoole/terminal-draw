@@ -152,6 +152,27 @@ header h1 {
     opacity: 1;
 }
 
+.tool-btn:disabled {
+    background: var(--ui-bg);
+    border-color: var(--ui-border);
+    color: var(--ui-text-dim);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.tool-btn:disabled:hover {
+    background: var(--ui-bg);
+    border-color: var(--ui-border);
+    transform: none;
+}
+
+.toolbar-separator {
+    width: 1px;
+    height: 24px;
+    background: var(--ui-border);
+    margin: 0 var(--spacing-sm);
+}
+
 /* I/O Panel (collapsible dropdown) */
 .io-panel {
     position: absolute;

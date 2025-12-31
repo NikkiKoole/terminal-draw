@@ -31,6 +31,26 @@
                     <button id="tool-picker" class="tool-btn">
                         💧 <span class="key">[P]</span>icker
                     </button>
+
+                    <!-- Undo/Redo buttons -->
+                    <div class="toolbar-separator"></div>
+                    <button
+                        id="undo-btn"
+                        class="tool-btn"
+                        title="Undo (Ctrl+Z)"
+                        disabled
+                    >
+                        ↶ Undo
+                    </button>
+                    <button
+                        id="redo-btn"
+                        class="tool-btn"
+                        title="Redo (Ctrl+Y)"
+                        disabled
+                    >
+                        ↷ Redo
+                    </button>
+
                     <div
                         style="
                             margin-left: auto;
@@ -134,6 +154,7 @@
                         <h3>Palette</h3>
                         <select id="palette-selector">
                             <option value="default">Default Terminal</option>
+                            <option value="dusty">Dusty</option>
                             <option value="gruvbox">Gruvbox Dark</option>
                             <option value="nord">Nord</option>
                             <option value="dracula">Dracula</option>

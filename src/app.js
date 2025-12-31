@@ -4,6 +4,7 @@
  */
 
 import palettes from "./palettes.json";
+console.log(palettes);
 import { Scene } from "./core/Scene.js";
 import { Cell } from "./core/Cell.js";
 import { LayerRenderer } from "./rendering/LayerRenderer.js";
@@ -17,6 +18,7 @@ import { LayerPanel } from "./ui/LayerPanel.js";
 import { GlyphPicker } from "./ui/GlyphPicker.js";
 import { ClipboardManager } from "./export/ClipboardManager.js";
 import { ProjectManager } from "./io/ProjectManager.js";
+import { CommandHistory } from "./commands/CommandHistory.js";
 
 // =============================================================================
 // Configuration & State
@@ -27,6 +29,9 @@ const GRID_HEIGHT = 25;
 
 let currentPalette = "default";
 let currentScale = 100;
+
+// Command History
+let commandHistory;
 
 // Scene and Renderer
 let scene = null;
@@ -282,10 +287,10 @@ function hideHoverIndicator() {
  * Initialize tools
  */
 function initTools() {
-  // Create tool instances
-  brushTool = new BrushTool({ ch: "█", fg: 7, bg: -1 });
-  eraserTool = new EraserTool();
-  pickerTool = new PickerTool();
+  // Create tool instances with command history
+  brushTool = new BrushTool({ ch: "█", fg: 7, bg: -1 }, commandHistory);
+  eraserTool = new EraserTool(commandHistory);
+  pickerTool = new PickerTool(commandHistory);
 
   // Set initial tool
   setCurrentTool(brushTool);
@@ -316,6 +321,33 @@ function initKeyboardShortcuts() {
   document.addEventListener("keydown", (e) => {
     // Don't trigger shortcuts if user is typing in an input/textarea
     if (e.target.matches("input, textarea")) {
+      return;
+    }
+
+    // Undo/Redo shortcuts
+    if (
+      (e.ctrlKey || e.metaKey) &&
+      !e.shiftKey &&
+      e.key.toLowerCase() === "z"
+    ) {
+      e.preventDefault();
+      if (commandHistory && commandHistory.canUndo()) {
+        commandHistory.undo();
+        updateUndoRedoButtons();
+      }
+      return;
+    }
+
+    if (
+      (e.ctrlKey || e.metaKey) &&
+      (e.key.toLowerCase() === "y" ||
+        (e.shiftKey && e.key.toLowerCase() === "z"))
+    ) {
+      e.preventDefault();
+      if (commandHistory && commandHistory.canRedo()) {
+        commandHistory.redo();
+        updateUndoRedoButtons();
+      }
       return;
     }
 
@@ -760,6 +792,11 @@ function replaceScene(newScene) {
     clipboardManager.scene = scene;
   }
 
+  // Clear command history when loading new scene
+  if (commandHistory) {
+    commandHistory.clear();
+  }
+
   // Re-render all layers
   renderScene();
 
@@ -777,10 +814,21 @@ function replaceScene(newScene) {
 
   // Apply the palette from loaded scene
   applyPalette(scene.paletteId);
+}
 
-  updateStatus(
-    `Loaded project • Grid: ${scene.w}×${scene.h} • Palette: ${scene.paletteId}`,
-  );
+/**
+ * Update all tools with current command history reference
+ */
+function updateToolsCommandHistory() {
+  if (brushTool && commandHistory) {
+    brushTool.setCommandHistory(commandHistory);
+  }
+  if (eraserTool && commandHistory) {
+    eraserTool.setCommandHistory(commandHistory);
+  }
+  if (pickerTool && commandHistory) {
+    pickerTool.setCommandHistory(commandHistory);
+  }
 }
 
 /**
@@ -854,7 +902,9 @@ function initIOPanel() {
 function init() {
   initScene();
   initInput();
+  initCommandHistory();
   initTools();
+  initKeyboardShortcuts();
   initLayerPanel();
   initInteractivePalette();
   initGlyphPicker();
@@ -1012,6 +1062,56 @@ function initPaletteSelector() {
   applyPalette(currentPalette);
 }
 
+/**
+ * Initialize command history system
+ */
+function initCommandHistory() {
+  commandHistory = new CommandHistory({
+    maxSize: 50,
+    stateManager: stateManager,
+  });
+
+  // Update tools with command history reference
+  updateToolsCommandHistory();
+
+  // Initialize undo/redo buttons
+  initUndoRedoButtons();
+
+  // Listen for history events
+  stateManager.on("history:changed", (status) => {
+    console.log("History changed:", status);
+    updateUndoRedoButtons();
+  });
+
+  stateManager.on("history:executed", (data) => {
+    console.log("Command executed:", data.command.description);
+    updateStatus(`Executed: ${data.command.description}`);
+    updateUndoRedoButtons();
+    // Re-render affected areas after command execution
+    renderScene();
+  });
+
+  stateManager.on("history:undone", (data) => {
+    console.log("Command undone:", data.command.description);
+    updateStatus(`Undid: ${data.command.description}`);
+    updateUndoRedoButtons();
+    // Re-render affected areas after undo
+    renderScene();
+  });
+
+  stateManager.on("history:redone", (data) => {
+    console.log("Command redone:", data.command.description);
+    updateStatus(`Redid: ${data.command.description}`);
+    updateUndoRedoButtons();
+    // Re-render affected areas after redo
+    renderScene();
+  });
+
+  stateManager.on("history:merged", (data) => {
+    console.log("Commands merged:", data.command.description);
+  });
+}
+
 // =============================================================================
 // Utility Functions
 // =============================================================================
@@ -1022,6 +1122,61 @@ function initPaletteSelector() {
 function updateStatus(message) {
   const status = document.getElementById("status");
   if (status) status.textContent = message;
+}
+
+function initUndoRedoButtons() {
+  const undoBtn = document.getElementById("undo-btn");
+  const redoBtn = document.getElementById("redo-btn");
+
+  if (undoBtn) {
+    undoBtn.addEventListener("click", () => {
+      if (commandHistory && commandHistory.canUndo()) {
+        commandHistory.undo();
+      }
+    });
+  }
+
+  if (redoBtn) {
+    redoBtn.addEventListener("click", () => {
+      if (commandHistory && commandHistory.canRedo()) {
+        commandHistory.redo();
+      }
+    });
+  }
+
+  // Initial button state
+  updateUndoRedoButtons();
+}
+
+function updateUndoRedoButtons() {
+  const undoBtn = document.getElementById("undo-btn");
+  const redoBtn = document.getElementById("redo-btn");
+
+  if (undoBtn && commandHistory) {
+    const canUndo = commandHistory.canUndo();
+    undoBtn.disabled = !canUndo;
+
+    if (canUndo) {
+      const undoCommand =
+        commandHistory.getUndoStack()[commandHistory.getUndoStack().length - 1];
+      undoBtn.title = `Undo: ${undoCommand.description} (Ctrl+Z)`;
+    } else {
+      undoBtn.title = "Undo (Ctrl+Z)";
+    }
+  }
+
+  if (redoBtn && commandHistory) {
+    const canRedo = commandHistory.canRedo();
+    redoBtn.disabled = !canRedo;
+
+    if (canRedo) {
+      const redoCommand =
+        commandHistory.getRedoStack()[commandHistory.getRedoStack().length - 1];
+      redoBtn.title = `Redo: ${redoCommand.description} (Ctrl+Y)`;
+    } else {
+      redoBtn.title = "Redo (Ctrl+Y)";
+    }
+  }
 }
 
 // =============================================================================

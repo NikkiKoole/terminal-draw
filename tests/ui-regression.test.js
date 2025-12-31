@@ -1,5 +1,8 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { JSDOM } from "jsdom";
+import { Scene } from "../src/core/Scene.js";
+import { StateManager } from "../src/core/StateManager.js";
+import { LayerPanel } from "../src/ui/LayerPanel.js";
 
 // Mock DOM setup for UI regression tests
 const dom = new JSDOM(`
@@ -387,6 +390,202 @@ describe("UI Regression Tests", () => {
 
       // Orphan should be removed (no data-layer = not in currentLayerIds)
       expect(document.getElementById("orphan-layer")).toBe(null);
+    });
+  });
+
+  describe("Layer Visibility and Lock Toggle (New Features)", () => {
+    let scene;
+    let stateManager;
+    let layerPanel;
+    let container;
+
+    beforeEach(() => {
+      // Create test DOM container
+      container = document.createElement("div");
+      container.id = "test-layer-panel";
+      document.body.appendChild(container);
+
+      // Create scene with multiple layers
+      stateManager = new StateManager();
+      scene = Scene.fromTemplateId("standard"); // 2 layers: bg, fg
+
+      layerPanel = new LayerPanel(container, scene, stateManager);
+    });
+
+    afterEach(() => {
+      if (container.parentNode) {
+        container.parentNode.removeChild(container);
+      }
+    });
+
+    describe("Visibility Toggle", () => {
+      it("should toggle layer visibility and update button", () => {
+        const bgLayer = scene.layers.find((l) => l.name === "Background");
+        expect(bgLayer.visible).toBe(true);
+
+        // Toggle visibility
+        layerPanel.toggleLayerVisibility(bgLayer.id);
+
+        expect(bgLayer.visible).toBe(false);
+
+        // Toggle back
+        layerPanel.toggleLayerVisibility(bgLayer.id);
+        expect(bgLayer.visible).toBe(true);
+      });
+
+      it("should emit layer:visibility event", () => {
+        const events = [];
+        stateManager.on("layer:visibility", (data) => events.push(data));
+
+        const bgLayer = scene.layers[0];
+        layerPanel.toggleLayerVisibility(bgLayer.id);
+
+        expect(events).toHaveLength(1);
+        expect(events[0].layerId).toBe(bgLayer.id);
+        expect(events[0].visible).toBe(false);
+      });
+
+      it("should update visibility button icon and classes", () => {
+        const bgLayer = scene.layers[0];
+
+        // Make layer invisible
+        layerPanel.toggleLayerVisibility(bgLayer.id);
+
+        const button = layerPanel.layerButtons.get(bgLayer.id);
+        const visibilityBtn = button.querySelector(".visibility-toggle");
+
+        expect(visibilityBtn.classList.contains("layer-hidden")).toBe(true);
+        expect(visibilityBtn.innerHTML).toBe("➖");
+        expect(visibilityBtn.title).toBe("Show layer");
+      });
+
+      it("should handle missing layer gracefully", () => {
+        expect(() => {
+          layerPanel.toggleLayerVisibility("nonexistent");
+        }).not.toThrow();
+      });
+    });
+
+    describe("Lock Toggle", () => {
+      it("should toggle layer lock state and update button", () => {
+        const bgLayer = scene.layers.find((l) => l.name === "Background");
+        expect(bgLayer.locked).toBe(false);
+
+        // Toggle lock
+        layerPanel.toggleLayerLock(bgLayer.id);
+
+        expect(bgLayer.locked).toBe(true);
+
+        // Toggle back
+        layerPanel.toggleLayerLock(bgLayer.id);
+        expect(bgLayer.locked).toBe(false);
+      });
+
+      it("should emit layer:lock event", () => {
+        const events = [];
+        stateManager.on("layer:lock", (data) => events.push(data));
+
+        const bgLayer = scene.layers[0];
+        layerPanel.toggleLayerLock(bgLayer.id);
+
+        expect(events).toHaveLength(1);
+        expect(events[0].layerId).toBe(bgLayer.id);
+        expect(events[0].locked).toBe(true);
+      });
+
+      it("should update lock button icon and classes", () => {
+        const bgLayer = scene.layers[0];
+
+        // Lock the layer
+        layerPanel.toggleLayerLock(bgLayer.id);
+
+        const button = layerPanel.layerButtons.get(bgLayer.id);
+        const lockBtn = button.querySelector(".lock-toggle");
+
+        expect(lockBtn.classList.contains("layer-locked")).toBe(true);
+        expect(lockBtn.innerHTML).toBe("🔒");
+        expect(lockBtn.title).toBe("Unlock layer");
+      });
+
+      it("should handle missing layer gracefully", () => {
+        expect(() => {
+          layerPanel.toggleLayerLock("nonexistent");
+        }).not.toThrow();
+      });
+    });
+
+    describe("Combined Visibility and Lock States", () => {
+      it("should handle layer that is both invisible and locked", () => {
+        const bgLayer = scene.layers[0];
+
+        // Make layer invisible and locked
+        layerPanel.toggleLayerVisibility(bgLayer.id);
+        layerPanel.toggleLayerLock(bgLayer.id);
+
+        expect(bgLayer.visible).toBe(false);
+        expect(bgLayer.locked).toBe(true);
+
+        const button = layerPanel.layerButtons.get(bgLayer.id);
+        const visibilityBtn = button.querySelector(".visibility-toggle");
+        const lockBtn = button.querySelector(".lock-toggle");
+
+        expect(visibilityBtn.classList.contains("layer-hidden")).toBe(true);
+        expect(lockBtn.classList.contains("layer-locked")).toBe(true);
+      });
+
+      it("should independently toggle visibility and lock", () => {
+        const bgLayer = scene.layers[0];
+
+        // Lock layer but keep visible
+        layerPanel.toggleLayerLock(bgLayer.id);
+        expect(bgLayer.visible).toBe(true);
+        expect(bgLayer.locked).toBe(true);
+
+        // Hide layer but keep locked
+        layerPanel.toggleLayerVisibility(bgLayer.id);
+        expect(bgLayer.visible).toBe(false);
+        expect(bgLayer.locked).toBe(true);
+
+        // Show layer, still locked
+        layerPanel.toggleLayerVisibility(bgLayer.id);
+        expect(bgLayer.visible).toBe(true);
+        expect(bgLayer.locked).toBe(true);
+
+        // Unlock layer, still visible
+        layerPanel.toggleLayerLock(bgLayer.id);
+        expect(bgLayer.visible).toBe(true);
+        expect(bgLayer.locked).toBe(false);
+      });
+    });
+
+    describe("Button Update Methods", () => {
+      it("should update visibility button directly without full render", () => {
+        const bgLayer = scene.layers[0];
+        const spy = vi.spyOn(layerPanel, "render");
+
+        layerPanel.updateVisibilityButton(bgLayer.id, false);
+
+        // Should not trigger full render
+        expect(spy).not.toHaveBeenCalled();
+
+        const button = layerPanel.layerButtons.get(bgLayer.id);
+        const visibilityBtn = button.querySelector(".visibility-toggle");
+        expect(visibilityBtn.innerHTML).toBe("➖");
+      });
+
+      it("should update lock button directly without full render", () => {
+        const bgLayer = scene.layers[0];
+        const spy = vi.spyOn(layerPanel, "render");
+
+        layerPanel.updateLockButton(bgLayer.id, true);
+
+        // Should not trigger full render
+        expect(spy).not.toHaveBeenCalled();
+
+        const button = layerPanel.layerButtons.get(bgLayer.id);
+        const lockBtn = button.querySelector(".lock-toggle");
+        expect(lockBtn.innerHTML).toBe("🔒");
+      });
     });
   });
 });

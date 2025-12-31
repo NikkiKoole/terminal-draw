@@ -46,6 +46,11 @@ export class EraserTool extends Tool {
       return;
     }
 
+    // Check if layer is visible - don't allow erasing on invisible layers
+    if (!activeLayer.visible) {
+      return;
+    }
+
     // Get current cell state for undo
     const index = y * scene.w + x;
     const beforeCell = activeLayer.getCell(x, y);

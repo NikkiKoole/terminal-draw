@@ -136,7 +136,7 @@ describe("BrushTool", () => {
       expect(cell.bg).toBe(6);
     });
 
-    it("should paint on invisible layer", () => {
+    it("should NOT paint on invisible layer", () => {
       const layer = scene.getActiveLayer();
       layer.visible = false;
 
@@ -144,8 +144,8 @@ describe("BrushTool", () => {
       brush.onCellDown(1, 2, scene, stateManager);
 
       const cell = layer.getCell(1, 2);
-      // Should still paint even if layer is invisible
-      expect(cell.ch).toBe("H");
+      // Should not paint on invisible layer - cell should remain default
+      expect(cell.ch).toBe(" ");
     });
   });
 

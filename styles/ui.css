@@ -226,6 +226,27 @@
     background: rgba(0, 0, 0, 0.1);
 }
 
+.lock-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 2px;
+    border-radius: var(--radius-sm);
+    transition: background-color 0.2s ease;
+}
+
+.lock-toggle:hover {
+    background: var(--ui-bg);
+}
+
+.lock-toggle.layer-locked {
+    color: #ff6b6b;
+}
+
+.lock-toggle.layer-unlocked {
+    color: #51cf66;
+}
+
 .layer-item.active {
     border-color: var(--ui-accent);
     background: rgba(0, 122, 204, 0.15);

@@ -104,19 +104,19 @@ describe("EraserTool", () => {
       expect(cell.bg).toBe(-1);
     });
 
-    it("should erase on invisible layer", () => {
+    it("should NOT erase on invisible layer", () => {
       const layer = scene.getActiveLayer();
       layer.visible = false;
 
       // Paint a cell first
       layer.setCell(1, 2, new Cell("H", 2, 3));
 
-      // Erase
+      // Try to erase
       eraser.onCellDown(1, 2, scene, stateManager);
 
       const cell = layer.getCell(1, 2);
-      // Should still erase even if layer is invisible
-      expect(cell.ch).toBe(" ");
+      // Should not erase on invisible layer - cell should remain unchanged
+      expect(cell.ch).toBe("H");
     });
   });
 

@@ -377,32 +377,21 @@
 
                 <!-- Main Editor Area -->
                 <div id="editor">
-                    <div class="grid-container">
+                    <div class="grid-container grid-stack">
                         <!-- Background: Solid color layer -->
                         <div id="background-grid" class="background-grid"></div>
 
                         <!-- Hit Test: Invisible layer for mouse events -->
-                        <div id="hit-test-layer" class="hit-test-layer"></div>
+                        <div
+                            id="hit-test-layer"
+                            class="hit-test-layer hit-test-overlay"
+                        ></div>
 
                         <!-- Hover Indicator: Visual feedback for hovered cell -->
                         <div id="hover-indicator" class="hover-indicator"></div>
 
-                        <!-- Text Layers: 3 layers for drawing (bg/mid/fg) -->
-                        <div
-                            id="layer-bg"
-                            class="visual-layer"
-                            data-layer="bg"
-                        ></div>
-                        <div
-                            id="layer-mid"
-                            class="visual-layer"
-                            data-layer="mid"
-                        ></div>
-                        <div
-                            id="layer-fg"
-                            class="visual-layer"
-                            data-layer="fg"
-                        ></div>
+                        <!-- Text Layers: Dynamically generated based on scene layers -->
+                        <!-- Layer containers will be created by JavaScript -->
                     </div>
                 </div>
             </main>

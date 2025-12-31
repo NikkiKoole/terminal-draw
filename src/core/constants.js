@@ -14,10 +14,27 @@ export const DEFAULT_CHAR = " ";
 export const DEFAULT_FG = 7; // White
 export const DEFAULT_BG = -1; // Transparent
 
-// Layer IDs
-export const LAYER_BG = "bg";
-export const LAYER_MID = "mid";
-export const LAYER_FG = "fg";
+// Template system constants
+export const DEFAULT_TEMPLATE_ID = "simple";
+
+// Dynamic layer ID generation
+let layerIdCounter = 0;
+export const generateLayerId = (purpose = "layer") => {
+  const timestamp = Date.now().toString(36);
+  const random = Math.random().toString(36).substr(2, 4);
+  return `${purpose}_${timestamp}_${random}`;
+};
+
+// Legacy layer IDs (for migration/compatibility)
+export const LEGACY_LAYER_BG = "bg";
+export const LEGACY_LAYER_MID = "mid";
+export const LEGACY_LAYER_FG = "fg";
+
+// Backward compatibility exports - these maintain the old API
+// Tests and existing code can continue using these during migration
+export const LAYER_BG = LEGACY_LAYER_BG;
+export const LAYER_MID = LEGACY_LAYER_MID;
+export const LAYER_FG = LEGACY_LAYER_FG;
 
 // Glyph presets organized by category
 export const GLYPHS = {

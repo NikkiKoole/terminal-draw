@@ -10,7 +10,12 @@ import { Cell } from "./core/Cell.js";
 import { LayerRenderer } from "./rendering/LayerRenderer.js";
 import { StateManager } from "./core/StateManager.js";
 import { HitTestOverlay } from "./input/HitTestOverlay.js";
-import { LAYER_BG, LAYER_MID, LAYER_FG } from "./core/constants.js";
+import {
+  LAYER_BG,
+  LAYER_MID,
+  LAYER_FG,
+  DEFAULT_TEMPLATE_ID,
+} from "./core/constants.js";
 import { BrushTool } from "./tools/BrushTool.js";
 import { EraserTool } from "./tools/EraserTool.js";
 import { PickerTool } from "./tools/PickerTool.js";
@@ -69,52 +74,73 @@ let hoverIndicator = null;
  * Initialize scene with test pattern
  */
 function initScene() {
-  // Create scene
+  // Create scene with default template (advanced 3-layer setup for compatibility)
   scene = new Scene(GRID_WIDTH, GRID_HEIGHT, currentPalette);
   renderer = new LayerRenderer();
 
-  // Get layers
-  const bgLayer = scene.getLayer(LAYER_BG);
-  const midLayer = scene.getLayer(LAYER_MID);
-  const fgLayer = scene.getLayer(LAYER_FG);
+  // Create dynamic layer containers
+  createLayerContainers();
 
-  // Create test pattern in layers
+  // Create test pattern in layers (flexible for any layer count)
+  createTestPattern();
+
+  console.log(`Scene initialized with ${scene.layers.length} layers`);
+}
+
+/**
+ * Create test pattern that works with any number of layers
+ */
+function createTestPattern() {
+  if (scene.layers.length === 0) return;
+
   const testChars = "─│┌┐└┘┬┴├┤┼━┃╔╗╚╝░▒▓█";
+  const centerY = Math.floor(GRID_HEIGHT / 2);
 
-  // Background: border
-  for (let y = 0; y < GRID_HEIGHT; y++) {
-    for (let x = 0; x < GRID_WIDTH; x++) {
-      if (y === 0 || y === GRID_HEIGHT - 1 || x === 0 || x === GRID_WIDTH - 1) {
-        let ch = "│";
-        if (y === 0 && x === 0) ch = "┌";
-        else if (y === 0 && x === GRID_WIDTH - 1) ch = "┐";
-        else if (y === GRID_HEIGHT - 1 && x === 0) ch = "└";
-        else if (y === GRID_HEIGHT - 1 && x === GRID_WIDTH - 1) ch = "┘";
-        else if (y === 0 || y === GRID_HEIGHT - 1) ch = "─";
+  // Use first layer for border (usually background)
+  const firstLayer = scene.layers[0];
+  if (firstLayer) {
+    for (let y = 0; y < GRID_HEIGHT; y++) {
+      for (let x = 0; x < GRID_WIDTH; x++) {
+        if (
+          y === 0 ||
+          y === GRID_HEIGHT - 1 ||
+          x === 0 ||
+          x === GRID_WIDTH - 1
+        ) {
+          let ch = "│";
+          if (y === 0 && x === 0) ch = "┌";
+          else if (y === 0 && x === GRID_WIDTH - 1) ch = "┐";
+          else if (y === GRID_HEIGHT - 1 && x === 0) ch = "└";
+          else if (y === GRID_HEIGHT - 1 && x === GRID_WIDTH - 1) ch = "┘";
+          else if (y === 0 || y === GRID_HEIGHT - 1) ch = "─";
 
-        bgLayer.setCell(x, y, new Cell(ch, 7, -1));
+          firstLayer.setCell(x, y, new Cell(ch, 7, -1));
+        }
       }
     }
   }
 
-  // Middle: center text
-  const centerY = Math.floor(GRID_HEIGHT / 2);
-  const text = "TERMINAL DRAW - STEP 3 COMPLETE";
-  const textX = Math.floor((GRID_WIDTH - text.length) / 2);
-  for (let i = 0; i < text.length; i++) {
-    midLayer.setCell(textX + i, centerY, new Cell(text[i], 3, -1));
+  // Use middle layer for text (if available)
+  if (scene.layers.length >= 2) {
+    const middleLayer = scene.layers[Math.floor(scene.layers.length / 2)];
+    const text = `TERMINAL DRAW - ${scene.layers.length} LAYERS`;
+    const textX = Math.floor((GRID_WIDTH - text.length) / 2);
+    for (let i = 0; i < text.length; i++) {
+      middleLayer.setCell(textX + i, centerY, new Cell(text[i], 3, -1));
+    }
   }
 
-  // Foreground: box drawing characters
-  //const testChars = "─│┌┐└┘┬┴├┤┼━┃╔╗╚╝░▒▓█";
-  for (let i = 0; i < testChars.length && i < 20; i++) {
-    fgLayer.setCell(30 + i, centerY + 2, new Cell(testChars[i], 6, -1));
-    fgLayer.setCell(30 + i, centerY + 3, new Cell(testChars[i], 6, -1));
+  // Use last layer for decorations (usually foreground)
+  if (scene.layers.length >= 2) {
+    const lastLayer = scene.layers[scene.layers.length - 1];
+    for (let i = 0; i < testChars.length && i < 20; i++) {
+      lastLayer.setCell(30 + i, centerY + 2, new Cell(testChars[i], 6, -1));
+      lastLayer.setCell(30 + i, centerY + 3, new Cell(testChars[i], 6, -1));
+    }
   }
 
   // Render all layers
   renderScene();
-
   updateStatus(
     `Ready • Grid: ${GRID_WIDTH}×${GRID_HEIGHT} • Hover over grid to test`,
   );
@@ -133,25 +159,66 @@ function updateGridDimensions() {
   root.style.setProperty("--grid-w", scene.w);
   root.style.setProperty("--grid-h", scene.h);
 }
+// =============================================================================
+// Dynamic Layer Management
+// =============================================================================
+
+/**
+ * Create layer containers dynamically based on scene layers
+ */
+function createLayerContainers() {
+  const gridStack = document.querySelector(".grid-stack");
+  if (!gridStack) {
+    console.error("Grid stack container not found");
+    return;
+  }
+
+  // Clear existing layer containers (except background and hit-test)
+  const existingLayers = gridStack.querySelectorAll(".visual-layer");
+  existingLayers.forEach((layer) => layer.remove());
+
+  // Create containers for each layer in the scene
+  scene.layers.forEach((layer, index) => {
+    const container = document.createElement("div");
+    container.id = `layer-${layer.id}`;
+    container.className = "visual-layer";
+    container.setAttribute("data-layer", layer.id);
+    container.style.zIndex = 100 + index; // Ensure proper stacking order
+
+    // Insert before the hit-test overlay (which should be on top)
+    const hitTestOverlay = gridStack.querySelector(".hit-test-overlay");
+    if (hitTestOverlay) {
+      gridStack.insertBefore(container, hitTestOverlay);
+    } else {
+      gridStack.appendChild(container);
+    }
+  });
+}
+
+// =============================================================================
+// Rendering Functions
+// =============================================================================
 
 function renderScene() {
   if (!scene || !renderer) return;
 
-  const bgContainer = document.getElementById("layer-bg");
-  const midContainer = document.getElementById("layer-mid");
-  const fgContainer = document.getElementById("layer-fg");
-
-  if (!bgContainer || !midContainer || !fgContainer) {
-    console.error("Layer containers not found");
-    return;
-  }
-
-  // Update CSS grid dimensions to match scene
   updateGridDimensions();
 
-  renderer.render(scene.getLayer(LAYER_BG), bgContainer);
-  renderer.render(scene.getLayer(LAYER_MID), midContainer);
-  renderer.render(scene.getLayer(LAYER_FG), fgContainer);
+  // Render each layer dynamically
+  scene.layers.forEach((layer) => {
+    const container = document.getElementById(`layer-${layer.id}`);
+    if (container) {
+      renderer.render(layer, container);
+      // Update layer visibility
+      if (layer.visible) {
+        container.classList.remove("hidden");
+      } else {
+        container.classList.add("hidden");
+      }
+    } else {
+      console.warn(`Container not found for layer: ${layer.id}`);
+    }
+  });
 
   // Update overlay size to match rendered grid
   if (hitTestOverlay) {
@@ -451,6 +518,35 @@ function initLayerPanel() {
     updateStatus(
       `Layer: ${data.layerId.toUpperCase()} • Tool: ${currentTool.name} • Scale: ${currentScale}%`,
     );
+  });
+
+  // Listen to layer structure changes to recreate containers
+  stateManager.on("layers:structure_changed", () => {
+    createLayerContainers();
+    renderScene();
+  });
+
+  // Listen to layer visibility changes to update DOM
+  stateManager.on("layer:visibility", (data) => {
+    const layerElement = document.getElementById(`layer-${data.layerId}`);
+    if (layerElement) {
+      if (data.visible) {
+        layerElement.classList.remove("hidden");
+      } else {
+        layerElement.classList.add("hidden");
+      }
+    }
+  });
+
+  // Listen to scene updates that might affect layers
+  stateManager.on("scene:updated", (data) => {
+    if (
+      data.reason === "layer_added" ||
+      data.reason === "layer_removed" ||
+      data.reason === "layer_reordered"
+    ) {
+      renderScene();
+    }
   });
 }
 

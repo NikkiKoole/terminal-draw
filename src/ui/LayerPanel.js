@@ -5,9 +5,14 @@
  * - Setting active layer
  * - Toggling visibility
  * - Toggling lock state
- * - Adding new layers
- * - Removing layers
+ * - Adding new layers (with undo/redo support)
+ * - Removing layers (with undo/redo support)
+ * - Reordering layers (with undo/redo support)
  */
+
+import { AddLayerCommand } from "../commands/AddLayerCommand.js";
+import { RemoveLayerCommand } from "../commands/RemoveLayerCommand.js";
+import { ReorderLayersCommand } from "../commands/ReorderLayersCommand.js";
 
 export class LayerPanel {
   /**
@@ -15,11 +20,13 @@ export class LayerPanel {
    * @param {HTMLElement} container - Container element for the panel
    * @param {Scene} scene - The scene to manage
    * @param {StateManager} stateManager - State manager for events
+   * @param {CommandHistory} commandHistory - Command history for undo/redo
    */
-  constructor(container, scene, stateManager) {
+  constructor(container, scene, stateManager, commandHistory = null) {
     this.container = container;
     this.scene = scene;
     this.stateManager = stateManager;
+    this.commandHistory = commandHistory;
 
     this.render();
     this.attachEventListeners();
@@ -266,36 +273,54 @@ export class LayerPanel {
   }
 
   /**
-   * Add a new layer with the specified purpose
+   * Add a new layer with the specified purpose (command-based)
    */
   addLayer(purpose) {
-    try {
-      const newLayer = this.scene.addSmartLayer(purpose);
-      this.stateManager.emit("layer:added", {
-        layerId: newLayer.id,
-        name: newLayer.name,
-        purpose: purpose,
-      });
-      this.stateManager.emit("scene:updated", { reason: "layer_added" });
+    if (this.commandHistory) {
+      // Use command pattern for undo/redo support
+      const command = new AddLayerCommand(this.scene, purpose);
+      const result = this.commandHistory.execute(command);
 
-      // Set the new layer as active
-      this.scene.setActiveLayer(newLayer.id);
-      this.stateManager.emit("layer:active", { layerId: newLayer.id });
-
-      this.render();
-
-      // Re-create layer containers to include the new layer
-      this.stateManager.emit("layers:structure_changed");
-    } catch (error) {
-      console.error("Failed to add layer:", error);
-      this.stateManager.emit("error", {
-        message: `Failed to add ${purpose} layer: ${error.message}`,
-      });
+      if (result && result.success) {
+        this.stateManager.emit("layer:added", {
+          layerId: result.layerId,
+          name: command.addedLayerName || purpose,
+          purpose: purpose,
+        });
+        this.stateManager.emit("scene:updated", { reason: "layer_added" });
+        this.stateManager.emit("layer:active", { layerId: result.layerId });
+        this.render();
+        this.stateManager.emit("layers:structure_changed");
+      } else {
+        this.stateManager.emit("error", {
+          message: result?.error || `Failed to add ${purpose} layer`,
+        });
+      }
+    } else {
+      // Fallback to direct manipulation
+      try {
+        const newLayer = this.scene.addSmartLayer(purpose);
+        this.stateManager.emit("layer:added", {
+          layerId: newLayer.id,
+          name: newLayer.name,
+          purpose: purpose,
+        });
+        this.stateManager.emit("scene:updated", { reason: "layer_added" });
+        this.scene.setActiveLayer(newLayer.id);
+        this.stateManager.emit("layer:active", { layerId: newLayer.id });
+        this.render();
+        this.stateManager.emit("layers:structure_changed");
+      } catch (error) {
+        console.error("Failed to add layer:", error);
+        this.stateManager.emit("error", {
+          message: `Failed to add ${purpose} layer: ${error.message}`,
+        });
+      }
     }
   }
 
   /**
-   * Remove a layer
+   * Remove a layer (command-based)
    */
   removeLayer(layerId) {
     if (this.scene.layers.length <= 1) {
@@ -312,31 +337,60 @@ export class LayerPanel {
     }
 
     const layerName = layer.name;
+    const confirmMessage = this.commandHistory
+      ? `Remove layer "${layerName}"? This can be undone with Ctrl+Z.`
+      : `Remove layer "${layerName}"? This action cannot be undone.`;
 
-    if (confirm(`Remove layer "${layerName}"? This action cannot be undone.`)) {
-      try {
-        const success = this.scene.removeLayer(layerId);
-        if (success) {
-          this.stateManager.emit("layer:removed", { layerId, name: layerName });
+    if (confirm(confirmMessage)) {
+      if (this.commandHistory) {
+        // Use command pattern for undo/redo support
+        const command = new RemoveLayerCommand(this.scene, layerId);
+        const result = this.commandHistory.execute(command);
+
+        if (result && result.success) {
+          this.stateManager.emit("layer:removed", {
+            layerId,
+            name: result.removedLayerName || layerName,
+          });
           this.stateManager.emit("scene:updated", { reason: "layer_removed" });
           this.stateManager.emit("layers:structure_changed");
           this.render();
         } else {
           this.stateManager.emit("error", {
-            message: "Failed to remove layer",
+            message: result?.error || "Failed to remove layer",
           });
         }
-      } catch (error) {
-        console.error("Failed to remove layer:", error);
-        this.stateManager.emit("error", {
-          message: `Failed to remove layer: ${error.message}`,
-        });
+      } else {
+        // Fallback to direct manipulation
+        try {
+          const success = this.scene.removeLayer(layerId);
+          if (success) {
+            this.stateManager.emit("layer:removed", {
+              layerId,
+              name: layerName,
+            });
+            this.stateManager.emit("scene:updated", {
+              reason: "layer_removed",
+            });
+            this.stateManager.emit("layers:structure_changed");
+            this.render();
+          } else {
+            this.stateManager.emit("error", {
+              message: "Failed to remove layer",
+            });
+          }
+        } catch (error) {
+          console.error("Failed to remove layer:", error);
+          this.stateManager.emit("error", {
+            message: `Failed to remove layer: ${error.message}`,
+          });
+        }
       }
     }
   }
 
   /**
-   * Move layer up or down
+   * Move layer up or down (command-based)
    */
   moveLayer(layerId, direction) {
     const currentIndex = this.scene.getLayerIndex(layerId);
@@ -345,23 +399,66 @@ export class LayerPanel {
     const targetIndex =
       direction === "up" ? currentIndex + 1 : currentIndex - 1;
 
-    try {
-      const success = this.scene.reorderLayers(currentIndex, targetIndex);
-      if (success) {
-        this.stateManager.emit("layer:reordered", {
+    // Validate target index
+    if (targetIndex < 0 || targetIndex >= this.scene.layers.length) {
+      return; // Invalid move
+    }
+
+    if (this.commandHistory) {
+      // Use command pattern for undo/redo support
+      try {
+        const command = new ReorderLayersCommand(
+          this.scene,
           layerId,
-          fromIndex: currentIndex,
-          toIndex: targetIndex,
+          currentIndex,
+          targetIndex,
+        );
+        const result = this.commandHistory.execute(command);
+
+        if (result && result.success) {
+          this.stateManager.emit("layer:reordered", {
+            layerId,
+            fromIndex: result.fromIndex,
+            toIndex: result.toIndex,
+          });
+          this.stateManager.emit("scene:updated", {
+            reason: "layer_reordered",
+          });
+          this.stateManager.emit("layers:structure_changed");
+          this.render();
+        } else {
+          this.stateManager.emit("error", {
+            message: result?.error || "Failed to reorder layer",
+          });
+        }
+      } catch (error) {
+        console.error("Failed to create reorder command:", error);
+        this.stateManager.emit("error", {
+          message: `Failed to reorder layer: ${error.message}`,
         });
-        this.stateManager.emit("scene:updated", { reason: "layer_reordered" });
-        this.stateManager.emit("layers:structure_changed");
-        this.render();
       }
-    } catch (error) {
-      console.error("Failed to reorder layer:", error);
-      this.stateManager.emit("error", {
-        message: `Failed to reorder layer: ${error.message}`,
-      });
+    } else {
+      // Fallback to direct manipulation
+      try {
+        const success = this.scene.reorderLayers(currentIndex, targetIndex);
+        if (success) {
+          this.stateManager.emit("layer:reordered", {
+            layerId,
+            fromIndex: currentIndex,
+            toIndex: targetIndex,
+          });
+          this.stateManager.emit("scene:updated", {
+            reason: "layer_reordered",
+          });
+          this.stateManager.emit("layers:structure_changed");
+          this.render();
+        }
+      } catch (error) {
+        console.error("Failed to reorder layer:", error);
+        this.stateManager.emit("error", {
+          message: `Failed to reorder layer: ${error.message}`,
+        });
+      }
     }
   }
 
@@ -418,6 +515,13 @@ export class LayerPanel {
     layer.locked = !layer.locked;
     this.stateManager.emit("layer:lock", { layerId, locked: layer.locked });
     this.render();
+  }
+
+  /**
+   * Set command history reference for undo/redo support
+   */
+  setCommandHistory(commandHistory) {
+    this.commandHistory = commandHistory;
   }
 
   /**

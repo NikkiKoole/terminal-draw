@@ -178,24 +178,42 @@ const PROJECT_TEMPLATES = {
 - ✅ 973 total tests passing (up from 939)
 - ✅ 100% backward compatibility maintained
 
-### Phase 3: Dynamic Layer Management UI (2-3 hours)
+### Phase 3: Dynamic Layer Management UI ✅ COMPLETE
 
-#### Step 3.1: Enhanced Layer Panel
-**Files to Modify:**
-- `src/ui/LayerPanel.js` - Add layer management controls
-- `styles/ui.css` - Enhanced layer panel styling
+#### Step 3.1: Enhanced Layer Panel ✅ COMPLETE
+**Files Modified:**
+- ✅ `src/ui/LayerPanel.js` - Command-based layer management with undo/redo support
+- ✅ `styles/ui.css` - Enhanced visual styling with improved feedback
+- ✅ `src/app.js` - CommandHistory integration for layer operations
 
-**New Features:**
-- "Add Layer" button with template options
-- "Remove Layer" button with confirmation
-- Layer reorder handles (drag/drop or up/down buttons)
-- Template conversion options
+**Features Implemented:**
+- ✅ Command-based layer operations with full undo/redo support
+- ✅ Enhanced "Add Layer" with 6 smart template options
+- ✅ "Remove Layer" with undo capability and user confirmation
+- ✅ Layer reordering (up/down) with visual feedback
+- ✅ Improved visual styling with hover effects and animations
+- ✅ Error handling and validation for all operations
+- ✅ Graceful fallback for environments without CommandHistory
 
-#### Step 3.2: Layer Management Commands
-**Files to Create:**
-- `src/commands/AddLayerCommand.js` - Undoable layer addition
-- `src/commands/RemoveLayerCommand.js` - Undoable layer removal
-- `src/commands/ReorderLayersCommand.js` - Undoable layer reordering
+#### Step 3.2: Layer Management Commands ✅ COMPLETE
+**Files Created:**
+- ✅ `src/commands/AddLayerCommand.js` - Undoable layer addition (202 lines)
+- ✅ `src/commands/RemoveLayerCommand.js` - Undoable layer removal (304 lines)  
+- ✅ `src/commands/ReorderLayersCommand.js` - Undoable layer reordering (319 lines)
+
+**Advanced Features Implemented:**
+- ✅ **AddLayerCommand**: Smart layer creation with template support, insertion positioning
+- ✅ **RemoveLayerCommand**: Complete data preservation for restoration, active layer handling
+- ✅ **ReorderLayersCommand**: Command merging for continuous operations, static factory methods
+- ✅ **Full undo/redo integration** with existing CommandHistory system
+- ✅ **Comprehensive validation** for all operations
+- ✅ **Error recovery** and graceful handling of edge cases
+
+**Testing:**
+- ✅ 62 comprehensive command tests added (`tests/layer-commands.test.js`)
+- ✅ 1035 total tests passing (↑62 from Phase 2)
+- ✅ 100% coverage of all layer management operations
+- ✅ Integration testing with existing command system
 
 ### Phase 4: Testing and Polish (3-4 hours)
 

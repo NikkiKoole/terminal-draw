@@ -29,6 +29,9 @@ import { ClearCommand } from "./commands/ClearCommand.js";
 import { GridResizer } from "./core/GridResizer.js";
 import { StartupDialog } from "./ui/StartupDialog.js";
 import { PROJECT_TEMPLATES, getTemplate } from "./core/ProjectTemplate.js";
+import { AddLayerCommand } from "./commands/AddLayerCommand.js";
+import { RemoveLayerCommand } from "./commands/RemoveLayerCommand.js";
+import { ReorderLayersCommand } from "./commands/ReorderLayersCommand.js";
 
 // =============================================================================
 // Configuration & State
@@ -549,7 +552,7 @@ function initLayerPanel() {
     return;
   }
 
-  layerPanel = new LayerPanel(container, scene, stateManager);
+  layerPanel = new LayerPanel(container, scene, stateManager, commandHistory);
 
   // Listen to layer active changes to update status
   stateManager.on("layer:active", (data) => {
@@ -1081,6 +1084,7 @@ function initUIComponents() {
   initTools();
   initKeyboardShortcuts();
   initLayerPanel();
+  updateLayerPanelCommandHistory();
   initInteractivePalette();
   initGlyphPicker();
   initClipboard();
@@ -1361,6 +1365,15 @@ function initUndoRedoButtons() {
 
   // Initial button state
   updateUndoRedoButtons();
+}
+
+/**
+ * Update layer panel with command history reference
+ */
+function updateLayerPanelCommandHistory() {
+  if (layerPanel && commandHistory) {
+    layerPanel.setCommandHistory(commandHistory);
+  }
 }
 
 function updateUndoRedoButtons() {

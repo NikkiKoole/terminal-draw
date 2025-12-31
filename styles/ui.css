@@ -117,6 +117,9 @@
 .layer-panel {
     width: 100%;
     position: relative;
+    background: var(--ui-bg);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-sm);
 }
 
 .layer-panel-header {
@@ -124,6 +127,8 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: var(--spacing-sm);
+    padding-bottom: var(--spacing-xs);
+    border-bottom: 1px solid var(--ui-border);
 }
 
 .add-layer-btn {
@@ -157,21 +162,40 @@
     display: flex;
     align-items: center;
     gap: var(--spacing-xs);
-    padding: var(--spacing-xs);
+    padding: var(--spacing-sm);
     border-radius: var(--radius-sm);
     border: 1px solid var(--ui-border);
-    background: var(--ui-bg);
-    transition: all 0.2s;
+    background: var(--ui-bg-light);
+    transition: all 0.2s ease;
     cursor: pointer;
+    position: relative;
+    margin-bottom: 2px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .layer-item.active {
     border-color: var(--ui-accent);
-    background: rgba(0, 122, 204, 0.1);
+    background: rgba(0, 122, 204, 0.15);
+    box-shadow: 0 2px 6px rgba(0, 122, 204, 0.2);
+    transform: translateX(2px);
 }
 
-.layer-item:hover {
+.layer-item.active::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--ui-accent);
+    border-radius: 0 2px 2px 0;
+}
+
+.layer-item:hover:not(.active) {
     border-color: var(--ui-text-dim);
+    background: var(--ui-bg);
+    transform: translateX(1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
 .layer-select {
@@ -202,23 +226,28 @@
 }
 
 .layer-remove {
-    background: var(--color-fg-1);
+    background: transparent;
     border: 1px solid var(--ui-border);
     border-radius: var(--radius-sm);
-    color: white;
-    width: 20px;
-    height: 20px;
+    color: var(--ui-text-dim);
+    width: 22px;
+    height: 22px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    font-size: 12px;
-    font-weight: bold;
     transition: all 0.2s;
+    font-size: 14px;
+    font-weight: bold;
+    opacity: 0.7;
 }
 
 .layer-remove:hover {
     background: #ff4444;
+    color: white;
+    border-color: #ff4444;
+    opacity: 1;
+    transform: scale(1.05);
 }
 
 .layer-reorder-controls {
@@ -230,22 +259,38 @@
 .layer-move {
     background: var(--ui-bg);
     border: 1px solid var(--ui-border);
-    border-radius: 2px;
-    color: var(--ui-text);
-    width: 16px;
-    height: 12px;
+    border-radius: 3px;
+    color: var(--ui-text-dim);
+    width: 18px;
+    height: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    font-size: 10px;
-    line-height: 1;
     transition: all 0.2s;
+    font-size: 11px;
+    line-height: 1;
+    opacity: 0.8;
 }
 
 .layer-move:hover {
     background: var(--ui-accent);
     color: white;
+    border-color: var(--ui-accent);
+    opacity: 1;
+    transform: scale(1.05);
+}
+
+.layer-move:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    background: var(--ui-border);
+}
+
+.layer-move:disabled:hover {
+    background: var(--ui-border);
+    color: var(--ui-text-dim);
+    transform: none;
 }
 
 .layer-template-menu {
@@ -341,8 +386,8 @@
 
 .layer-visibility,
 .layer-lock {
-    width: 28px;
-    height: 28px;
+    width: 26px;
+    height: 26px;
     padding: 0;
     margin: 0;
     display: flex;
@@ -352,20 +397,73 @@
     border: 1px solid var(--ui-border);
     border-radius: var(--radius-sm);
     cursor: pointer;
-    font-size: 14px;
     transition: all 0.2s;
+    font-size: 13px;
+    opacity: 0.8;
 }
 
 .layer-visibility:hover,
 .layer-lock:hover {
     background: var(--ui-border);
     transform: scale(1.05);
+    opacity: 1;
 }
 
 .layer-visibility.layer-hidden,
 .layer-lock.locked {
-    background: rgba(204, 0, 0, 0.1);
-    border-color: rgba(204, 0, 0, 0.3);
+    background: rgba(204, 0, 0, 0.15);
+    border-color: rgba(204, 0, 0, 0.4);
+    opacity: 1;
+}
+
+/* Enhanced visual feedback for command-based operations */
+.layer-item.command-executing {
+    opacity: 0.6;
+    pointer-events: none;
+    position: relative;
+}
+
+.layer-item.command-executing::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 122, 204, 0.1);
+    border-radius: var(--radius-sm);
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0%,
+    100% {
+        opacity: 0.1;
+    }
+    50% {
+        opacity: 0.3;
+    }
+}
+
+/* Undo/Redo integration hints */
+.layer-panel-header h3 {
+    position: relative;
+}
+
+.layer-panel-header h3::after {
+    content: "Ctrl+Z to undo";
+    position: absolute;
+    top: -2px;
+    right: 0;
+    font-size: 10px;
+    color: var(--ui-text-dim);
+    opacity: 0;
+    transition: opacity 0.3s;
+    white-space: nowrap;
+}
+
+.layer-panel:hover .layer-panel-header h3::after {
+    opacity: 0.7;
 }
 
 /* ============================================

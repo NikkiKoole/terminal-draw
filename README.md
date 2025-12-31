@@ -4,7 +4,7 @@ A web-based ASCII art editor that renders true text glyphs in the DOM for creati
 
 ## Features
 
-**Steps 1-9 Complete ✅ + Phase 1 & 2: Advanced Template System ✅**
+**Steps 1-9 Complete ✅ + Phase 1, 2 & 3: Professional Layer Management ✅**
 - ✅ Project Setup - Cell-based rendering, palettes, scaling
 - ✅ Core Data Models - Cell, Layer, Scene, StateManager, constants
 - ✅ Basic Rendering - LayerRenderer and Compositor
@@ -17,15 +17,17 @@ A web-based ASCII art editor that renders true text glyphs in the DOM for creati
 - ✅ Testing & Polish - All functionality complete and validated
 - ✅ **Phase 1: Flexible Layer Template System** - Dynamic multi-layer architecture
 - ✅ **Phase 2: Startup Dialog** - Professional project creation experience
+- ✅ **Phase 3: Command-Based Layer Management** - Full undo/redo layer operations
 
-**Current Status: Professional ASCII Editor with Template-Driven Workflow ✅**
+**Current Status: Production-Ready ASCII Editor with Advanced Layer Management ✅**
 - **Template System**: 3 project templates (Simple/Standard/Advanced)
 - **Startup Dialog**: Beautiful project creation modal with template selection
 - **Dynamic Layers**: Add, remove, reorder layers with smart templates
 - **Professional UI**: Enhanced layer panel with real-time management
 - **Flexible Architecture**: Scales from 1 to unlimited layers seamlessly
-- **Custom Configuration**: Canvas dimensions, color palettes, smart defaults
-- **973 tests passing** - comprehensive coverage with 34 new StartupDialog tests
+- **Command-Based Operations**: Full undo/redo support for all layer management
+- **Enhanced UI**: Improved visual feedback and professional styling
+- **1035 tests passing** - comprehensive coverage with 62 new layer command tests
 - Complete backward compatibility with existing projects
 
 ## Quick Start
@@ -166,7 +168,7 @@ terminal-draw/
 
 ## Current Status
 
-**Steps 1-9 Complete ✅ + Phase 1 & 2 Complete ✅**  
+**Steps 1-9 Complete ✅ + Phase 1, 2 & 3 Complete ✅**
 - ✅ Step 1: Project Setup (HTML/CSS, palettes, scaling)
 - ✅ Step 2: Core Data Models (Cell, Layer, Scene, StateManager, constants)
 - ✅ Step 3: Basic Rendering (LayerRenderer, Compositor)
@@ -179,9 +181,10 @@ terminal-draw/
 - ✅ Step 9: Testing & Polish (complete functionality validation)
 - ✅ **Phase 1: Flexible Layer Template System** (dynamic multi-layer architecture)
 - ✅ **Phase 2: Startup Dialog** (professional project creation experience)
-- **973 tests passing (100%)**
+- ✅ **Phase 3: Command-Based Layer Management** (full undo/redo layer operations)
+- **1035 tests passing (100%)**
 
-**Current:** Production-ready ASCII art editor with professional template workflow
+**Current:** Production-ready ASCII art editor with advanced layer management system
 
 See [00-implementation-plan.md](./docs/00-implementation-plan.md) for detailed roadmap.
 
@@ -369,7 +372,7 @@ Test pages are in `test-pages/`:
 
 ## Progress
 
-**Original 9 steps complete ✅ + Phase 1 & 2: Template System ✅**
+**Original 9 steps complete ✅ + Phase 1, 2 & 3: Advanced Layer System ✅**
 
 **Phase 1 Achievements:**
 - ✅ **Template System Foundation** - 3 project templates with smart defaults
@@ -384,13 +387,21 @@ Test pages are in `test-pages/`:
 - ✅ **User Experience** - Quick start, keyboard shortcuts, settings persistence
 - ✅ **34 new tests added** - Full StartupDialog functionality coverage
 
+**Phase 3 Achievements:**
+- ✅ **Command-Based Layer Management** - Full undo/redo support for layer operations
+- ✅ **Enhanced Layer Commands** - AddLayerCommand, RemoveLayerCommand, ReorderLayersCommand
+- ✅ **Professional UI Improvements** - Enhanced visual feedback and styling
+- ✅ **Advanced Error Handling** - Graceful validation and recovery for all operations
+- ✅ **62 new tests added** - Comprehensive layer command functionality coverage
+
 **Recent Major Features:**
+- ✅ **Advanced Layer Management** - Full command-based operations with undo/redo
 - ✅ **Professional Startup Experience** - Template-driven project creation workflow
 - ✅ **Flexible Layer Templates** - Simple (1), Standard (2), Advanced (3) layer configurations
-- ✅ **Dynamic Layer Management** - Add, remove, reorder layers in real-time
-- ✅ **Enhanced Layer Panel** - Professional UI with template-based layer addition
-- ✅ **Smart Configuration** - Canvas sizing, palette selection with smart defaults
-- ✅ **Complete Test Coverage** - 973 tests ensuring quality and reliability
+- ✅ **Enhanced User Interface** - Professional styling with visual feedback
+- ✅ **Smart Layer Operations** - Add, remove, reorder with complete validation
+- ✅ **Comprehensive Test Coverage** - 1035 tests ensuring enterprise-grade reliability
+- ✅ **Production Ready** - Professional-grade editor with advanced features
 - ✅ **Backward Compatibility** - Existing projects work seamlessly
 
 ## License

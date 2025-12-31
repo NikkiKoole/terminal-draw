@@ -109,9 +109,9 @@ terminal-draw/
 │   └── ui.css                # UI component styles
 ├── tests/                    # 939 tests
 ├── docs/                     # Documentation
-│   ├── IMPLEMENTATION-PLAN.md
-│   ├── STEP-*-COMPLETION.md
-│   └── design-document.md
+│   ├── 00-implementation-plan.md
+│   ├── M*-*-completion.md
+│   └── 00-design-document.md
 ├── test-pages/               # Test HTML pages
 │   ├── test-ansi.html
 │   ├── diagnose-cells.html
@@ -169,7 +169,7 @@ terminal-draw/
 
 **Current:** Step 9 - Testing & Polish (~97% complete - performance validation pending)
 
-See [IMPLEMENTATION-PLAN.md](./IMPLEMENTATION-PLAN.md) for detailed roadmap.
+See [00-implementation-plan.md](./docs/00-implementation-plan.md) for detailed roadmap.
 
 ## User Interface
 
@@ -343,11 +343,12 @@ Colors are defined as CSS variables for easy theming:
 
 All documentation has been moved to the `docs/` folder:
 
-- [design-document.md](./docs/design-document.md) - Full feature specification
-- [IMPLEMENTATION-PLAN.md](./docs/IMPLEMENTATION-PLAN.md) - Development roadmap
-- [STEP-8-COMPLETION.md](./docs/STEP-8-COMPLETION.md) - Latest completion details
-- [STEP-9-PROGRESS.md](./docs/STEP-9-PROGRESS.md) - Current progress
-- [HANDOFF-NEXT-SESSION.md](./docs/HANDOFF-NEXT-SESSION.md) - Next session guide
+- [00-design-document.md](./docs/00-design-document.md) - Full feature specification
+- [00-implementation-plan.md](./docs/00-implementation-plan.md) - Development roadmap
+- [M1-original-editor-completion.md](./docs/M1-original-editor-completion.md) - Original editor completion
+- [M2-advanced-editing-completion.md](./docs/M2-advanced-editing-completion.md) - Advanced editing features
+- [M3-P1-infrastructure-completion.md](./docs/M3-P1-infrastructure-completion.md) - Latest completion details
+- [S1-handoff-notes.md](./docs/S1-handoff-notes.md) - Next session guide
 
 Test pages are in `test-pages/`:
 - [test-ansi.html](./test-pages/test-ansi.html) - ANSI output viewer

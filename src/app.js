@@ -123,6 +123,17 @@ function initScene() {
 /**
  * Render the scene to DOM
  */
+/**
+ * Update CSS custom properties for grid dimensions
+ */
+function updateGridDimensions() {
+  if (!scene) return;
+
+  const root = document.documentElement;
+  root.style.setProperty("--grid-w", scene.w);
+  root.style.setProperty("--grid-h", scene.h);
+}
+
 function renderScene() {
   if (!scene || !renderer) return;
 
@@ -134,6 +145,9 @@ function renderScene() {
     console.error("Layer containers not found");
     return;
   }
+
+  // Update CSS grid dimensions to match scene
+  updateGridDimensions();
 
   renderer.render(scene.getLayer(LAYER_BG), bgContainer);
   renderer.render(scene.getLayer(LAYER_MID), midContainer);

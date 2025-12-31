@@ -137,6 +137,9 @@ function initSceneFromTemplate(config) {
   // Apply palette
   applyPalette(palette);
 
+  // Render scene to update grid dimensions and visual display
+  renderScene();
+
   console.log(
     `Scene created from template '${template}' with ${scene.layers.length} layers (${dimensions.w}×${dimensions.h})${border?.enabled ? " with border" : ""}`,
   );
@@ -228,9 +231,18 @@ function createLayerContainers() {
     return;
   }
 
+  if (!scene) {
+    console.error("Scene not available for creating layer containers");
+    return;
+  }
+
   // Clear existing layer containers (except background and hit-test)
   const existingLayers = gridStack.querySelectorAll(".visual-layer");
-  existingLayers.forEach((layer) => layer.remove());
+  existingLayers.forEach((layer) => {
+    // Force immediate removal with innerHTML clear
+    layer.innerHTML = "";
+    layer.remove();
+  });
 
   // Create containers for each layer in the scene
   scene.layers.forEach((layer, index) => {
@@ -258,6 +270,19 @@ function renderScene() {
   if (!scene || !renderer) return;
 
   updateGridDimensions();
+
+  // Get all current layer containers
+  const allLayerContainers = document.querySelectorAll(".visual-layer");
+  const currentLayerIds = new Set(scene.layers.map((layer) => layer.id));
+
+  // Remove orphaned layer containers (for layers that no longer exist)
+  allLayerContainers.forEach((container) => {
+    const layerId = container.getAttribute("data-layer");
+    if (!currentLayerIds.has(layerId)) {
+      console.warn(`Removing orphaned layer container: ${layerId}`);
+      container.remove();
+    }
+  });
 
   // Render each layer dynamically
   scene.layers.forEach((layer) => {
@@ -579,6 +604,17 @@ function initLayerPanel() {
   stateManager.on("layers:structure_changed", () => {
     createLayerContainers();
     renderScene();
+  });
+
+  // Listen to layer removal for immediate cleanup
+  stateManager.on("layer:removed", (data) => {
+    // Immediate synchronous removal
+    const layerElement = document.getElementById(`layer-${data.layerId}`);
+    if (layerElement) {
+      layerElement.innerHTML = ""; // Clear content immediately
+      layerElement.remove();
+      console.log(`Immediately removed layer container: ${data.layerId}`);
+    }
   });
 
   // Listen to layer visibility changes to update DOM
@@ -1039,7 +1075,10 @@ function showProjectStatus(result, statusElement) {
 /**
  * Initialize I/O panel toggle
  */
+let ioInitialized = false;
 function initIOPanel() {
+  if (ioInitialized) return; // Prevent duplicate initialization
+
   const ioToggle = document.getElementById("io-toggle");
   const ioPanel = document.getElementById("io-panel");
 
@@ -1069,6 +1108,8 @@ function initIOPanel() {
         ioToggle.classList.remove("active");
       }
     });
+
+    ioInitialized = true;
   }
 }
 
@@ -1485,9 +1526,21 @@ function initGridResize() {
   });
 
   function updateCurrentDimensions() {
-    if (scene && currentDimensions) {
+    if (!scene) {
+      console.warn("Scene not available for resize dimensions");
+      return;
+    }
+
+    // Update display text
+    if (currentDimensions) {
       currentDimensions.textContent = `${scene.w}×${scene.h}`;
+    }
+
+    // Update input fields
+    if (widthInput) {
       widthInput.value = scene.w;
+    }
+    if (heightInput) {
       heightInput.value = scene.h;
     }
   }

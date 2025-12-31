@@ -566,4 +566,83 @@ describe("StartupDialog", () => {
       expect(dialog.selectedTemplate).toBe(initialTemplate);
     });
   });
+
+  describe("Template Dimension Updates (Regression Tests)", () => {
+    it("should update input fields when simple template is selected", () => {
+      dialog.show();
+
+      const simpleCard = document.querySelector('[data-template-id="simple"]');
+      const widthInput = document.getElementById("canvas-width");
+      const heightInput = document.getElementById("canvas-height");
+
+      simpleCard.click();
+
+      expect(widthInput.value).toBe("40");
+      expect(heightInput.value).toBe("20");
+      expect(dialog.customDimensions).toEqual({ w: 40, h: 20 });
+    });
+
+    it("should update input fields when advanced template is selected", () => {
+      dialog.show();
+
+      const advancedCard = document.querySelector(
+        '[data-template-id="advanced"]',
+      );
+      const widthInput = document.getElementById("canvas-width");
+      const heightInput = document.getElementById("canvas-height");
+
+      advancedCard.click();
+
+      expect(widthInput.value).toBe("80");
+      expect(heightInput.value).toBe("25");
+      expect(dialog.customDimensions).toEqual({ w: 80, h: 25 });
+    });
+
+    it("should update dimensions immediately on template click", () => {
+      dialog.show();
+
+      const simpleCard = document.querySelector('[data-template-id="simple"]');
+      const standardCard = document.querySelector(
+        '[data-template-id="standard"]',
+      );
+      const advancedCard = document.querySelector(
+        '[data-template-id="advanced"]',
+      );
+      const widthInput = document.getElementById("canvas-width");
+      const heightInput = document.getElementById("canvas-height");
+
+      // Click simple
+      simpleCard.click();
+      expect(widthInput.value).toBe("40");
+      expect(heightInput.value).toBe("20");
+
+      // Click standard
+      standardCard.click();
+      expect(widthInput.value).toBe("60");
+      expect(heightInput.value).toBe("25");
+
+      // Click advanced
+      advancedCard.click();
+      expect(widthInput.value).toBe("80");
+      expect(heightInput.value).toBe("25");
+    });
+
+    it("should maintain visual selection state after dimension updates", () => {
+      dialog.show();
+
+      const simpleCard = document.querySelector('[data-template-id="simple"]');
+      const standardCard = document.querySelector(
+        '[data-template-id="standard"]',
+      );
+
+      // Initially standard should be selected
+      expect(standardCard.classList.contains("selected")).toBe(true);
+      expect(simpleCard.classList.contains("selected")).toBe(false);
+
+      // Click simple
+      simpleCard.click();
+      expect(simpleCard.classList.contains("selected")).toBe(true);
+      expect(standardCard.classList.contains("selected")).toBe(false);
+    });
+  });
 });

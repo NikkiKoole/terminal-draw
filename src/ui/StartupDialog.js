@@ -18,7 +18,7 @@ export class StartupDialog {
     this.dialog = null;
     this.selectedTemplate = "standard"; // Default selection
     this.selectedPalette = "default";
-    this.customDimensions = { w: 80, h: 25 };
+    this.customDimensions = { w: 60, h: 25 }; // Match standard template default
     this.borderEnabled = false; // Default border setting
     this.borderStyle = "single"; // single or double
     this.onTemplateSelect = null; // Callback for template selection
@@ -32,6 +32,17 @@ export class StartupDialog {
   init() {
     this.createDialog();
     this.attachEventListeners();
+    this.initializeDefaultTemplate();
+  }
+
+  /**
+   * Initialize dimensions for the default template
+   */
+  initializeDefaultTemplate() {
+    const template = getTemplate(this.selectedTemplate);
+    if (template) {
+      this.customDimensions = { ...template.defaultDimensions };
+    }
   }
 
   /**
@@ -276,17 +287,28 @@ export class StartupDialog {
    * Select a template and update UI
    */
   selectTemplate(templateId) {
-    if (this.selectedTemplate === templateId) return;
-
-    this.selectedTemplate = templateId;
-
-    // Update visual selection
+    // Always update visual selection (in case it's out of sync)
     this.dialog.querySelectorAll(".template-card").forEach((card) => {
       card.classList.remove("selected");
       if (card.dataset.templateId === templateId) {
         card.classList.add("selected");
       }
     });
+
+    // Skip other updates if template hasn't changed
+    if (this.selectedTemplate === templateId) return;
+
+    this.selectedTemplate = templateId;
+
+    // Update input fields directly with template dimensions
+    const template = getTemplate(templateId);
+    if (template) {
+      const widthInput = this.dialog.querySelector("#canvas-width");
+      const heightInput = this.dialog.querySelector("#canvas-height");
+      if (widthInput) widthInput.value = template.defaultDimensions.w;
+      if (heightInput) heightInput.value = template.defaultDimensions.h;
+      this.customDimensions = { ...template.defaultDimensions };
+    }
 
     // Emit event for dimension updates
     try {
@@ -404,7 +426,11 @@ export class StartupDialog {
         const config = JSON.parse(saved);
         this.selectedTemplate = config.template || "standard";
         this.selectedPalette = config.palette || "default";
-        this.customDimensions = config.dimensions || { w: 80, h: 25 };
+        // Use template dimensions as fallback
+        const template = getTemplate(this.selectedTemplate);
+        this.customDimensions =
+          config.dimensions ||
+          (template ? { ...template.defaultDimensions } : { w: 60, h: 25 });
         this.borderEnabled = config.border?.enabled || false;
         this.borderStyle = config.border?.style || "single";
 
@@ -413,6 +439,18 @@ export class StartupDialog {
       }
     } catch (e) {
       console.warn("Failed to load last used template:", e);
+
+      // Only set default dimensions when localStorage failed/missing
+      const template = getTemplate(this.selectedTemplate);
+      if (template) {
+        this.customDimensions = { ...template.defaultDimensions };
+
+        // Update UI inputs to match template dimensions
+        const widthInput = this.dialog.querySelector("#canvas-width");
+        const heightInput = this.dialog.querySelector("#canvas-height");
+        if (widthInput) widthInput.value = template.defaultDimensions.w;
+        if (heightInput) heightInput.value = template.defaultDimensions.h;
+      }
     }
   }
 

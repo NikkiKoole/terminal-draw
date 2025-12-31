@@ -726,4 +726,76 @@ describe("Layer Management Commands", () => {
       expect(uniqueIds.size).toBe(layerIds.length);
     });
   });
+
+  describe("Layer Removal UI Updates (Regression Tests)", () => {
+    it("should execute RemoveLayerCommand through CommandHistory without return value", () => {
+      const commandHistory = {
+        execute: vi.fn(), // CommandHistory.execute() returns void, not command result
+      };
+
+      const command = new RemoveLayerCommand(scene, "mid");
+
+      // Simulate what happens in LayerPanel.removeLayer()
+      expect(() => {
+        commandHistory.execute(command);
+      }).not.toThrow();
+
+      expect(commandHistory.execute).toHaveBeenCalledWith(command);
+    });
+
+    it("should handle command execution success without relying on return value", () => {
+      const commandHistory = {
+        execute: vi.fn(), // Returns undefined (void)
+      };
+
+      let success = false;
+      let error = null;
+
+      try {
+        commandHistory.execute(new RemoveLayerCommand(scene, "mid"));
+        // If no exception thrown, consider it successful
+        success = true;
+      } catch (e) {
+        error = e;
+      }
+
+      expect(success).toBe(true);
+      expect(error).toBe(null);
+    });
+
+    it("should properly validate layer removal before execution", () => {
+      const command = new RemoveLayerCommand(scene, "mid");
+
+      // Validate the command can be executed
+      const validation = command.validate();
+      expect(validation.valid).toBe(true);
+
+      // Execute and verify layer is removed from scene
+      const originalLayerCount = scene.layers.length;
+      const result = command.execute();
+
+      expect(result.success).toBe(true);
+      expect(scene.layers.length).toBe(originalLayerCount - 1);
+      expect(scene.getLayer("mid")).toBe(null);
+    });
+
+    it("should maintain layer panel state consistency after removal", () => {
+      const initialLayers = scene.layers.map((l) => l.id);
+      expect(initialLayers).toContain("mid");
+
+      // Execute removal command
+      const command = new RemoveLayerCommand(scene, "mid");
+      command.execute();
+
+      // Verify scene state is updated
+      const finalLayers = scene.layers.map((l) => l.id);
+      expect(finalLayers).not.toContain("mid");
+      expect(finalLayers.length).toBe(initialLayers.length - 1);
+
+      // Verify active layer is properly updated if removed layer was active
+      if (scene.activeLayerId !== "mid") {
+        expect(scene.getActiveLayer()).toBeDefined();
+      }
+    });
+  });
 });

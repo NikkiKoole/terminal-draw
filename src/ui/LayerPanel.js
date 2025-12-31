@@ -345,19 +345,24 @@ export class LayerPanel {
       if (this.commandHistory) {
         // Use command pattern for undo/redo support
         const command = new RemoveLayerCommand(this.scene, layerId);
-        const result = this.commandHistory.execute(command);
 
-        if (result && result.success) {
+        try {
+          this.commandHistory.execute(command);
+
+          // CommandHistory.execute() doesn't return command result, but if we get here
+          // without exception, the command executed successfully
           this.stateManager.emit("layer:removed", {
             layerId,
-            name: result.removedLayerName || layerName,
+            name: layerName,
           });
           this.stateManager.emit("scene:updated", { reason: "layer_removed" });
           this.stateManager.emit("layers:structure_changed");
+
+          // Force immediate render - call directly
           this.render();
-        } else {
+        } catch (error) {
           this.stateManager.emit("error", {
-            message: result?.error || "Failed to remove layer",
+            message: error.message || "Failed to remove layer",
           });
         }
       } else {
@@ -373,6 +378,8 @@ export class LayerPanel {
               reason: "layer_removed",
             });
             this.stateManager.emit("layers:structure_changed");
+
+            // Force immediate render - call directly
             this.render();
           } else {
             this.stateManager.emit("error", {
@@ -380,9 +387,9 @@ export class LayerPanel {
             });
           }
         } catch (error) {
-          console.error("Failed to remove layer:", error);
+          console.error("Error removing layer:", error);
           this.stateManager.emit("error", {
-            message: `Failed to remove layer: ${error.message}`,
+            message: "Failed to remove layer",
           });
         }
       }

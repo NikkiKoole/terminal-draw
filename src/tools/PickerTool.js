@@ -6,14 +6,24 @@
  * as an event that can be used to update the brush tool.
  */
 
-import { Tool } from './Tool.js';
+import { Tool } from "./Tool.js";
 
 export class PickerTool extends Tool {
   /**
    * Create a new picker tool
+   * @param {CommandHistory} commandHistory - Command history (unused for picker)
    */
-  constructor() {
-    super('Picker');
+  constructor(commandHistory = null) {
+    super("Picker");
+    this.commandHistory = commandHistory; // Not used but kept for consistency
+  }
+
+  /**
+   * Set command history (not used but kept for consistency)
+   * @param {CommandHistory} commandHistory - Command history instance
+   */
+  setCommandHistory(commandHistory) {
+    this.commandHistory = commandHistory;
   }
 
   /**
@@ -39,11 +49,11 @@ export class PickerTool extends Tool {
     const cellData = cell.toObject();
 
     // Emit tool:picked event with the sampled cell data
-    stateManager.emit('tool:picked', {
+    stateManager.emit("tool:picked", {
       x,
       y,
       layerId: activeLayer.id,
-      cell: cellData
+      cell: cellData,
     });
   }
 
@@ -74,6 +84,6 @@ export class PickerTool extends Tool {
    * Get the cursor style for this tool
    */
   getCursor() {
-    return 'copy';
+    return "copy";
   }
 }

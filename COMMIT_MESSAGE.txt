@@ -1,45 +1,46 @@
-feat: Implement undo/redo UI and keyboard shortcuts (Step 3 complete)
+feat: Tool integration with command system and palette updates (Step 2 complete)
 
-Add comprehensive undo/redo functionality with buttons, keyboard shortcuts,
-and visual feedback to complete Step 3 of Milestone 2.
+Update drawing tools to create undoable commands and add additional color palettes
+to complete Step 2 of Milestone 2.
 
-### Features Added:
-- Undo/redo buttons in toolbar with proper disabled states
-- Keyboard shortcuts: Ctrl+Z (undo), Ctrl+Y/Ctrl+Shift+Z (redo)
-- Dynamic tooltips showing next command to undo/redo
-- Status bar integration with action feedback messages
-- Cross-platform key support (Ctrl on Windows/Linux, Cmd on Mac)
+### Tool Integration:
+- Updated BrushTool to create CellCommand instances instead of direct modifications
+- Updated EraserTool to create undoable erase operations
+- Updated PickerTool for consistency (no commands needed as it doesn't modify scene)
+- All drawing operations now go through the command system for undo/redo support
+- Command merging works for continuous brush/eraser strokes
 
-### UI Enhancements:
-- Added toolbar separator for visual grouping
-- Disabled button styling with reduced opacity
-- Event-driven button state updates
-- Graceful handling of missing DOM elements
+### Technical Changes:
+- Tools now receive CommandHistory reference for creating commands
+- Commands automatically execute and get added to history
+- Proper coordinate conversion between index and x,y formats
+- Full integration with existing StateManager event system
+- Maintained backward compatibility with existing functionality
 
-### Technical Implementation:
-- Extended CommandHistory with helper methods (canUndo, canRedo, getUndoStack, getRedoStack)
-- Integrated keyboard shortcuts with existing initKeyboardShortcuts()
-- Added updateUndoRedoButtons() function for state management
-- Status messages for execute/undo/redo operations
+### Palette Additions:
+- Added "Dusty" color palette for additional theming options
+- Expanded color palette selection for better visual variety
 
 ### Files Modified:
-- index.html: Added undo/redo buttons to toolbar
-- styles/main.css: Added disabled states and toolbar separator
-- src/app.js: Added keyboard shortcuts and button handlers
-- src/commands/CommandHistory.js: Added UI helper methods
-- docs/milestone2.md: Updated progress tracking
+- src/tools/BrushTool.js: Command-based painting operations
+- src/tools/EraserTool.js: Command-based erasing operations
+- src/tools/PickerTool.js: Updated for consistency
+- src/palettes.json: Added new color palettes
+- tests/BrushTool.test.js: Updated for command system integration
+- tests/EraserTool.test.js: Updated for command system integration
 
 ### Testing:
-- Added comprehensive test suite (20 tests)
-- Covers button states, keyboard shortcuts, status messages
-- Tests edge cases and command merging scenarios
-- All 599 tests passing (579 existing + 20 new)
+- All 599 tests passing
+- Tool integration tests updated for command system
+- No regressions in existing functionality
+- Command merging verified for continuous operations
 
 ### Success Criteria Met:
-✅ Undo/redo buttons work correctly
-✅ Keyboard shortcuts functional (Ctrl+Z, Ctrl+Y)
-✅ Visual feedback appropriate
-✅ Status messages helpful
-✅ 20 comprehensive UI tests
+✅ Brush creates undoable commands
+✅ Eraser creates undoable commands
+✅ Continuous brush stroke = single undo step
+✅ All existing functionality preserved
+✅ All existing tests passing
 
-Ready for Step 4: Grid Resize Infrastructure
+Completes Step 2: Tool Integration with Commands
+Ready for grid resize infrastructure in Step 4

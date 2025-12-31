@@ -12,6 +12,19 @@
       "#d3d7cf"
     ]
   },
+  "dusty": {
+    "name": "Dusted",
+    "colors": [
+      "#292B2C",
+      "#5B7FBA",
+      "#D67C4C",
+      "#AAB8C6",
+      "#C85738",
+      "#8DA1A6",
+      "#F4B62A",
+      "#4E6E8E"
+    ]
+  },
   "gruvbox": {
     "name": "Gruvbox Dark",
     "colors": [

@@ -27,7 +27,7 @@ export class SprayTool extends Tool {
     this.coverage = 0.1; // 10% of cells within radius get painted
 
     // Density progression sequence
-    this.densitySequence = ['.', '-', '+', '*', '%', 'm', '#'];
+    this.densitySequence = [".", "-", "+", "*", "%", "m", "#"];
   }
 
   /**
@@ -175,8 +175,31 @@ export class SprayTool extends Tool {
       // Calculate next density character
       const nextChar = this._getNextDensityChar(beforeCell.ch);
 
-      // If character doesn't change (already at max density), skip
+      // Handle max density cells - allow color change even if character doesn't change
       if (nextChar === beforeCell.ch) {
+        // If already at max density (#), check if we can change color
+        if (beforeCell.ch === "#" && beforeCell.fg !== this.currentCell.fg) {
+          // Change color of existing # character
+          const afterCell = new Cell(
+            "#", // Keep the # character
+            this.currentCell.fg, // Use new color
+            beforeCell.bg, // Preserve background color
+          );
+
+          // Create command for color change
+          const command = CellCommand.fromSingleCell({
+            layer: activeLayer,
+            index: index,
+            before: beforeCell.toObject(),
+            after: afterCell.toObject(),
+            tool: "spray",
+            stateManager: stateManager,
+            scene: scene,
+          });
+
+          commands.push(command);
+        }
+        // If same color or not max density, skip
         continue;
       }
 
@@ -184,7 +207,7 @@ export class SprayTool extends Tool {
       const afterCell = new Cell(
         nextChar,
         this.currentCell.fg,
-        beforeCell.bg // Preserve background color
+        beforeCell.bg, // Preserve background color
       );
 
       // Create command for this cell

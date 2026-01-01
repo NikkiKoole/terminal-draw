@@ -61,6 +61,17 @@ This convention ensures the documentation remains organized and navigable as the
 - ✅ **Enhanced UX**: Fixed template-based layers (1/2/3) with visibility/lock controls
 - ✅ **Test Coverage**: 911 tests passing with dramatically cleaner codebase
 
+## Recent Completion: M4-P1 Spray Can Tool
+
+**M4-P1-spray-tool-completion.md** documents the first feature implementation of M4: Enhanced Painting Tools:
+
+### What Was Completed:
+- ✅ **Spray Can Tool**: Density progression system with organic texture creation
+- ✅ **Integration**: Full tool system integration with keyboard shortcut [S]
+- ✅ **Architecture**: Clean implementation following existing patterns
+- ✅ **Test Coverage**: 29 comprehensive tests covering all functionality
+- ✅ **Performance**: Efficient ~3 hour implementation (50% under estimate)
+
 ### Key Architecture Change:
 **Before**: Complex dynamic layer management (unlimited runtime add/remove/reorder)
 **After**: Simplified fixed layers chosen at project creation with enhanced controls

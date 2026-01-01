@@ -274,19 +274,48 @@ describe("SprayTool", () => {
         randomSpy.mockRestore();
       });
 
-      it("should not modify cells at maximum density", () => {
+      it("should change color of max density cells when using different color", () => {
+        // Set up a cell at maximum density with one color
+        activeLayer.setCell(5, 5, new Cell("#", 1, -1)); // fg=1 (red)
+
+        // Set spray tool to use a different color
+        sprayTool.setCurrentCell({ ch: ".", fg: 3, bg: -1 }); // fg=3 (blue)
+
+        // Mock random to ensure the center cell gets selected
+        const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0.05);
+
+        sprayTool.onCellDown(5, 5, scene, stateManager);
+
+        // Should have created a command to change the color
+        expect(commandHistory.undoStack.length).toBeGreaterThan(0);
+
+        // Check that the cell color was changed but character stayed #
+        const updatedCell = activeLayer.getCell(5, 5);
+        expect(updatedCell.ch).toBe("#");
+        expect(updatedCell.fg).toBe(3); // Should be the new color
+
+        randomSpy.mockRestore();
+      });
+
+      it("should not modify max density cells when using same color", () => {
         // Set up a cell already at maximum density
         activeLayer.setCell(5, 5, new Cell("#", 7, -1));
 
         // Mock random to ensure the center cell would be selected
         const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0.05);
 
+        // Set spray tool to use the same color as the existing cell
+        sprayTool.setCurrentCell({ ch: ".", fg: 7, bg: -1 }); // Same as cell color
+
         const initialCommandCount = commandHistory.undoStack.length;
 
         sprayTool.onCellDown(5, 5, scene, stateManager);
 
-        // Should not create commands for max density cells
-        // (though other cells in radius might still be affected)
+        // Should not create commands for max density cells with same color
+        // Note: Other cells in radius might still be affected, so we check the specific cell
+        const cellAfter = activeLayer.getCell(5, 5);
+        expect(cellAfter.ch).toBe("#");
+        expect(cellAfter.fg).toBe(7); // Should remain unchanged
 
         randomSpy.mockRestore();
       });

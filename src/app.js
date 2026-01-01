@@ -19,6 +19,7 @@ import {
 import { BrushTool } from "./tools/BrushTool.js";
 import { EraserTool } from "./tools/EraserTool.js";
 import { PickerTool } from "./tools/PickerTool.js";
+import { SprayTool } from "./tools/SprayTool.js";
 import { LayerPanel } from "./ui/LayerPanel.js";
 import { GlyphPicker } from "./ui/GlyphPicker.js";
 import { ClipboardManager } from "./export/ClipboardManager.js";
@@ -55,6 +56,7 @@ let hitTestOverlay = null;
 let brushTool = null;
 let eraserTool = null;
 let pickerTool = null;
+let sprayTool = null;
 let currentTool = null;
 
 // Startup Dialog
@@ -453,6 +455,7 @@ function initTools() {
   brushTool = new BrushTool({ ch: "█", fg: 7, bg: -1 }, commandHistory);
   eraserTool = new EraserTool(commandHistory);
   pickerTool = new PickerTool(commandHistory);
+  sprayTool = new SprayTool({ ch: ".", fg: 7, bg: -1 }, commandHistory);
 
   // Set initial tool
   setCurrentTool(brushTool);
@@ -461,6 +464,7 @@ function initTools() {
   const brushBtn = document.getElementById("tool-brush");
   const eraserBtn = document.getElementById("tool-eraser");
   const pickerBtn = document.getElementById("tool-picker");
+  const sprayBtn = document.getElementById("tool-spray");
 
   if (brushBtn) {
     brushBtn.addEventListener("click", () => setCurrentTool(brushTool));
@@ -470,6 +474,9 @@ function initTools() {
   }
   if (pickerBtn) {
     pickerBtn.addEventListener("click", () => setCurrentTool(pickerTool));
+  }
+  if (sprayBtn) {
+    sprayBtn.addEventListener("click", () => setCurrentTool(sprayTool));
   }
 
   // Keyboard shortcuts
@@ -524,6 +531,9 @@ function initKeyboardShortcuts() {
       case "p":
         setCurrentTool(pickerTool);
         break;
+      case "s":
+        setCurrentTool(sprayTool);
+        break;
       case "l":
         cycleLayer();
         break;
@@ -572,6 +582,8 @@ function setCurrentTool(tool) {
     document.getElementById("tool-eraser")?.classList.add("active");
   } else if (tool === pickerTool) {
     document.getElementById("tool-picker")?.classList.add("active");
+  } else if (tool === sprayTool) {
+    document.getElementById("tool-spray")?.classList.add("active");
   }
 
   updateStatus(
@@ -692,6 +704,15 @@ function selectFgColor(colorIndex) {
     fg: colorIndex,
   });
 
+  // Update spray tool
+  if (sprayTool) {
+    const sprayCell = sprayTool.getCurrentCell();
+    sprayTool.setCurrentCell({
+      ...sprayCell,
+      fg: colorIndex,
+    });
+  }
+
   // Update UI
   updatePaletteSelection();
   updateColorPreview();
@@ -712,6 +733,15 @@ function selectBgColor(colorIndex) {
     ...currentCell,
     bg: colorIndex,
   });
+
+  // Update spray tool (preserve background for spray tool)
+  if (sprayTool) {
+    const sprayCell = sprayTool.getCurrentCell();
+    sprayTool.setCurrentCell({
+      ...sprayCell,
+      bg: colorIndex,
+    });
+  }
 
   // Update UI
   updatePaletteSelection();
@@ -1038,6 +1068,9 @@ function updateToolsCommandHistory() {
   }
   if (pickerTool && commandHistory) {
     pickerTool.setCommandHistory(commandHistory);
+  }
+  if (sprayTool && commandHistory) {
+    sprayTool.setCommandHistory(commandHistory);
   }
 }
 

@@ -1172,6 +1172,7 @@ function initUIComponents() {
   initLayerPanel();
   initInteractivePalette();
   initGlyphPicker();
+  initSmartDrawingMode();
   initClipboard();
   initProject();
   initIOPanel();
@@ -1381,6 +1382,32 @@ function initPaletteSelector() {
   }
 
   applyPalette(currentPalette);
+}
+
+/**
+ * Initialize smart drawing mode dropdown
+ */
+function initSmartDrawingMode() {
+  const selector = document.getElementById("smart-drawing-mode");
+
+  if (selector && brushTool) {
+    selector.addEventListener("change", (e) => {
+      const mode = e.target.value;
+      brushTool.setDrawingMode(mode);
+
+      let statusMessage = `Drawing Mode: ${mode.charAt(0).toUpperCase() + mode.slice(1)}`;
+      if (mode === "single") {
+        statusMessage += " Line (Smart Box-Drawing)";
+      } else if (mode === "double") {
+        statusMessage += " Line (Smart Box-Drawing)";
+      }
+
+      updateStatus(statusMessage);
+    });
+
+    // Set initial mode
+    brushTool.setDrawingMode("normal");
+  }
 }
 
 /**

@@ -58,12 +58,13 @@ This document outlines potential future development directions for Terminal Draw
   - Session persistence of recently used glyphs
 
 #### Intelligent Brush System
-- **Smart Box-Drawing Brushes**
-  - Single line style: ─│┌┐└┘├┤┬┴┼
-  - Double line style: ═║╔╗╚╝╠╣╦╩╬
-  - Context-aware glyph placement based on neighbors
-  - Auto-connects to existing lines with proper junctions
-  - Real-time preview of smart connections
+- **Smart Box-Drawing Brushes** ✅ **COMPLETED**
+  - ✅ Single line style: ─│┌┐└┘├┤┬┴┼
+  - ✅ Double line style: ═║╔╗╚╝╠╣╦╩╬
+  - ✅ Context-aware glyph placement based on neighbors
+  - ✅ Auto-connects to existing lines with proper junctions
+  - ✅ UI dropdown for Normal/Smart Single Line/Smart Double Line modes
+  - ⚠️ Mixed single/double intersections need polish (functional but not optimal)
 
 - **Variety Brushes**
   - Random glyph selection from custom sets (e.g., ░▒▓█ for textures)
@@ -86,6 +87,8 @@ This document outlines potential future development directions for Terminal Draw
 **Impact:** High - Fundamental improvement to core drawing experience
 
 **Completion Notes:** Implemented January 2025 with density progression system, random spray patterns, and full integration with existing tool architecture. 29 tests passing.
+
+**Smart Box-Drawing Completion Notes:** Implemented January 2025 with intelligent neighbor detection, automatic junction creation, and comprehensive test coverage (26 tests passing). Features dropdown UI integration and works with existing brush tool. Mixed single/double line intersections work functionally but need visual polish for optimal character selection.
 
 ---
 
@@ -391,7 +394,7 @@ Based on original design document Phase 2 plans:
 4. **Market Demand** - User-requested features and competitive analysis
 
 ### Recommended Development Order
-1. **M4: Enhanced Painting Tools** - ✅ **Spray Can tool completed** - Continue with Smart Glyph Management
+1. **M4: Enhanced Painting Tools** - ✅ **Spray Can + Smart Box-Drawing completed** - Continue with Smart Glyph Management
 2. **M5: Selection System** - Highest impact for productivity  
 3. **M6: Advanced Drawing Tools** - Natural progression for professional use
 4. **M7: Enhanced Project Management** - Quality of life improvements

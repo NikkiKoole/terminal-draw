@@ -74,6 +74,40 @@
     border-color: var(--ui-accent);
 }
 
+/* Smart Drawing Mode Controls */
+.smart-drawing-controls {
+    margin-top: var(--spacing-sm);
+}
+
+.smart-drawing-controls label {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--ui-text-secondary);
+    margin-bottom: var(--spacing-xs);
+}
+
+#smart-drawing-mode {
+    width: 100%;
+    padding: var(--spacing-xs);
+    background: var(--ui-bg);
+    border: 1px solid var(--ui-border);
+    border-radius: var(--radius-sm);
+    color: var(--ui-text);
+    font-size: 11px;
+    cursor: pointer;
+}
+
+#smart-drawing-mode:hover {
+    border-color: var(--ui-accent);
+}
+
+#smart-drawing-mode:focus {
+    outline: none;
+    border-color: var(--ui-accent);
+    box-shadow: 0 0 0 2px rgba(79, 172, 254, 0.2);
+}
+
 .palette-swatch[data-color="0"] {
     background-color: var(--color-fg-0);
 }

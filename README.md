@@ -21,8 +21,9 @@ A web-based ASCII art editor that renders true text glyphs in the DOM for creati
 - ✅ **Phase 4: UI Polish & Features** - Enhanced controls and user experience
 - ✅ **Border System** - Optional single/double-line borders with customizable styles
 - ✅ **M4 Spray Can Tool** - Density progression spray tool with organic texture creation
+- ✅ **M4 Smart Box-Drawing** - Intelligent box-drawing brushes with automatic junction detection
 
-**Current Status: Production-Ready ASCII Editor with Enhanced Painting Tools ✅**
+**Current Status: Production-Ready ASCII Editor with Smart Drawing Tools ✅**
 - **Template System**: 3 project templates (Simple/Standard/Advanced) with fixed layer counts
 - **Startup Dialog**: Beautiful project creation modal with template selection
 - **Fixed Layers**: Clean architecture - choose 1, 2, or 3 layers at project start
@@ -32,7 +33,8 @@ A web-based ASCII art editor that renders true text glyphs in the DOM for creati
 - **Border Functionality**: Optional decorative borders with single/double-line styles
 - **Drawing Protection**: Can't draw on invisible or locked layers
 - **Spray Can Tool**: Density progression system (`. → - → + → * → % → m → #`) with random spray patterns
-- **940 tests passing** - comprehensive coverage with simplified, maintainable codebase
+- **Smart Box-Drawing**: Intelligent junction detection with Normal/Smart Single Line/Smart Double Line modes
+- **966 tests passing** - comprehensive coverage with simplified, maintainable codebase
 - Complete backward compatibility with existing projects
 
 ## Quick Start

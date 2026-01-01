@@ -9,6 +9,7 @@
 import { Tool } from "./Tool.js";
 import { Cell } from "../core/Cell.js";
 import { CellCommand } from "../commands/CellCommand.js";
+import { SmartBoxDrawing } from "../utils/SmartBoxDrawing.js";
 
 export class BrushTool extends Tool {
   /**
@@ -21,6 +22,8 @@ export class BrushTool extends Tool {
     this.currentCell = { ...currentCell };
     this.commandHistory = commandHistory;
     this.currentStroke = null; // Track current brush stroke for merging
+    this.smartBoxDrawing = new SmartBoxDrawing();
+    this.drawingMode = "normal"; // "normal", "single", or "double"
   }
 
   /**
@@ -48,6 +51,22 @@ export class BrushTool extends Tool {
   }
 
   /**
+   * Set the drawing mode for smart box-drawing
+   * @param {string} mode - Drawing mode: "normal", "single", or "double"
+   */
+  setDrawingMode(mode) {
+    this.drawingMode = mode;
+  }
+
+  /**
+   * Get the current drawing mode
+   * @returns {string} Current drawing mode
+   */
+  getDrawingMode() {
+    return this.drawingMode;
+  }
+
+  /**
    * Paint a cell at the given coordinates using commands
    * @private
    */
@@ -69,7 +88,20 @@ export class BrushTool extends Tool {
       return;
     }
 
-    // Get current cell state for undo
+    // Check if we should use smart box-drawing
+    if (this.drawingMode !== "normal") {
+      this._paintSmartBoxDrawing(x, y, scene, stateManager);
+    } else {
+      this._paintNormalCell(x, y, scene, stateManager);
+    }
+  }
+
+  /**
+   * Paint a cell normally (non-smart mode)
+   * @private
+   */
+  _paintNormalCell(x, y, scene, stateManager) {
+    const activeLayer = scene.getActiveLayer();
     const index = y * scene.w + x;
     const beforeCell = activeLayer.getCell(x, y);
 
@@ -84,8 +116,6 @@ export class BrushTool extends Tool {
       this.currentCell.bg,
     );
 
-    // Create command even if cell appears unchanged - let the command system decide
-
     // Create and execute command
     const command = CellCommand.fromSingleCell({
       layer: activeLayer,
@@ -98,6 +128,91 @@ export class BrushTool extends Tool {
     });
 
     this.commandHistory.execute(command);
+  }
+
+  /**
+   * Paint using smart box-drawing logic
+   * @private
+   */
+  _paintSmartBoxDrawing(x, y, scene, stateManager) {
+    const activeLayer = scene.getActiveLayer();
+
+    // Get neighbors around the target position
+    const neighbors = this.smartBoxDrawing.getNeighbors(
+      x,
+      y,
+      activeLayer,
+      scene.w,
+      scene.h,
+    );
+
+    // Determine the smart character based on neighbors and mode
+    const smartChar = this.smartBoxDrawing.getSmartCharacter(
+      neighbors,
+      this.drawingMode,
+    );
+
+    // Create and execute command for the main cell
+    const index = y * scene.w + x;
+    const beforeCell = activeLayer.getCell(x, y);
+
+    if (!beforeCell) {
+      return;
+    }
+
+    const afterCell = new Cell(
+      smartChar,
+      this.currentCell.fg,
+      this.currentCell.bg,
+    );
+
+    const command = CellCommand.fromSingleCell({
+      layer: activeLayer,
+      index: index,
+      before: beforeCell.toObject(),
+      after: afterCell.toObject(),
+      tool: "brush",
+      stateManager: stateManager,
+      scene: scene,
+    });
+
+    this.commandHistory.execute(command);
+
+    // Update neighboring box-drawing characters that need adjustment
+    const neighborsToUpdate = this.smartBoxDrawing.getNeighborsToUpdate(
+      x,
+      y,
+      activeLayer,
+      scene.w,
+      scene.h,
+    );
+
+    for (const neighbor of neighborsToUpdate) {
+      const neighborIndex = neighbor.y * scene.w + neighbor.x;
+      const neighborBeforeCell = activeLayer.getCell(neighbor.x, neighbor.y);
+
+      if (!neighborBeforeCell) {
+        continue;
+      }
+
+      const neighborAfterCell = new Cell(
+        neighbor.char,
+        neighbor.fg,
+        neighbor.bg,
+      );
+
+      const neighborCommand = CellCommand.fromSingleCell({
+        layer: activeLayer,
+        index: neighborIndex,
+        before: neighborBeforeCell.toObject(),
+        after: neighborAfterCell.toObject(),
+        tool: "brush",
+        stateManager: stateManager,
+        scene: scene,
+      });
+
+      this.commandHistory.execute(neighborCommand);
+    }
   }
 
   /**

@@ -72,6 +72,17 @@ This convention ensures the documentation remains organized and navigable as the
 - ✅ **Test Coverage**: 29 comprehensive tests covering all functionality
 - ✅ **Performance**: Efficient ~3 hour implementation (50% under estimate)
 
+## Recent Completion: M4-P2 Smart Box-Drawing
+
+**M4-P2-smart-box-drawing-completion.md** documents the second feature implementation of M4: Enhanced Painting Tools:
+
+### What Was Completed:
+- ✅ **Smart Box-Drawing Brushes**: Intelligent junction detection with automatic character placement
+- ✅ **UI Integration**: Dropdown for Normal/Smart Single Line/Smart Double Line modes
+- ✅ **Neighbor Updates**: Existing characters automatically become junctions when new connections are made
+- ✅ **Test Coverage**: 26 comprehensive tests covering all smart drawing scenarios
+- ✅ **Mixed Line Support**: Single/double line intersection (functional, needs visual polish)
+
 ### Key Architecture Change:
 **Before**: Complex dynamic layer management (unlimited runtime add/remove/reorder)
 **After**: Simplified fixed layers chosen at project creation with enhanced controls

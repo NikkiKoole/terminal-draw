@@ -22,6 +22,7 @@ import { PickerTool } from "./tools/PickerTool.js";
 import { SprayTool } from "./tools/SprayTool.js";
 import { RectangleTool } from "./tools/RectangleTool.js";
 import { LineTool } from "./tools/LineTool.js";
+import { FloodFillTool } from "./tools/FloodFillTool.js";
 import { LayerPanel } from "./ui/LayerPanel.js";
 import { GlyphPicker } from "./ui/GlyphPicker.js";
 import { ClipboardManager } from "./export/ClipboardManager.js";
@@ -61,6 +62,7 @@ let pickerTool = null;
 let sprayTool = null;
 let rectangleTool = null;
 let lineTool = null;
+let floodFillTool = null;
 let currentTool = null;
 
 // Startup Dialog
@@ -505,6 +507,7 @@ function initTools() {
   sprayTool = new SprayTool({ ch: ".", fg: 7, bg: -1 }, commandHistory);
   rectangleTool = new RectangleTool({ ch: "█", fg: 7, bg: -1 }, commandHistory);
   lineTool = new LineTool({ ch: "█", fg: 7, bg: -1 }, commandHistory);
+  floodFillTool = new FloodFillTool({ ch: "█", fg: 7, bg: -1 }, commandHistory);
 
   // Set initial tool
   setCurrentTool(brushTool);
@@ -516,6 +519,7 @@ function initTools() {
   const sprayBtn = document.getElementById("tool-spray");
   const rectangleBtn = document.getElementById("tool-rectangle");
   const lineBtn = document.getElementById("tool-line");
+  const floodFillBtn = document.getElementById("tool-floodfill");
 
   if (brushBtn) {
     brushBtn.addEventListener("click", () => setCurrentTool(brushTool));
@@ -534,6 +538,9 @@ function initTools() {
   }
   if (lineBtn) {
     lineBtn.addEventListener("click", () => setCurrentTool(lineTool));
+  }
+  if (floodFillBtn) {
+    floodFillBtn.addEventListener("click", () => setCurrentTool(floodFillTool));
   }
 
   // Keyboard shortcuts
@@ -596,6 +603,9 @@ function initKeyboardShortcuts() {
         break;
       case "l":
         setCurrentTool(lineTool);
+        break;
+      case "f":
+        setCurrentTool(floodFillTool);
         break;
     }
   });
@@ -667,6 +677,8 @@ function setCurrentTool(tool) {
     }
   } else if (tool === lineTool) {
     document.getElementById("tool-line")?.classList.add("active");
+  } else if (tool === floodFillTool) {
+    document.getElementById("tool-floodfill")?.classList.add("active");
   }
 
   updateStatus(
@@ -814,6 +826,15 @@ function selectFgColor(colorIndex) {
     });
   }
 
+  // Update flood fill tool
+  if (floodFillTool) {
+    const floodFillCell = floodFillTool.getCurrentCell();
+    floodFillTool.setCurrentCell({
+      ...floodFillCell,
+      fg: colorIndex,
+    });
+  }
+
   // Update UI
   updatePaletteSelection();
   updateColorPreview();
@@ -858,6 +879,15 @@ function selectBgColor(colorIndex) {
     const lineCell = lineTool.getCurrentCell();
     lineTool.setCurrentCell({
       ...lineCell,
+      bg: colorIndex,
+    });
+  }
+
+  // Update flood fill tool
+  if (floodFillTool) {
+    const floodFillCell = floodFillTool.getCurrentCell();
+    floodFillTool.setCurrentCell({
+      ...floodFillCell,
       bg: colorIndex,
     });
   }
@@ -958,6 +988,15 @@ function initGlyphPicker() {
       const lineCell = lineTool.getCurrentCell();
       lineTool.setCurrentCell({
         ...lineCell,
+        ch: data.char,
+      });
+    }
+
+    // Sync character to flood fill tool
+    if (floodFillTool && data.char) {
+      const floodFillCell = floodFillTool.getCurrentCell();
+      floodFillTool.setCurrentCell({
+        ...floodFillCell,
         ch: data.char,
       });
     }
@@ -1223,6 +1262,9 @@ function updateToolsCommandHistory() {
   }
   if (lineTool && commandHistory) {
     lineTool.setCommandHistory(commandHistory);
+  }
+  if (floodFillTool && commandHistory) {
+    floodFillTool.setCommandHistory(commandHistory);
   }
 }
 
@@ -1595,6 +1637,9 @@ function initPaintMode() {
       if (eraserTool) {
         eraserTool.setPaintMode(newMode);
       }
+      if (floodFillTool) {
+        floodFillTool.setPaintMode(newMode);
+      }
 
       // Update button text based on mode
       const modeLabels = {
@@ -1627,6 +1672,9 @@ function initPaintMode() {
     }
     if (eraserTool) {
       eraserTool.setPaintMode("all");
+    }
+    if (floodFillTool) {
+      floodFillTool.setPaintMode("all");
     }
   }
 }

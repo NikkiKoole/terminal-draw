@@ -21,7 +21,7 @@ This document outlines potential future development directions for Terminal Draw
 - Enhanced layer controls (visibility 👁️/➖, lock 🔓/🔒)
 - Undo/redo system, grid resize, project save/load
 - Copy/export as plain text, JSON project format
-- 1091 tests passing with clean, maintainable codebase
+- 1091 tests passing with clean, maintainable codebase (flood fill tool not yet fully tested)
 
 ---
 
@@ -102,6 +102,7 @@ This document outlines potential future development directions for Terminal Draw
 - **Paint Mode Eraser**: Implemented January 2025 with selective erasing support (all/fg/bg/glyph modes). Eraser now respects paint mode toggle for flexible attribute removal. Smart box-drawing neighbor updates only trigger in glyph/all modes. 12 new tests, 1062 total tests passing.
 - **Variety Brushes via Spray Can**: Implemented January 2025 with 10 character set presets (Artist, Blocks, Dots, Stipple, Heights, Widths, Stars, Triangles, Crosses, Waves), configurable radius (Small/Medium/Large), and density control (Light/Medium/Heavy). Dedicated tool options bar in header shows contextual settings. Renamed "Density" preset to "Artist" to avoid confusion with density control. 19 new tests, 1084 total tests passing.
 - **Filled Rectangle Support**: Implemented January 2025 with Fill toggle in tool options bar (Outline/Filled modes). Filled mode fills entire rectangle area with current glyph, works with all paint modes and smart box-drawing modes. Settings shown when rectangle tool is active. 6 new tests, 1091 total tests passing.
+- **Flood Fill Tool**: Implemented January 2025 with paint-mode-aware filling using breadth-first search algorithm. Respects paint mode (all/fg/bg/glyph) for flexible filling behavior. All mode fills cells matching all attributes, fg/bg modes fill by color, glyph mode replaces characters. Keyboard shortcut [F]. Full undo/redo support. ⚠️ **NOT FULLY TESTED** - implementation complete but requires browser testing to verify all edge cases and interactions. No automated tests added yet.
 
 **Smart Box-Drawing Completion Notes:** Implemented January 2025 with intelligent neighbor detection, automatic junction creation, and comprehensive test coverage (26 tests passing). Features dropdown UI integration and works with existing brush tool. **Mixed single/double intersections completed with correct character mappings** using elegant bitwise tileset algorithm - all 10 mixed junction characters working perfectly (╫ ╪ ╞ ╡ ╟ ╢ ╤ ╥ ╧ ╨). Smart eraser completes the intelligent box-drawing system by handling cleanup automatically.
 
@@ -192,12 +193,18 @@ This document outlines potential future development directions for Terminal Draw
   - Ellipse support with width/height ratio control
   - Character selection for circle styles (○●◯⬤)
 
-- **Flood Fill Tool**
-  - Fill enclosed areas with characters/colors
-  - Boundary-based fill (stop at different characters)
-  - Color-based fill (replace specific colors)
-  - Pattern fill with custom character sequences
-  - Undo support for large fill operations
+- **Flood Fill Tool** ⚠️ **IMPLEMENTED BUT UNTESTED**
+  - ✅ Paint-mode-aware flood fill (respects all/fg/bg/glyph modes)
+  - ✅ Breadth-first search algorithm (prevents stack overflow)
+  - ✅ All mode: Fills cells matching all attributes (ch, fg, bg)
+  - ✅ FG mode: Changes all cells with same foreground color
+  - ✅ BG mode: Changes all cells with same background color
+  - ✅ Glyph mode: Replaces all cells with same character
+  - ✅ Keyboard shortcut [F]
+  - ✅ Full undo/redo support
+  - ✅ Integrated with paint mode and color selection system
+  - ⚠️ **Requires browser testing** - implementation complete but not verified in production
+  - Pattern fill with custom sequences (future enhancement)
 
 #### Smart Connectivity (Advanced)
 - **Advanced Smart Connectivity**

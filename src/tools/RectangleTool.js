@@ -156,6 +156,16 @@ export class RectangleTool extends Tool {
     this.startY = null;
     this.currentX = null;
     this.currentY = null;
+
+    // Disable merging briefly to prevent next rectangle from merging with this one
+    if (this.commandHistory) {
+      setTimeout(() => {
+        if (this.commandHistory) {
+          this.commandHistory.setMergingEnabled(false);
+          this.commandHistory.setMergingEnabled(true);
+        }
+      }, 100);
+    }
   }
 
   /**

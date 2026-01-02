@@ -51,6 +51,25 @@
     display: block;
 }
 
+/* Anchor Indicator - Shows rectangle/shape start point */
+.anchor-indicator {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1ch;
+    height: var(--cell-height);
+    z-index: 9;
+    pointer-events: none;
+    background-color: rgba(0, 200, 255, 0.3);
+    border: 2px solid rgba(0, 200, 255, 0.8);
+    box-sizing: border-box;
+    display: none;
+}
+
+.anchor-indicator.visible {
+    display: block;
+}
+
 /* Background Grid - simple colored background */
 .background-grid {
     position: absolute;

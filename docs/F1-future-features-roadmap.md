@@ -89,6 +89,7 @@ This document outlines potential future development directions for Terminal Draw
 **Completion Notes:** 
 - **Spray Can Tool**: Implemented January 2025 with density progression system, random spray patterns, and full integration with existing tool architecture. 30 tests passing.
 - **Selective Cell Painting**: Implemented January 2025 with paint mode cycling (all/fg/bg/glyph), single toggle button UI, and complete undo/redo support. 9 new tests, 975 total tests passing.
+- **Rectangle Tool (M6)**: Implemented January 2025 with smart box-drawing support (normal/single/double line modes), paint mode integration, and anchor indicator preview (shows start point). 21 new tests, 996 total tests passing.
 
 **Smart Box-Drawing Completion Notes:** Implemented January 2025 with intelligent neighbor detection, automatic junction creation, and comprehensive test coverage (26 tests passing). Features dropdown UI integration and works with existing brush tool. Mixed single/double line intersections work functionally but need visual polish for optimal character selection.
 
@@ -161,11 +162,14 @@ This document outlines potential future development directions for Terminal Draw
   - Line thickness options using different characters
 
 #### Shape Tools
-- **Rectangle Tool**
-  - Hollow rectangle outlines
-  - Filled rectangle support
-  - Corner style selection (┌─┐ vs ╭─╮ vs +++)
-  - Shift-constraint for perfect squares
+- **Rectangle Tool** ✅ **COMPLETED**
+  - ✅ Hollow rectangle outlines
+  - Filled rectangle support (future)
+  - ✅ Smart line mode integration (single/double box-drawing)
+  - ✅ Paint mode support (fg/bg/glyph/all)
+  - ✅ Keyboard shortcut [R]
+  - ✅ Click-drag interaction with anchor indicator preview
+  - ✅ Full undo/redo support
 
 - **Circle Tool (Bresenham Circle Algorithm)**
   - Perfect circular outlines using ASCII approximation

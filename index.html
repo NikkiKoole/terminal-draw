@@ -35,6 +35,9 @@
                     <button id="tool-spray" class="tool-btn">
                         🎨 <span class="key">[S]</span>pray
                     </button>
+                    <button id="tool-rectangle" class="tool-btn">
+                        ▭ <span class="key">[R]</span>ectangle
+                    </button>
 
                     <!-- Undo/Redo buttons -->
                     <div class="toolbar-separator"></div>
@@ -410,6 +413,12 @@
 
                         <!-- Hover Indicator: Visual feedback for hovered cell -->
                         <div id="hover-indicator" class="hover-indicator"></div>
+
+                        <!-- Anchor Indicator: Shows rectangle/shape start point -->
+                        <div
+                            id="anchor-indicator"
+                            class="anchor-indicator"
+                        ></div>
 
                         <!-- Text Layers: Dynamically generated based on scene layers -->
                         <!-- Layer containers will be created by JavaScript -->

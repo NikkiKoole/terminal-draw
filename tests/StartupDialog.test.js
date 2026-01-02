@@ -8,6 +8,9 @@ import { JSDOM } from "jsdom";
 import { StartupDialog } from "../src/ui/StartupDialog.js";
 import { PROJECT_TEMPLATES } from "../src/core/ProjectTemplate.js";
 
+// Mock console.warn globally to suppress expected error messages
+const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
 // Mock localStorage
 const localStorageMock = {
   getItem: vi.fn(),
@@ -445,12 +448,9 @@ describe("StartupDialog", () => {
 
     it("should handle corrupted localStorage data gracefully", () => {
       localStorageMock.getItem.mockReturnValue("invalid json");
-      const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
       expect(() => dialog.loadLastUsed()).not.toThrow();
-      expect(consoleSpy).toHaveBeenCalled();
-
-      consoleSpy.mockRestore();
+      expect(consoleWarnSpy).toHaveBeenCalled();
     });
   });
 

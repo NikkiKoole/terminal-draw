@@ -17,7 +17,7 @@ export class GlyphPicker {
     this.brushTool = brushTool;
     this.stateManager = stateManager;
     this.isOpen = false;
-    this.selectedCategory = "ALL";
+    this.selectedCategory = "CP437";
 
     this.modal = null;
     this.triggerButton = null;
@@ -50,7 +50,7 @@ export class GlyphPicker {
             ${Object.entries(GLYPHS)
               .map(
                 ([key, category]) =>
-                  `<option value="${key}">${category.name}</option>`,
+                  `<option value="${key}" ${key === this.selectedCategory ? "selected" : ""}>${category.name}</option>`,
               )
               .join("")}
           </select>

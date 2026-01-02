@@ -46,6 +46,7 @@ describe("constants", () => {
 
   describe("GLYPHS", () => {
     it("should have all expected categories", () => {
+      expect(GLYPHS.CP437).toBeDefined();
       expect(GLYPHS.BASIC_TEXT).toBeDefined();
       expect(GLYPHS.ACCENTED_LETTERS).toBeDefined();
       expect(GLYPHS.GREEK_CYRILLIC).toBeDefined();
@@ -102,7 +103,7 @@ describe("constants", () => {
     });
 
     it("should have many characters", () => {
-      // With 10 categories, we should have over a thousand characters
+      // With 11 categories, we should have over a thousand characters
       expect(ALL_GLYPHS.length).toBeGreaterThan(1000);
     });
   });
@@ -110,7 +111,7 @@ describe("constants", () => {
   describe("GLYPH_CATEGORIES", () => {
     it("should be an array of category objects", () => {
       expect(GLYPH_CATEGORIES).toBeInstanceOf(Array);
-      expect(GLYPH_CATEGORIES.length).toBe(10);
+      expect(GLYPH_CATEGORIES.length).toBe(11);
     });
 
     it("should have id, name, and chars for each category", () => {
@@ -121,9 +122,9 @@ describe("constants", () => {
       }
     });
 
-    it("should have BASIC_TEXT as first category", () => {
-      expect(GLYPH_CATEGORIES[0].id).toBe("BASIC_TEXT");
-      expect(GLYPH_CATEGORIES[0].name).toBe("Basic Text (A-Z, a-z, 0-9)");
+    it("should have CP437 as first category", () => {
+      expect(GLYPH_CATEGORIES[0].id).toBe("CP437");
+      expect(GLYPH_CATEGORIES[0].name).toBe("CP437 (DOS/ANSI Standard)");
     });
   });
 });

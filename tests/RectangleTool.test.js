@@ -19,7 +19,10 @@ describe("RectangleTool", () => {
     scene = new Scene(20, 20);
     stateManager = new StateManager();
     commandHistory = new CommandHistory({ stateManager });
-    rectangleTool = new RectangleTool({ ch: "█", fg: 7, bg: -1 }, commandHistory);
+    rectangleTool = new RectangleTool(
+      { ch: "█", fg: 7, bg: -1 },
+      commandHistory,
+    );
   });
 
   describe("constructor", () => {
@@ -40,6 +43,10 @@ describe("RectangleTool", () => {
 
     it("should have default paint mode 'all'", () => {
       expect(rectangleTool.getPaintMode()).toBe("all");
+    });
+
+    it("should have default fill mode 'outline'", () => {
+      expect(rectangleTool.getFillMode()).toBe("outline");
     });
   });
 
@@ -291,6 +298,60 @@ describe("RectangleTool", () => {
       // Redo
       commandHistory.redo();
       expect(layer.getCell(5, 5).ch).toBe("#");
+    });
+  });
+
+  describe("fill mode", () => {
+    it("should set and get fill mode to 'filled'", () => {
+      rectangleTool.setFillMode("filled");
+      expect(rectangleTool.getFillMode()).toBe("filled");
+    });
+
+    it("should set and get fill mode to 'outline'", () => {
+      rectangleTool.setFillMode("outline");
+      expect(rectangleTool.getFillMode()).toBe("outline");
+    });
+
+    it("should ignore invalid fill modes", () => {
+      rectangleTool.setFillMode("outline");
+      rectangleTool.setFillMode("invalid");
+      expect(rectangleTool.getFillMode()).toBe("outline");
+    });
+
+    it("should draw filled rectangle when fillMode is 'filled'", () => {
+      const activeLayer = scene.getActiveLayer();
+
+      rectangleTool.setFillMode("filled");
+      rectangleTool.onCellDown(5, 5, scene, stateManager);
+      rectangleTool.onCellDrag(8, 7, scene, stateManager);
+      rectangleTool.onCellUp(8, 7, scene, stateManager);
+
+      // Check that interior cells are filled (not just outline)
+      // Rectangle from (5,5) to (8,7) should be completely filled
+      for (let y = 5; y <= 7; y++) {
+        for (let x = 5; x <= 8; x++) {
+          const cell = activeLayer.getCell(x, y);
+          expect(cell.ch).toBe("█");
+        }
+      }
+    });
+
+    it("should draw outline rectangle when fillMode is 'outline'", () => {
+      const activeLayer = scene.getActiveLayer();
+
+      rectangleTool.setFillMode("outline");
+      rectangleTool.onCellDown(5, 5, scene, stateManager);
+      rectangleTool.onCellDrag(8, 7, scene, stateManager);
+      rectangleTool.onCellUp(8, 7, scene, stateManager);
+
+      // Check that interior cells are NOT filled (only outline)
+      // Center cell (6,6) should be empty
+      const centerCell = activeLayer.getCell(6, 6);
+      expect(centerCell.ch).toBe(" ");
+
+      // Corners should be filled
+      expect(activeLayer.getCell(5, 5).ch).toBe("█");
+      expect(activeLayer.getCell(8, 7).ch).toBe("█");
     });
   });
 

@@ -23,6 +23,7 @@ export class RectangleTool extends Tool {
     this.commandHistory = commandHistory;
     this.drawingMode = "normal"; // "normal", "single", or "double"
     this.paintMode = "all"; // "all", "fg", "bg", "glyph"
+    this.fillMode = "outline"; // "outline" or "filled"
     this.smartBoxDrawing = new SmartBoxDrawing();
 
     // Rectangle state
@@ -85,11 +86,30 @@ export class RectangleTool extends Tool {
   }
 
   /**
-   * Get the current paint mode
+   * Get current paint mode
    * @returns {string} Current paint mode
    */
   getPaintMode() {
     return this.paintMode;
+  }
+
+  /**
+   * Set fill mode
+   * @param {string} mode - Fill mode: "outline" or "filled"
+   */
+  setFillMode(mode) {
+    const validModes = ["outline", "filled"];
+    if (validModes.includes(mode)) {
+      this.fillMode = mode;
+    }
+  }
+
+  /**
+   * Get current fill mode
+   * @returns {string} Current fill mode
+   */
+  getFillMode() {
+    return this.fillMode;
   }
 
   /**
@@ -196,13 +216,58 @@ export class RectangleTool extends Tool {
   }
 
   /**
+   * Get cells for rectangle (outline or filled)
+   * @param {object} coords - Rectangle coordinates from _getRectangleCoords
+   * @param {Scene} scene - Scene instance
+   * @returns {Array} Array of {x, y, cell} objects
+   * @private
+   */
+  _getRectangleCells(coords, scene) {
+    if (this.fillMode === "filled") {
+      return this._getFilledRectangleCells(coords, scene);
+    } else {
+      return this._getOutlineRectangleCells(coords, scene);
+    }
+  }
+
+  /**
+   * Get cells for filled rectangle
+   * @param {object} coords - Rectangle coordinates
+   * @param {Scene} scene - Scene instance
+   * @returns {Array} Array of {x, y, cell} objects
+   * @private
+   */
+  _getFilledRectangleCells(coords, scene) {
+    const cells = [];
+    const activeLayer = scene.getActiveLayer();
+
+    if (!activeLayer) {
+      return cells;
+    }
+
+    const { x1, y1, x2, y2 } = coords;
+
+    // Fill entire rectangle area
+    for (let y = y1; y <= y2; y++) {
+      for (let x = x1; x <= x2; x++) {
+        const char = this.currentCell.ch;
+        const beforeCell = activeLayer.getCell(x, y);
+        const afterCell = this._applyPaintMode(char, beforeCell);
+        cells.push({ x, y, cell: afterCell });
+      }
+    }
+
+    return cells;
+  }
+
+  /**
    * Get cells for rectangle outline
    * @param {object} coords - Rectangle coordinates
    * @param {Scene} scene - Scene instance
    * @returns {Array} Array of {x, y, cell} objects
    * @private
    */
-  _getRectangleCells(coords, scene) {
+  _getOutlineRectangleCells(coords, scene) {
     const { x1, y1, x2, y2 } = coords;
     const cells = [];
     const activeLayer = scene.getActiveLayer();

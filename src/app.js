@@ -638,9 +638,13 @@ function setCurrentTool(tool) {
 
   // Hide all tool-specific options by default
   const sprayOptions = document.getElementById("spray-options");
+  const rectangleOptions = document.getElementById("rectangle-options");
 
   if (sprayOptions) {
     sprayOptions.style.display = "none";
+  }
+  if (rectangleOptions) {
+    rectangleOptions.style.display = "none";
   }
 
   if (tool === brushTool) {
@@ -657,6 +661,10 @@ function setCurrentTool(tool) {
     }
   } else if (tool === rectangleTool) {
     document.getElementById("tool-rectangle")?.classList.add("active");
+    // Show rectangle options
+    if (rectangleOptions) {
+      rectangleOptions.style.display = "flex";
+    }
   } else if (tool === lineTool) {
     document.getElementById("tool-line")?.classList.add("active");
   }
@@ -1319,6 +1327,7 @@ function initUIComponents() {
   initPaintMode();
   initSmartDrawingMode();
   initSpraySettings();
+  initRectangleSettings();
   initClipboard();
   initProject();
   initIOPanel();
@@ -1690,6 +1699,30 @@ function initSpraySettings() {
 
     // Set initial coverage
     sprayTool.setCoverage(0.05);
+  }
+}
+
+/**
+ * Initialize rectangle tool settings
+ */
+function initRectangleSettings() {
+  const fillSelect = document.getElementById("rectangle-fill");
+
+  if (fillSelect && rectangleTool) {
+    fillSelect.addEventListener("change", (e) => {
+      const fillMode = e.target.value;
+      rectangleTool.setFillMode(fillMode);
+
+      const fillLabels = {
+        outline: "Outline",
+        filled: "Filled",
+      };
+
+      updateStatus(`Rectangle Fill: ${fillLabels[fillMode]}`);
+    });
+
+    // Set initial fill mode
+    rectangleTool.setFillMode("outline");
   }
 }
 

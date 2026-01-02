@@ -64,7 +64,7 @@ This document outlines potential future development directions for Terminal Draw
   - ✅ Context-aware glyph placement based on neighbors
   - ✅ Auto-connects to existing lines with proper junctions
   - ✅ UI dropdown for Normal/Smart Single Line/Smart Double Line modes
-  - ⚠️ Mixed single/double intersections need polish (functional but not optimal)
+  - ✅ Mixed single/double intersections (╫ ╪ ╞ ╡ ╟ ╢ ╤ ╥ ╧ ╨) - fully working with bitwise tileset algorithm
 
 - **Smart Box-Drawing Eraser** ✅ **COMPLETED**
   - ✅ Intelligent neighbor updates when erasing box-drawing characters
@@ -102,7 +102,7 @@ This document outlines potential future development directions for Terminal Draw
 - **Line Tool (M6)**: Implemented January 2025 with Bresenham algorithm, smart box-drawing for corners/edges, paint mode integration, and anchor indicator preview. 26 new tests, 1022 total tests passing.
 - **Smart Box-Drawing Eraser**: Implemented January 2025 with intelligent neighbor updates when erasing junctions/corners. Automatically simplifies box-drawing characters when connections are removed while preserving isolated lines. 9 new tests, 1031 total tests passing.
 
-**Smart Box-Drawing Completion Notes:** Implemented January 2025 with intelligent neighbor detection, automatic junction creation, and comprehensive test coverage (26 tests passing). Features dropdown UI integration and works with existing brush tool. Mixed single/double line intersections work functionally but need visual polish for optimal character selection. Smart eraser completes the intelligent box-drawing system by handling cleanup automatically.
+**Smart Box-Drawing Completion Notes:** Implemented January 2025 with intelligent neighbor detection, automatic junction creation, and comprehensive test coverage (26 tests passing). Features dropdown UI integration and works with existing brush tool. **Mixed single/double intersections completed with correct character mappings** using elegant bitwise tileset algorithm - all 10 mixed junction characters working perfectly (╫ ╪ ╞ ╡ ╟ ╢ ╤ ╥ ╧ ╨). Smart eraser completes the intelligent box-drawing system by handling cleanup automatically.
 
 ---
 

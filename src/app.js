@@ -21,6 +21,7 @@ import { EraserTool } from "./tools/EraserTool.js";
 import { PickerTool } from "./tools/PickerTool.js";
 import { SprayTool } from "./tools/SprayTool.js";
 import { RectangleTool } from "./tools/RectangleTool.js";
+import { LineTool } from "./tools/LineTool.js";
 import { LayerPanel } from "./ui/LayerPanel.js";
 import { GlyphPicker } from "./ui/GlyphPicker.js";
 import { ClipboardManager } from "./export/ClipboardManager.js";
@@ -59,6 +60,7 @@ let eraserTool = null;
 let pickerTool = null;
 let sprayTool = null;
 let rectangleTool = null;
+let lineTool = null;
 let currentTool = null;
 
 // Startup Dialog
@@ -347,6 +349,15 @@ function initInput() {
     }
   });
 
+  // Listen for line tool anchor events
+  stateManager.on("line:anchor", (data) => {
+    if (data.x !== null && data.y !== null) {
+      showAnchorIndicator(data.x, data.y);
+    } else {
+      hideAnchorIndicator();
+    }
+  });
+
   // Listen to tool:picked events from picker tool
   stateManager.on("tool:picked", handleToolPicked);
 
@@ -493,6 +504,7 @@ function initTools() {
   pickerTool = new PickerTool(commandHistory);
   sprayTool = new SprayTool({ ch: ".", fg: 7, bg: -1 }, commandHistory);
   rectangleTool = new RectangleTool({ ch: "█", fg: 7, bg: -1 }, commandHistory);
+  lineTool = new LineTool({ ch: "█", fg: 7, bg: -1 }, commandHistory);
 
   // Set initial tool
   setCurrentTool(brushTool);
@@ -503,6 +515,7 @@ function initTools() {
   const pickerBtn = document.getElementById("tool-picker");
   const sprayBtn = document.getElementById("tool-spray");
   const rectangleBtn = document.getElementById("tool-rectangle");
+  const lineBtn = document.getElementById("tool-line");
 
   if (brushBtn) {
     brushBtn.addEventListener("click", () => setCurrentTool(brushTool));
@@ -518,6 +531,9 @@ function initTools() {
   }
   if (rectangleBtn) {
     rectangleBtn.addEventListener("click", () => setCurrentTool(rectangleTool));
+  }
+  if (lineBtn) {
+    lineBtn.addEventListener("click", () => setCurrentTool(lineTool));
   }
 
   // Keyboard shortcuts
@@ -579,7 +595,7 @@ function initKeyboardShortcuts() {
         setCurrentTool(rectangleTool);
         break;
       case "l":
-        cycleLayer();
+        setCurrentTool(lineTool);
         break;
     }
   });
@@ -630,6 +646,8 @@ function setCurrentTool(tool) {
     document.getElementById("tool-spray")?.classList.add("active");
   } else if (tool === rectangleTool) {
     document.getElementById("tool-rectangle")?.classList.add("active");
+  } else if (tool === lineTool) {
+    document.getElementById("tool-line")?.classList.add("active");
   }
 
   updateStatus(
@@ -768,6 +786,15 @@ function selectFgColor(colorIndex) {
     });
   }
 
+  // Update line tool
+  if (lineTool) {
+    const lineCell = lineTool.getCurrentCell();
+    lineTool.setCurrentCell({
+      ...lineCell,
+      fg: colorIndex,
+    });
+  }
+
   // Update UI
   updatePaletteSelection();
   updateColorPreview();
@@ -803,6 +830,15 @@ function selectBgColor(colorIndex) {
     const rectangleCell = rectangleTool.getCurrentCell();
     rectangleTool.setCurrentCell({
       ...rectangleCell,
+      bg: colorIndex,
+    });
+  }
+
+  // Update line tool
+  if (lineTool) {
+    const lineCell = lineTool.getCurrentCell();
+    lineTool.setCurrentCell({
+      ...lineCell,
       bg: colorIndex,
     });
   }
@@ -894,6 +930,15 @@ function initGlyphPicker() {
       const rectangleCell = rectangleTool.getCurrentCell();
       rectangleTool.setCurrentCell({
         ...rectangleCell,
+        ch: data.char,
+      });
+    }
+
+    // Sync character to line tool
+    if (lineTool && data.char) {
+      const lineCell = lineTool.getCurrentCell();
+      lineTool.setCurrentCell({
+        ...lineCell,
         ch: data.char,
       });
     }
@@ -1156,6 +1201,9 @@ function updateToolsCommandHistory() {
   }
   if (rectangleTool && commandHistory) {
     rectangleTool.setCommandHistory(commandHistory);
+  }
+  if (lineTool && commandHistory) {
+    lineTool.setCommandHistory(commandHistory);
   }
 }
 
@@ -1483,6 +1531,9 @@ function initSmartDrawingMode() {
       if (rectangleTool) {
         rectangleTool.setDrawingMode(mode);
       }
+      if (lineTool) {
+        lineTool.setDrawingMode(mode);
+      }
 
       let statusMessage = `Drawing Mode: ${mode.charAt(0).toUpperCase() + mode.slice(1)}`;
       if (mode === "single") {
@@ -1499,6 +1550,9 @@ function initSmartDrawingMode() {
     if (rectangleTool) {
       rectangleTool.setDrawingMode("normal");
     }
+    if (lineTool) {
+      lineTool.setDrawingMode("normal");
+    }
   }
 }
 
@@ -1513,6 +1567,9 @@ function initPaintMode() {
       const newMode = brushTool.cyclePaintMode();
       if (rectangleTool) {
         rectangleTool.setPaintMode(newMode);
+      }
+      if (lineTool) {
+        lineTool.setPaintMode(newMode);
       }
 
       // Update button text based on mode
@@ -1540,6 +1597,9 @@ function initPaintMode() {
     brushTool.setPaintMode("all");
     if (rectangleTool) {
       rectangleTool.setPaintMode("all");
+    }
+    if (lineTool) {
+      lineTool.setPaintMode("all");
     }
   }
 }

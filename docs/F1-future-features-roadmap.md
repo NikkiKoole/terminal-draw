@@ -90,6 +90,7 @@ This document outlines potential future development directions for Terminal Draw
 - **Spray Can Tool**: Implemented January 2025 with density progression system, random spray patterns, and full integration with existing tool architecture. 30 tests passing.
 - **Selective Cell Painting**: Implemented January 2025 with paint mode cycling (all/fg/bg/glyph), single toggle button UI, and complete undo/redo support. 9 new tests, 975 total tests passing.
 - **Rectangle Tool (M6)**: Implemented January 2025 with smart box-drawing support (normal/single/double line modes), paint mode integration, and anchor indicator preview (shows start point). 21 new tests, 996 total tests passing.
+- **Line Tool (M6)**: Implemented January 2025 with Bresenham algorithm, smart box-drawing for corners/edges, paint mode integration, and anchor indicator preview. 26 new tests, 1022 total tests passing.
 
 **Smart Box-Drawing Completion Notes:** Implemented January 2025 with intelligent neighbor detection, automatic junction creation, and comprehensive test coverage (26 tests passing). Features dropdown UI integration and works with existing brush tool. Mixed single/double line intersections work functionally but need visual polish for optimal character selection.
 
@@ -140,12 +141,15 @@ This document outlines potential future development directions for Terminal Draw
 **Goal:** Professional shape and line drawing capabilities
 
 #### Line Drawing System
-- **Line Tool**
-  - Click-and-drag line creation
-  - Manhattan lines (horizontal/vertical/diagonal)
-  - Shift-constraint for perfect straight lines
-  - Character selection for line drawing (─│┌┐└┘├┤┬┴┼)
-  - Smart line mode with automatic neighbor detection
+- **Line Tool** ✅ **COMPLETED**
+  - ✅ Click-and-drag line creation
+  - ✅ Bresenham algorithm for lines at any angle
+  - ✅ Smart line mode (single/double box-drawing with corners)
+  - ✅ Normal mode (any glyph)
+  - ✅ Paint mode support (fg/bg/glyph/all)
+  - ✅ Keyboard shortcut [L]
+  - ✅ Anchor indicator preview (shows start point)
+  - ✅ Full undo/redo support
 
 - **Polyline Tool** *(inspired by Emacs artist mode)*
   - Click to place connected line segments
@@ -155,11 +159,10 @@ This document outlines potential future development directions for Terminal Draw
   - Auto-closing option to create polygons
   - Real-time preview of next segment
 
-- **Bresenham Line Algorithm**
-  - Perfect diagonal lines at any angle
-  - Anti-aliased line rendering with ASCII characters
-  - Smooth curves using character density (█▓▒░)
-  - Line thickness options using different characters
+- **Bresenham Line Algorithm** ✅ **COMPLETED** (integrated into Line Tool)
+  - ✅ Perfect lines at any angle using Bresenham algorithm
+  - ✅ Smart mode creates staircase patterns with corners for diagonals
+  - Line thickness options using different characters (future)
 
 #### Shape Tools
 - **Rectangle Tool** ✅ **COMPLETED**

@@ -74,37 +74,84 @@ export class SmartBoxDrawing {
       ...Object.values(this.mixedChars.doubleHorizontalSingleVertical),
     ]);
 
-    // Unified 8-bit bitmask lookup table
-    // Bits 0-3: single line connections (N=1, S=2, E=4, W=8)
-    // Bits 4-7: double line connections (N=16, S=32, E=64, W=128)
-    // This elegantly handles all combinations including mixed intersections!
-    this.BITMASK_CHARS = this._buildBitmaskTable();
+    // Build lookup tables using 4-bit connectivity masks
+    // Bits: North=1, South=2, East=4, West=8
+    this.CONNECTIVITY_SINGLE = this._buildConnectivityTable(this.singleChars);
+    this.CONNECTIVITY_DOUBLE = this._buildConnectivityTable(this.doubleChars);
+
+    // Mixed intersection lookup tables
+    this.MIXED_SH_DV = this._buildMixedTable("singleHorizontalDoubleVertical");
+    this.MIXED_DH_SV = this._buildMixedTable("doubleHorizontalSingleVertical");
   }
 
   /**
-   * Calculate 8-bit bitmask encoding both presence AND type of neighbors
-   * Lower 4 bits = single line connections
-   * Upper 4 bits = double line connections
-   * @param {object} neighbors - Object with north, south, east, west properties
-   * @returns {number} Bitmask value 0-255
+   * Build a 4-bit connectivity lookup table for a character set
+   * @param {object} chars - Character set (singleChars or doubleChars)
+   * @returns {object} Lookup table mapping 4-bit masks to characters
    * @private
    */
-  _calculateBitmask(neighbors) {
+  _buildConnectivityTable(chars) {
+    return {
+      0: chars.horizontal, // 0000 - no connections
+      1: chars.vertical, // 0001 - north only
+      2: chars.vertical, // 0010 - south only
+      3: chars.vertical, // 0011 - north + south
+      4: chars.horizontal, // 0100 - east only
+      5: chars.bottomLeft, // 0101 - north + east
+      6: chars.topLeft, // 0110 - south + east
+      7: chars.teeLeft, // 0111 - north + south + east
+      8: chars.horizontal, // 1000 - west only
+      9: chars.bottomRight, // 1001 - north + west
+      10: chars.topRight, // 1010 - south + west
+      11: chars.teeRight, // 1011 - north + south + west
+      12: chars.horizontal, // 1100 - east + west
+      13: chars.teeBottom, // 1101 - north + east + west
+      14: chars.teeTop, // 1110 - south + east + west
+      15: chars.cross, // 1111 - all directions
+    };
+  }
+
+  /**
+   * Build mixed intersection lookup table
+   * @param {string} type - "singleHorizontalDoubleVertical" or "doubleHorizontalSingleVertical"
+   * @returns {object} Lookup table for mixed patterns
+   * @private
+   */
+  _buildMixedTable(type) {
+    if (type === "singleHorizontalDoubleVertical") {
+      // Single horizontal + double vertical
+      return {
+        7: "╟", // 0111 - N + S + E
+        11: "╢", // 1011 - N + S + W
+        13: "╨", // 1101 - N + E + W
+        14: "╥", // 1110 - S + E + W
+        15: "╫", // 1111 - all directions
+      };
+    } else {
+      // Double horizontal + single vertical
+      return {
+        7: "╞", // 0111 - N + S + E
+        11: "╡", // 1011 - N + S + W
+        13: "╧", // 1101 - N + E + W
+        14: "╤", // 1110 - S + E + W
+        15: "╪", // 1111 - all directions
+      };
+    }
+  }
+
+  /**
+   * Calculate 4-bit connectivity mask from neighbors
+   * @param {object} neighbors - Object with north, south, east, west properties
+   * @returns {number} Bitmask value 0-15
+   * @private
+   */
+  _calculateConnectivity(neighbors) {
     const { north, south, east, west } = neighbors;
     let mask = 0;
-
-    // Single line bits (0-3)
-    if (north && this.isSingleLineChar(north)) mask |= 1; // North single = bit 0
-    if (south && this.isSingleLineChar(south)) mask |= 2; // South single = bit 1
-    if (east && this.isSingleLineChar(east)) mask |= 4; // East single = bit 2
-    if (west && this.isSingleLineChar(west)) mask |= 8; // West single = bit 3
-
-    // Double line bits (4-7)
-    if (north && this.isDoubleLineChar(north)) mask |= 16; // North double = bit 4
-    if (south && this.isDoubleLineChar(south)) mask |= 32; // South double = bit 5
-    if (east && this.isDoubleLineChar(east)) mask |= 64; // East double = bit 6
-    if (west && this.isDoubleLineChar(west)) mask |= 128; // West double = bit 7
-
+    if (this.isBoxDrawingChar(north)) mask |= 1; // North = bit 0
+    if (this.isBoxDrawingChar(south)) mask |= 2; // South = bit 1
+    if (this.isBoxDrawingChar(east)) mask |= 4; // East = bit 2
+    if (this.isBoxDrawingChar(west)) mask |= 8; // West = bit 3
     return mask;
   }
 
@@ -136,123 +183,8 @@ export class SmartBoxDrawing {
   }
 
   /**
-   * Build the complete 8-bit bitmask lookup table
-   * @returns {object} Lookup table mapping masks to characters
-   * @private
-   */
-  _buildBitmaskTable() {
-    const table = {};
-
-    // Helper to get character for a specific pattern
-    const getChar = (
-      nSingle,
-      sSingle,
-      eSingle,
-      wSingle,
-      nDouble,
-      sDouble,
-      eDouble,
-      wDouble,
-    ) => {
-      const hasN = nSingle || nDouble;
-      const hasS = sSingle || sDouble;
-      const hasE = eSingle || eDouble;
-      const hasW = wSingle || wDouble;
-
-      // Check if this is a mixed intersection
-      const verticalSingle = (nSingle || sSingle) && !nDouble && !sDouble;
-      const verticalDouble = (nDouble || sDouble) && !nSingle && !sSingle;
-      const horizontalSingle = (eSingle || wSingle) && !eDouble && !wDouble;
-      const horizontalDouble = (eDouble || wDouble) && !eSingle && !wSingle;
-
-      // Mixed: single horizontal + double vertical
-      if (horizontalSingle && verticalDouble) {
-        if (hasN && hasS && hasE && hasW) return "╫"; // Cross
-        if (hasN && hasS && hasE) return "╞"; // Left tee
-        if (hasN && hasS && hasW) return "╡"; // Right tee
-        if (hasN && hasE && hasW) return "╨"; // Bottom tee
-        if (hasS && hasE && hasW) return "╥"; // Top tee
-      }
-
-      // Mixed: double horizontal + single vertical
-      if (horizontalDouble && verticalSingle) {
-        if (hasN && hasS && hasE && hasW) return "╪"; // Cross
-        if (hasN && hasS && hasE) return "╟"; // Left tee
-        if (hasN && hasS && hasW) return "╢"; // Right tee
-        if (hasN && hasE && hasW) return "╧"; // Bottom tee
-        if (hasS && hasE && hasW) return "╤"; // Top tee
-      }
-
-      // Pure double lines
-      const allDouble =
-        (hasN ? nDouble : true) &&
-        (hasS ? sDouble : true) &&
-        (hasE ? eDouble : true) &&
-        (hasW ? wDouble : true);
-      if (allDouble && (nDouble || sDouble || eDouble || wDouble)) {
-        if (hasN && hasS && hasE && hasW) return "╬";
-        if (hasN && hasS && hasE) return "╠";
-        if (hasN && hasS && hasW) return "╣";
-        if (hasN && hasE && hasW) return "╩";
-        if (hasS && hasE && hasW) return "╦";
-        if (hasN && hasE) return "╚";
-        if (hasN && hasW) return "╝";
-        if (hasS && hasE) return "╔";
-        if (hasS && hasW) return "╗";
-        if (hasN && hasS) return "║";
-        if (hasE && hasW) return "═";
-        if (hasN || hasS) return "║";
-        if (hasE || hasW) return "═";
-        return "═";
-      }
-
-      // Pure single lines (or default)
-      if (hasN && hasS && hasE && hasW) return "┼";
-      if (hasN && hasS && hasE) return "├";
-      if (hasN && hasS && hasW) return "┤";
-      if (hasN && hasE && hasW) return "┴";
-      if (hasS && hasE && hasW) return "┬";
-      if (hasN && hasE) return "└";
-      if (hasN && hasW) return "┘";
-      if (hasS && hasE) return "┌";
-      if (hasS && hasW) return "┐";
-      if (hasN && hasS) return "│";
-      if (hasE && hasW) return "─";
-      if (hasN || hasS) return "│";
-      if (hasE || hasW) return "─";
-      return "─";
-    };
-
-    // Generate all 256 combinations
-    for (let mask = 0; mask < 256; mask++) {
-      const nSingle = (mask & 1) !== 0;
-      const sSingle = (mask & 2) !== 0;
-      const eSingle = (mask & 4) !== 0;
-      const wSingle = (mask & 8) !== 0;
-      const nDouble = (mask & 16) !== 0;
-      const sDouble = (mask & 32) !== 0;
-      const eDouble = (mask & 64) !== 0;
-      const wDouble = (mask & 128) !== 0;
-
-      table[mask] = getChar(
-        nSingle,
-        sSingle,
-        eSingle,
-        wSingle,
-        nDouble,
-        sDouble,
-        eDouble,
-        wDouble,
-      );
-    }
-
-    return table;
-  }
-
-  /**
    * Analyze neighbors and determine the correct box-drawing character
-   * Mode determines what WE draw, neighbors determine the shape (corner, tee, etc.)
-   * 8-bit mask only used for true mixed intersections
+   * Uses bitwise connectivity masks for clean, efficient lookup
    *
    * @param {object} neighbors - Object with north, south, east, west properties
    * @param {string} mode - "single" or "double" line mode - determines what WE draw
@@ -261,21 +193,15 @@ export class SmartBoxDrawing {
   getSmartCharacter(neighbors, mode) {
     const { north, south, east, west } = neighbors;
 
-    // Check if we have any neighbors at all
-    const hasNeighbors = north || south || east || west;
-
-    // If no neighbors, use mode to determine starting character
-    if (!hasNeighbors) {
+    // Quick check: if no neighbors, return default based on mode
+    if (!north && !south && !east && !west) {
       return mode === "double" ? "═" : "─";
     }
 
-    // Determine basic connectivity pattern (ignoring type for now)
-    const hasNorth = this.isBoxDrawingChar(north);
-    const hasSouth = this.isBoxDrawingChar(south);
-    const hasEast = this.isBoxDrawingChar(east);
-    const hasWest = this.isBoxDrawingChar(west);
+    // Calculate 4-bit connectivity mask (which directions have box-drawing chars)
+    const connectivityMask = this._calculateConnectivity(neighbors);
 
-    // Check if we have a mixed intersection situation
+    // Detect mixed intersections by checking neighbor types
     const northSingle = north && this.isSingleLineChar(north);
     const northDouble = north && this.isDoubleLineChar(north);
     const southSingle = south && this.isSingleLineChar(south);
@@ -285,7 +211,6 @@ export class SmartBoxDrawing {
     const westSingle = west && this.isSingleLineChar(west);
     const westDouble = west && this.isDoubleLineChar(west);
 
-    // Detect if we're crossing different line types (true mixed intersection)
     const verticalSingle =
       (northSingle || southSingle) && !northDouble && !southDouble;
     const verticalDouble =
@@ -295,41 +220,21 @@ export class SmartBoxDrawing {
     const horizontalDouble =
       (eastDouble || westDouble) && !eastSingle && !westSingle;
 
-    // MIXED INTERSECTION: single horizontal crossing double vertical
+    // Check for mixed intersections first
     if (horizontalSingle && verticalDouble) {
-      if (hasNorth && hasSouth && hasEast && hasWest) return "╫";
-      if (hasNorth && hasSouth && hasEast) return "╟";
-      if (hasNorth && hasSouth && hasWest) return "╢";
-      if (hasNorth && hasEast && hasWest) return "╨";
-      if (hasSouth && hasEast && hasWest) return "╥";
+      const char = this.MIXED_SH_DV[connectivityMask];
+      if (char) return char;
     }
 
-    // MIXED INTERSECTION: double horizontal crossing single vertical
     if (horizontalDouble && verticalSingle) {
-      if (hasNorth && hasSouth && hasEast && hasWest) return "╪";
-      if (hasNorth && hasSouth && hasEast) return "╞";
-      if (hasNorth && hasSouth && hasWest) return "╡";
-      if (hasNorth && hasEast && hasWest) return "╧";
-      if (hasSouth && hasEast && hasWest) return "╤";
+      const char = this.MIXED_DH_SV[connectivityMask];
+      if (char) return char;
     }
 
-    // NO MIXED INTERSECTION: Use mode to determine which character set
-    const chars = mode === "double" ? this.doubleChars : this.singleChars;
-
-    // Return appropriate character based on connectivity pattern
-    if (hasNorth && hasSouth && hasEast && hasWest) return chars.cross;
-    if (hasNorth && hasSouth && hasEast) return chars.teeLeft;
-    if (hasNorth && hasSouth && hasWest) return chars.teeRight;
-    if (hasNorth && hasEast && hasWest) return chars.teeBottom;
-    if (hasSouth && hasEast && hasWest) return chars.teeTop;
-    if (hasNorth && hasEast) return chars.bottomLeft;
-    if (hasNorth && hasWest) return chars.bottomRight;
-    if (hasSouth && hasEast) return chars.topLeft;
-    if (hasSouth && hasWest) return chars.topRight;
-    if (hasNorth || hasSouth) return chars.vertical;
-    if (hasEast || hasWest) return chars.horizontal;
-
-    return mode === "double" ? "═" : "─";
+    // No mixed intersection: use mode-based lookup table
+    const lookupTable =
+      mode === "double" ? this.CONNECTIVITY_DOUBLE : this.CONNECTIVITY_SINGLE;
+    return lookupTable[connectivityMask] || (mode === "double" ? "═" : "─");
   }
 
   /**

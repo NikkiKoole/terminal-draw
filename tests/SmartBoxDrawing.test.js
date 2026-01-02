@@ -477,7 +477,7 @@ describe("SmartBoxDrawing", () => {
           east: testCase.east,
           west: testCase.west,
         };
-        const mask = smartBoxDrawing._calculateBitmask(neighbors);
+        const mask = smartBoxDrawing._calculateConnectivity(neighbors);
         expect(mask).toBe(testCase.mask);
       });
     });

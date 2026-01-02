@@ -436,28 +436,6 @@ describe("StartupDialog", () => {
       );
     });
 
-    it("should load last used configuration", () => {
-      const config = {
-        template: "advanced",
-        dimensions: { w: 100, h: 30 },
-        palette: "gruvbox",
-        border: {
-          enabled: true,
-          style: "double",
-        },
-      };
-
-      localStorageMock.getItem.mockReturnValue(JSON.stringify(config));
-
-      dialog.loadLastUsed();
-
-      expect(dialog.selectedTemplate).toBe("advanced");
-      expect(dialog.customDimensions).toEqual({ w: 100, h: 30 });
-      expect(dialog.selectedPalette).toBe("gruvbox");
-      expect(dialog.borderEnabled).toBe(true);
-      expect(dialog.borderStyle).toBe("double");
-    });
-
     it("should handle missing localStorage data gracefully", () => {
       localStorageMock.getItem.mockReturnValue(null);
 

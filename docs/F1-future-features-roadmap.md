@@ -21,7 +21,7 @@ This document outlines potential future development directions for Terminal Draw
 - Enhanced layer controls (visibility 👁️/➖, lock 🔓/🔒)
 - Undo/redo system, grid resize, project save/load
 - Copy/export as plain text, JSON project format
-- 1084 tests passing with clean, maintainable codebase
+- 1091 tests passing with clean, maintainable codebase
 
 ---
 
@@ -101,6 +101,7 @@ This document outlines potential future development directions for Terminal Draw
 - **Smart Box-Drawing Eraser**: Implemented January 2025 with intelligent neighbor updates when erasing junctions/corners. Automatically simplifies box-drawing characters when connections are removed while preserving isolated lines. 9 new tests, 1031 total tests passing.
 - **Paint Mode Eraser**: Implemented January 2025 with selective erasing support (all/fg/bg/glyph modes). Eraser now respects paint mode toggle for flexible attribute removal. Smart box-drawing neighbor updates only trigger in glyph/all modes. 12 new tests, 1062 total tests passing.
 - **Variety Brushes via Spray Can**: Implemented January 2025 with 10 character set presets (Artist, Blocks, Dots, Stipple, Heights, Widths, Stars, Triangles, Crosses, Waves), configurable radius (Small/Medium/Large), and density control (Light/Medium/Heavy). Dedicated tool options bar in header shows contextual settings. Renamed "Density" preset to "Artist" to avoid confusion with density control. 19 new tests, 1084 total tests passing.
+- **Filled Rectangle Support**: Implemented January 2025 with Fill toggle in tool options bar (Outline/Filled modes). Filled mode fills entire rectangle area with current glyph, works with all paint modes and smart box-drawing modes. Settings shown when rectangle tool is active. 6 new tests, 1091 total tests passing.
 
 **Smart Box-Drawing Completion Notes:** Implemented January 2025 with intelligent neighbor detection, automatic junction creation, and comprehensive test coverage (26 tests passing). Features dropdown UI integration and works with existing brush tool. **Mixed single/double intersections completed with correct character mappings** using elegant bitwise tileset algorithm - all 10 mixed junction characters working perfectly (╫ ╪ ╞ ╡ ╟ ╢ ╤ ╥ ╧ ╨). Smart eraser completes the intelligent box-drawing system by handling cleanup automatically.
 
@@ -177,11 +178,12 @@ This document outlines potential future development directions for Terminal Draw
 #### Shape Tools
 - **Rectangle Tool** ✅ **COMPLETED**
   - ✅ Hollow rectangle outlines
-  - Filled rectangle support (future)
+  - ✅ Filled rectangle support with Fill toggle (Outline/Filled modes)
   - ✅ Smart line mode integration (single/double box-drawing)
   - ✅ Paint mode support (fg/bg/glyph/all)
   - ✅ Keyboard shortcut [R]
   - ✅ Click-drag interaction with anchor indicator preview
+  - ✅ Tool options bar shows Fill toggle when rectangle tool is active
   - ✅ Full undo/redo support
 
 - **Circle Tool (Bresenham Circle Algorithm)**

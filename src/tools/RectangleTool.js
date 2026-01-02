@@ -9,6 +9,7 @@
 import { Tool } from "./Tool.js";
 import { Cell } from "../core/Cell.js";
 import { CellCommand } from "../commands/CellCommand.js";
+import { SmartBoxDrawing } from "../utils/SmartBoxDrawing.js";
 
 export class RectangleTool extends Tool {
   /**
@@ -22,6 +23,7 @@ export class RectangleTool extends Tool {
     this.commandHistory = commandHistory;
     this.drawingMode = "normal"; // "normal", "single", or "double"
     this.paintMode = "all"; // "all", "fg", "bg", "glyph"
+    this.smartBoxDrawing = new SmartBoxDrawing();
 
     // Rectangle state
     this.isDrawing = false;
@@ -217,18 +219,51 @@ export class RectangleTool extends Tool {
 
         // Determine character based on position
         let char;
-        if (isTop && isLeft) {
-          char = chars.topLeft;
-        } else if (isTop && isRight) {
-          char = chars.topRight;
-        } else if (isBottom && isLeft) {
-          char = chars.bottomLeft;
-        } else if (isBottom && isRight) {
-          char = chars.bottomRight;
-        } else if (isTop || isBottom) {
-          char = chars.horizontal;
+
+        // Get the expected character for this position
+        const expectedChar = this._getExpectedChar(
+          chars,
+          isTop,
+          isBottom,
+          isLeft,
+          isRight,
+        );
+
+        // In smart mode, check if there are existing perpendicular lines
+        // that would require a mixed intersection character
+        if (this.drawingMode !== "normal") {
+          const neighbors = this.smartBoxDrawing.getNeighbors(
+            x,
+            y,
+            activeLayer,
+            scene.w,
+            scene.h,
+          );
+
+          // Get the smart character considering neighbors
+          const smartChar = this.smartBoxDrawing.getSmartCharacter(
+            neighbors,
+            this.drawingMode,
+          );
+
+          // Only use smart character if it's a mixed character
+          // (different from what we'd normally place)
+          const isMixedChar =
+            Object.values(
+              this.smartBoxDrawing.mixedChars.singleHorizontalDoubleVertical,
+            ).includes(smartChar) ||
+            Object.values(
+              this.smartBoxDrawing.mixedChars.doubleHorizontalSingleVertical,
+            ).includes(smartChar);
+
+          if (isMixedChar) {
+            char = smartChar; // Use mixed character for intersection
+          } else {
+            char = expectedChar; // Use normal rectangle character
+          }
         } else {
-          char = chars.vertical;
+          // Normal mode - use position-based character
+          char = expectedChar;
         }
 
         // Apply paint mode
@@ -240,6 +275,26 @@ export class RectangleTool extends Tool {
     }
 
     return cells;
+  }
+
+  /**
+   * Get expected character based on position
+   * @private
+   */
+  _getExpectedChar(chars, isTop, isBottom, isLeft, isRight) {
+    if (isTop && isLeft) {
+      return chars.topLeft;
+    } else if (isTop && isRight) {
+      return chars.topRight;
+    } else if (isBottom && isLeft) {
+      return chars.bottomLeft;
+    } else if (isBottom && isRight) {
+      return chars.bottomRight;
+    } else if (isTop || isBottom) {
+      return chars.horizontal;
+    } else {
+      return chars.vertical;
+    }
   }
 
   /**

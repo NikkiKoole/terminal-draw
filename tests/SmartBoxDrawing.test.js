@@ -354,4 +354,217 @@ describe("SmartBoxDrawing", () => {
       }).not.toThrow();
     });
   });
+
+  describe("mixed single/double line intersections", () => {
+    it("should create mixed cross when single horizontal crosses double vertical", () => {
+      // Create neighbors around position (5,5) - double vertical, single horizontal
+      layer.setCell(5, 4, new Cell("║", 7, -1)); // North
+      layer.setCell(5, 6, new Cell("║", 7, -1)); // South
+      layer.setCell(4, 5, new Cell("─", 7, -1)); // West
+      layer.setCell(6, 5, new Cell("─", 7, -1)); // East
+      // Note: (5,5) is empty - we're checking what character should go there
+
+      const neighbors = smartBoxDrawing.getNeighbors(5, 5, layer, 10, 10);
+
+      // Should return mixed character (single horizontal, double vertical)
+      const char = smartBoxDrawing.getSmartCharacter(neighbors, "single");
+      expect(char).toBe("╫"); // Mixed cross: single horizontal, double vertical
+    });
+
+    it("should create mixed cross when double horizontal crosses single vertical", () => {
+      // Create neighbors around position (5,5) - single vertical, double horizontal
+      layer.setCell(5, 4, new Cell("│", 7, -1)); // North
+      layer.setCell(5, 6, new Cell("│", 7, -1)); // South
+      layer.setCell(4, 5, new Cell("═", 7, -1)); // West
+      layer.setCell(6, 5, new Cell("═", 7, -1)); // East
+
+      const neighbors = smartBoxDrawing.getNeighbors(5, 5, layer, 10, 10);
+      const char = smartBoxDrawing.getSmartCharacter(neighbors, "double");
+      expect(char).toBe("╪"); // Mixed cross: double horizontal, single vertical
+    });
+
+    it("should create mixed T-junction when single horizontal meets double vertical from top", () => {
+      // Create neighbors: double vertical from north, single horizontal arms
+      layer.setCell(5, 4, new Cell("║", 7, -1)); // North
+      layer.setCell(4, 5, new Cell("─", 7, -1)); // West
+      layer.setCell(6, 5, new Cell("─", 7, -1)); // East
+      // South is empty, so this is a T-junction pointing down
+
+      const neighbors = smartBoxDrawing.getNeighbors(5, 5, layer, 10, 10);
+      const char = smartBoxDrawing.getSmartCharacter(neighbors, "single");
+      expect(char).toBe("╨"); // Tee bottom: double vertical from top, single horizontal arms
+    });
+
+    it("should create mixed T-junction when double horizontal meets single vertical from left", () => {
+      // Single vertical connections
+      layer.setCell(5, 4, new Cell("│", 7, -1)); // North
+      layer.setCell(5, 6, new Cell("│", 7, -1)); // South
+
+      // Double horizontal from west
+      layer.setCell(4, 5, new Cell("═", 7, -1)); // West
+
+      const neighbors = smartBoxDrawing.getNeighbors(5, 5, layer, 10, 10);
+      const char = smartBoxDrawing.getSmartCharacter(neighbors, "double");
+      expect(char).toBe("╡"); // Tee right: double horizontal from left, single vertical
+    });
+
+    it("should create mixed T-junction when double horizontal meets single vertical from right", () => {
+      // Single vertical connections
+      layer.setCell(5, 4, new Cell("│", 7, -1)); // North
+      layer.setCell(5, 6, new Cell("│", 7, -1)); // South
+
+      // Double horizontal from east
+      layer.setCell(6, 5, new Cell("═", 7, -1)); // East
+
+      const neighbors = smartBoxDrawing.getNeighbors(5, 5, layer, 10, 10);
+      const char = smartBoxDrawing.getSmartCharacter(neighbors, "double");
+      expect(char).toBe("╞"); // Tee left: double horizontal from right, single vertical
+    });
+  });
+
+  describe("bitwise tileset algorithm (alternative implementation)", () => {
+    it("should produce correct result for simple cross", () => {
+      // Create a cross pattern
+      layer.setCell(5, 4, new Cell("│", 7, -1)); // North
+      layer.setCell(5, 6, new Cell("│", 7, -1)); // South
+      layer.setCell(4, 5, new Cell("─", 7, -1)); // West
+      layer.setCell(6, 5, new Cell("─", 7, -1)); // East
+
+      const neighbors = smartBoxDrawing.getNeighbors(5, 5, layer, 10, 10);
+      const result = smartBoxDrawing.getSmartCharacter(neighbors, "single");
+
+      expect(result).toBe("┼");
+    });
+
+    it("should produce correct result for mixed intersections", () => {
+      // Single horizontal, double vertical
+      layer.setCell(5, 4, new Cell("║", 7, -1)); // North
+      layer.setCell(5, 6, new Cell("║", 7, -1)); // South
+      layer.setCell(4, 5, new Cell("─", 7, -1)); // West
+      layer.setCell(6, 5, new Cell("─", 7, -1)); // East
+
+      const neighbors = smartBoxDrawing.getNeighbors(5, 5, layer, 10, 10);
+      const result = smartBoxDrawing.getSmartCharacter(neighbors, "single");
+
+      expect(result).toBe("╫");
+    });
+
+    it("should calculate correct bitmask for all directions", () => {
+      // Test all 16 possible bitmask values
+      const testCases = [
+        { mask: 0, north: null, south: null, east: null, west: null },
+        { mask: 1, north: "│", south: null, east: null, west: null },
+        { mask: 2, north: null, south: "│", east: null, west: null },
+        { mask: 3, north: "│", south: "│", east: null, west: null },
+        { mask: 4, north: null, south: null, east: "─", west: null },
+        { mask: 5, north: "│", south: null, east: "─", west: null },
+        { mask: 6, north: null, south: "│", east: "─", west: null },
+        { mask: 7, north: "│", south: "│", east: "─", west: null },
+        { mask: 8, north: null, south: null, east: null, west: "─" },
+        { mask: 9, north: "│", south: null, east: null, west: "─" },
+        { mask: 10, north: null, south: "│", east: null, west: "─" },
+        { mask: 11, north: "│", south: "│", east: null, west: "─" },
+        { mask: 12, north: null, south: null, east: "─", west: "─" },
+        { mask: 13, north: "│", south: null, east: "─", west: "─" },
+        { mask: 14, north: null, south: "│", east: "─", west: "─" },
+        { mask: 15, north: "│", south: "│", east: "─", west: "─" },
+      ];
+
+      testCases.forEach((testCase) => {
+        const neighbors = {
+          north: testCase.north,
+          south: testCase.south,
+          east: testCase.east,
+          west: testCase.west,
+        };
+        const mask = smartBoxDrawing._calculateBitmask(neighbors);
+        expect(mask).toBe(testCase.mask);
+      });
+    });
+
+    it("should handle T-junctions with bitmask correctly", () => {
+      // Left tee (├): north + south + east = mask 7
+      layer.setCell(5, 4, new Cell("│", 7, -1));
+      layer.setCell(5, 6, new Cell("│", 7, -1));
+      layer.setCell(6, 5, new Cell("─", 7, -1));
+
+      const neighbors = smartBoxDrawing.getNeighbors(5, 5, layer, 10, 10);
+      const result = smartBoxDrawing.getSmartCharacter(neighbors, "single");
+      expect(result).toBe("├");
+    });
+
+    it("should handle corners with bitmask correctly", () => {
+      // Top-left corner (┌): south + east = mask 6
+      layer.setCell(5, 6, new Cell("│", 7, -1));
+      layer.setCell(6, 5, new Cell("─", 7, -1));
+
+      const neighbors = smartBoxDrawing.getNeighbors(5, 5, layer, 10, 10);
+      const result = smartBoxDrawing.getSmartCharacter(neighbors, "single");
+      expect(result).toBe("┌");
+    });
+  });
+
+  describe("8-bit bitmask comprehensive tests", () => {
+    it("should draw single line when mode=single with no neighbors", () => {
+      const neighbors = { north: null, south: null, east: null, west: null };
+      const result = smartBoxDrawing.getSmartCharacter(neighbors, "single");
+      expect(result).toBe("─");
+    });
+
+    it("should draw double line when mode=double with no neighbors", () => {
+      const neighbors = { north: null, south: null, east: null, west: null };
+      const result = smartBoxDrawing.getSmartCharacter(neighbors, "double");
+      expect(result).toBe("═");
+    });
+
+    it("should extend single lines when drawing single with single neighbors", () => {
+      const neighbors = { north: null, south: null, east: "─", west: "─" };
+      const result = smartBoxDrawing.getSmartCharacter(neighbors, "single");
+      expect(result).toBe("─");
+    });
+
+    it("should convert to double when drawing double with single neighbors", () => {
+      const neighbors = { north: null, south: null, east: "─", west: "─" };
+      const result = smartBoxDrawing.getSmartCharacter(neighbors, "double");
+      expect(result).toBe("═");
+    });
+
+    it("should extend double lines when drawing double with double neighbors", () => {
+      const neighbors = { north: null, south: null, east: "═", west: "═" };
+      const result = smartBoxDrawing.getSmartCharacter(neighbors, "double");
+      expect(result).toBe("═");
+    });
+
+    it("should convert to single when drawing single with double neighbors", () => {
+      const neighbors = { north: null, south: null, east: "═", west: "═" };
+      const result = smartBoxDrawing.getSmartCharacter(neighbors, "single");
+      expect(result).toBe("─");
+    });
+
+    it("should create mixed cross when drawing double through single vertical", () => {
+      const neighbors = { north: "│", south: "│", east: "═", west: null };
+      const result = smartBoxDrawing.getSmartCharacter(neighbors, "double");
+      expect(result).toBe("╞"); // Mixed: double horizontal + single vertical, left tee
+    });
+
+    it("should create mixed cross when drawing single through double vertical", () => {
+      const neighbors = { north: "║", south: "║", east: "─", west: null };
+      const result = smartBoxDrawing.getSmartCharacter(neighbors, "single");
+      expect(result).toBe("╟"); // Mixed: single horizontal + double vertical, left tee
+    });
+
+    it("should handle actual painting scenario - brush double over existing single vertical", () => {
+      // This simulates: single vertical line exists at a cell, we brush double horizontal through it
+      layer.setCell(5, 4, new Cell("│", 7, -1)); // North of target
+      layer.setCell(5, 6, new Cell("│", 7, -1)); // South of target
+      layer.setCell(4, 5, new Cell("═", 7, -1)); // West of target (we're drawing double)
+      // Note: the cell at 5,5 has existing "│" which the brush should detect separately
+
+      const neighbors = smartBoxDrawing.getNeighbors(5, 5, layer, 10, 10);
+      // Neighbors: N=│, S=│, E=null, W=═
+      const result = smartBoxDrawing.getSmartCharacter(neighbors, "double");
+      // We have single vertical (N+S) and double horizontal (W), should give mixed char
+      expect(result).toBe("╡"); // Double horizontal + single vertical, right tee
+    });
+  });
 });

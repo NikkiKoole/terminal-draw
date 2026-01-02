@@ -187,6 +187,10 @@ export class BrushTool extends Tool {
   _paintSmartBoxDrawing(x, y, scene, stateManager) {
     const activeLayer = scene.getActiveLayer();
 
+    // Get the existing cell at this position
+    const existingCell = activeLayer.getCell(x, y);
+    const existingChar = existingCell ? existingCell.ch : null;
+
     // Get neighbors around the target position
     const neighbors = this.smartBoxDrawing.getNeighbors(
       x,
@@ -196,9 +200,40 @@ export class BrushTool extends Tool {
       scene.h,
     );
 
+    // Check if we're painting over a perpendicular line (mixed intersection)
+    // We need to inject the existing perpendicular line into neighbors
+    let modifiedNeighbors = { ...neighbors };
+
+    if (existingChar && this.smartBoxDrawing.isBoxDrawingChar(existingChar)) {
+      const existingIsSingleVertical = existingChar === "│";
+      const existingIsDoubleVertical = existingChar === "║";
+      const existingIsSingleHorizontal = existingChar === "─";
+      const existingIsDoubleHorizontal = existingChar === "═";
+
+      const existingIsVertical =
+        existingIsSingleVertical || existingIsDoubleVertical;
+      const existingIsHorizontal =
+        existingIsSingleHorizontal || existingIsDoubleHorizontal;
+
+      // Determine if we're drawing horizontally or vertically based on neighbors
+      const drawingHorizontal = neighbors.east || neighbors.west;
+      const drawingVertical = neighbors.north || neighbors.south;
+
+      // If we're drawing horizontal over an existing vertical line, inject it as north/south
+      if (existingIsVertical && drawingHorizontal && !drawingVertical) {
+        modifiedNeighbors.north = existingChar;
+        modifiedNeighbors.south = existingChar;
+      }
+      // If we're drawing vertical over an existing horizontal line, inject it as east/west
+      else if (existingIsHorizontal && drawingVertical && !drawingHorizontal) {
+        modifiedNeighbors.east = existingChar;
+        modifiedNeighbors.west = existingChar;
+      }
+    }
+
     // Determine the smart character based on neighbors and mode
     const smartChar = this.smartBoxDrawing.getSmartCharacter(
-      neighbors,
+      modifiedNeighbors,
       this.drawingMode,
     );
 

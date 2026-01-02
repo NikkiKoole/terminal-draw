@@ -636,6 +636,13 @@ function setCurrentTool(tool) {
   const buttons = document.querySelectorAll('[id^="tool-"]');
   buttons.forEach((btn) => btn.classList.remove("active"));
 
+  // Hide all tool-specific options by default
+  const sprayOptions = document.getElementById("spray-options");
+
+  if (sprayOptions) {
+    sprayOptions.style.display = "none";
+  }
+
   if (tool === brushTool) {
     document.getElementById("tool-brush")?.classList.add("active");
   } else if (tool === eraserTool) {
@@ -644,6 +651,10 @@ function setCurrentTool(tool) {
     document.getElementById("tool-picker")?.classList.add("active");
   } else if (tool === sprayTool) {
     document.getElementById("tool-spray")?.classList.add("active");
+    // Show spray options
+    if (sprayOptions) {
+      sprayOptions.style.display = "flex";
+    }
   } else if (tool === rectangleTool) {
     document.getElementById("tool-rectangle")?.classList.add("active");
   } else if (tool === lineTool) {
@@ -1307,6 +1318,7 @@ function initUIComponents() {
   initGlyphPicker();
   initPaintMode();
   initSmartDrawingMode();
+  initSpraySettings();
   initClipboard();
   initProject();
   initIOPanel();
@@ -1607,6 +1619,77 @@ function initPaintMode() {
     if (eraserTool) {
       eraserTool.setPaintMode("all");
     }
+  }
+}
+
+/**
+ * Initialize spray tool settings
+ */
+function initSpraySettings() {
+  const presetSelect = document.getElementById("spray-preset");
+  const radiusSelect = document.getElementById("spray-radius");
+  const coverageSelect = document.getElementById("spray-coverage");
+
+  if (presetSelect && sprayTool) {
+    presetSelect.addEventListener("change", (e) => {
+      const preset = e.target.value;
+      sprayTool.setPreset(preset);
+
+      const presetLabels = {
+        artist: "Artist (. - + * % m #)",
+        blocks: "Blocks (░ ▒ ▓ █)",
+        dots: "Dots (· • ● ○)",
+        stipple: "Stipple (, . · :)",
+        heights: "Heights (▁ ▂ ▃ ▄ ▅ ▆ ▇ █)",
+        widths: "Widths (▏ ▎ ▍ ▌ ▋ ▊ ▉)",
+        stars: "Stars (· • ✶ ✕)",
+        triangles: "Triangles (▴ ▵ ► ◄ ▲ ▼)",
+        crosses: "Crosses (· ÷ + ✕ × X ╳)",
+        waves: "Waves (~ ∼ ≈ ≋)",
+      };
+
+      updateStatus(`Spray Preset: ${presetLabels[preset]}`);
+    });
+
+    // Set initial preset
+    sprayTool.setPreset("artist");
+  }
+
+  if (radiusSelect && sprayTool) {
+    radiusSelect.addEventListener("change", (e) => {
+      const radius = parseInt(e.target.value);
+      sprayTool.setRadius(radius);
+
+      const sizeLabels = {
+        2: "Small",
+        3: "Medium",
+        5: "Large",
+      };
+
+      updateStatus(`Spray Size: ${sizeLabels[radius]}`);
+    });
+
+    // Set initial radius
+    sprayTool.setRadius(3);
+  }
+
+  if (coverageSelect && sprayTool) {
+    coverageSelect.addEventListener("change", (e) => {
+      const coverage = parseFloat(e.target.value);
+      sprayTool.setCoverage(coverage);
+
+      const densityLabels = {
+        0.025: "Light",
+        0.05: "Medium",
+        0.1: "Dense",
+        0.5: "Heavy",
+      };
+
+      updateStatus(`Spray Density: ${densityLabels[coverage]}`);
+    });
+
+    // Set initial coverage
+    sprayTool.setCoverage(0.05);
   }
 }
 

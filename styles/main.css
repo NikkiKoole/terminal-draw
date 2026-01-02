@@ -98,25 +98,22 @@ body {
 
 header {
     position: relative;
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-md);
-    padding: var(--spacing-sm) var(--spacing-md);
     background: var(--ui-bg-light);
-    border-bottom: 1px solid var(--ui-border);
 }
 
 header h1 {
     font-size: calc(var(--font-size-base) + 4px);
     font-weight: 600;
     color: var(--ui-text);
-    margin: 0;
 }
 
 #toolbar {
     display: flex;
     gap: var(--spacing-sm);
     align-items: center;
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--ui-bg-light);
+    border-bottom: 1px solid var(--ui-border);
 }
 
 .tool-btn {

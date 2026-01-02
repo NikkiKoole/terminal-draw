@@ -21,13 +21,13 @@ This document outlines potential future development directions for Terminal Draw
 - Enhanced layer controls (visibility 👁️/➖, lock 🔓/🔒)
 - Undo/redo system, grid resize, project save/load
 - Copy/export as plain text, JSON project format
-- 1062 tests passing with clean, maintainable codebase
+- 1084 tests passing with clean, maintainable codebase
 
 ---
 
 ## High Priority Features (M4-M6)
 
-### 🎯 **M4: Enhanced Painting Tools**
+### 🎯 **M4: Enhanced Painting Tools** ✅ **FULLY COMPLETED**
 
 **Goal:** Improve fundamental drawing capabilities with selective and intelligent painting
 
@@ -60,25 +60,38 @@ This document outlines potential future development directions for Terminal Draw
   - ✅ Drag erasing smoothly handles multiple connected junctions
   - ✅ Paint mode support (erase all/fg/bg/glyph selectively)
 
-- **Variety Brushes**
-  - Random glyph selection from custom sets (e.g., ░▒▓█ for textures)
-  - Random color variation within specified palettes
-  - Splatter effects with configurable density and patterns
-  - Organic/natural variation for artistic effects
-  - Custom brush sets for different art styles
+- **Variety Brushes** ✅ **COMPLETED**
+  - ✅ 10 character set presets integrated into Spray Can tool
+  - ✅ Artist preset: `. - + * % m #` (progressive density, default)
+  - ✅ Blocks preset: `░ ▒ ▓ █`
+  - ✅ Dots preset: `· • ○ ●`
+  - ✅ Stipple preset: `, . · :`
+  - ✅ Heights preset: `▁ ▂ ▃ ▄ ▅ ▆ ▇ █`
+  - ✅ Widths preset: `▏ ▎ ▍ ▌ ▋ ▊ ▉`
+  - ✅ Stars preset: `· • ✶ ✕`
+  - ✅ Triangles preset: `▴ ▵ ► ◄ ▲ ▼`
+  - ✅ Crosses preset: `· ÷ + ✕ × X ╳`
+  - ✅ Waves preset: `~ ∼ ≈ ≋`
+  - ✅ Configurable spray radius: Small (2), Medium (3), Large (5)
+  - ✅ Configurable spray density: Light (2.5%), Medium (5%), Heavy (50%)
+  - ✅ Dedicated tool options bar in header (appears when spray tool active)
+  - ✅ Clean UI with contextual controls
 
 - **Spray Can Tool** *(inspired by Emacs artist mode)* ✅ **COMPLETED**
   - ✅ Random character distribution in circular area around cursor
-  - ✅ Density progression system: `. → - → + → * → % → m → #`
-  - ✅ Configurable spray radius (hardcoded to 3 cells, easily adjustable)
-  - ✅ ~10% coverage with random cell selection
-  - ✅ Perfect for creating organic textures, clouds, or stippled effects
+  - ✅ Character progression system with 10 artistic presets
+  - ✅ Configurable spray radius: Small (2), Medium (3), Large (5)
+  - ✅ Configurable spray density: Light (2.5%), Medium (5%), Heavy (50%)
+  - ✅ Perfect for creating organic textures, clouds, stippled effects, waves
   - ✅ Integrated with tool system, undo/redo, and layer management
   - ✅ Keyboard shortcut `[S]` and comprehensive test coverage
+  - ✅ Settings shown in dedicated tool options bar (second row in header)
+  - ✅ Preset, Size, and Density controls all in one convenient location
 
-**Estimated Effort:** ~~6-8 hours~~ ✅ **COMPLETED (3 hours actual)**  
+**Estimated Effort:** ~~6-8 hours~~ ✅ **COMPLETED**  
 **Dependencies:** None  
-**Impact:** High - Fundamental improvement to core drawing experience
+**Impact:** High - Fundamental improvement to core drawing experience  
+**Status:** ✅ **M4 FULLY COMPLETED - All painting tools and variety brushes implemented**
 
 **Completion Notes:** 
 - **Spray Can Tool**: Implemented January 2025 with density progression system, random spray patterns, and full integration with existing tool architecture. 30 tests passing.
@@ -87,6 +100,7 @@ This document outlines potential future development directions for Terminal Draw
 - **Line Tool (M6)**: Implemented January 2025 with Bresenham algorithm, smart box-drawing for corners/edges, paint mode integration, and anchor indicator preview. 26 new tests, 1022 total tests passing.
 - **Smart Box-Drawing Eraser**: Implemented January 2025 with intelligent neighbor updates when erasing junctions/corners. Automatically simplifies box-drawing characters when connections are removed while preserving isolated lines. 9 new tests, 1031 total tests passing.
 - **Paint Mode Eraser**: Implemented January 2025 with selective erasing support (all/fg/bg/glyph modes). Eraser now respects paint mode toggle for flexible attribute removal. Smart box-drawing neighbor updates only trigger in glyph/all modes. 12 new tests, 1062 total tests passing.
+- **Variety Brushes via Spray Can**: Implemented January 2025 with 10 character set presets (Artist, Blocks, Dots, Stipple, Heights, Widths, Stars, Triangles, Crosses, Waves), configurable radius (Small/Medium/Large), and density control (Light/Medium/Heavy). Dedicated tool options bar in header shows contextual settings. Renamed "Density" preset to "Artist" to avoid confusion with density control. 19 new tests, 1084 total tests passing.
 
 **Smart Box-Drawing Completion Notes:** Implemented January 2025 with intelligent neighbor detection, automatic junction creation, and comprehensive test coverage (26 tests passing). Features dropdown UI integration and works with existing brush tool. **Mixed single/double intersections completed with correct character mappings** using elegant bitwise tileset algorithm - all 10 mixed junction characters working perfectly (╫ ╪ ╞ ╡ ╟ ╢ ╤ ╥ ╧ ╨). Smart eraser completes the intelligent box-drawing system by handling cleanup automatically.
 

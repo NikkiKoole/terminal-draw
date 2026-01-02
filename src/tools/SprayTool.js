@@ -1,9 +1,15 @@
 /**
- * SprayTool.js - Spray density characters in a random pattern
+ * SprayTool.js - Spray characters in a random pattern with various presets
  *
- * The spray tool applies density characters (. - + * % m #) in a circular
- * area around the cursor with random distribution. Each spray application
- * upgrades existing characters to the next density level.
+ * The spray tool applies characters in a circular area around the cursor
+ * with random distribution. Supports multiple character set presets:
+ * - Density: . - + * % m # (progressive density)
+ * - Blocks: ░ ▒ ▓ █ (light to heavy blocks)
+ * - Dots: · • ● ○ (various dot styles)
+ * - Stipple: , . · : (fine texture)
+ *
+ * Each spray application upgrades existing characters to the next level
+ * in the current preset sequence.
  */
 
 import { Tool } from "./Tool.js";
@@ -23,11 +29,86 @@ export class SprayTool extends Tool {
     this.currentStroke = null;
 
     // Spray settings
-    this.radius = 3; // Hardcoded radius for now
-    this.coverage = 0.1; // 10% of cells within radius get painted
+    this.radius = 3; // Default medium radius
+    this.coverage = 0.05; // 5% of cells within radius get painted (medium)
 
-    // Density progression sequence
-    this.densitySequence = [".", "-", "+", "*", "%", "m", "#"];
+    // Character set presets
+    this.presets = {
+      artist: [".", "-", "+", "*", "%", "m", "#"],
+      blocks: ["░", "▒", "▓", "█"],
+      dots: ["·", "•", "○", "●"],
+      stipple: [",", ".", "·", ":"],
+      heights: ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"],
+      widths: ["▏", "▎", "▍", "▌", "▋", "▊", "▉"],
+      stars: ["·", "•", "✶", "✕"],
+      triangles: ["▴", "▵", "►", "◄", "▲", "▼"],
+      crosses: ["·", "÷", "+", "✕", "×", "X", "╳"],
+      waves: ["~", "∼", "≈", "≋"],
+    };
+
+    // Current preset and sequence
+    this.currentPreset = "artist";
+    this.densitySequence = this.presets.artist;
+  }
+
+  /**
+   * Set the character preset
+   * @param {string} presetName - Name of preset: "density", "blocks", "dots", or "stipple"
+   */
+  setPreset(presetName) {
+    if (this.presets[presetName]) {
+      this.currentPreset = presetName;
+      this.densitySequence = this.presets[presetName];
+    }
+  }
+
+  /**
+   * Get the current preset name
+   * @returns {string} Current preset name
+   */
+  getPreset() {
+    return this.currentPreset;
+  }
+
+  /**
+   * Set the spray radius
+   * @param {number} radius - Radius size (2=small, 3=medium, 5=large)
+   */
+  setRadius(radius) {
+    if (radius === 2 || radius === 3 || radius === 5) {
+      this.radius = radius;
+    }
+  }
+
+  /**
+   * Get the current radius
+   * @returns {number} Current radius
+   */
+  getRadius() {
+    return this.radius;
+  }
+
+  /**
+   * Set the spray coverage (density)
+   * @param {number} coverage - Coverage percentage (0.025=light, 0.05=medium, 0.1=dense, 0.5=heavy)
+   */
+  setCoverage(coverage) {
+    if (
+      coverage === 0.025 ||
+      coverage === 0.05 ||
+      coverage === 0.1 ||
+      coverage === 0.5
+    ) {
+      this.coverage = coverage;
+    }
+  }
+
+  /**
+   * Get the current coverage
+   * @returns {number} Current coverage
+   */
+  getCoverage() {
+    return this.coverage;
   }
 
   /**

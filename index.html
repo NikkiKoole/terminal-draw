@@ -20,9 +20,9 @@
     </head>
     <body>
         <div id="app">
-            <header>
-                <h1>Terminal Draw</h1>
+            <header style="display: flex; flex-direction: column">
                 <div id="toolbar">
+                    <h1 style="margin: 0; font-size: 1.2em">Terminal Draw</h1>
                     <button id="tool-brush" class="tool-btn active">
                         🖌️ <span class="key">[B]</span>rush
                     </button>
@@ -92,6 +92,89 @@
                             >100%</span
                         >
                         <button id="io-toggle" class="tool-btn">💾 I/O</button>
+                    </div>
+                </div>
+
+                <!-- Tool Options Bar (contextual options for selected tool) -->
+                <div
+                    id="tool-options-bar"
+                    style="
+                        display: flex;
+                        padding: 8px 16px;
+                        background: var(--bg-primary);
+                        gap: 16px;
+                        align-items: center;
+                        min-height: 52px;
+                        height: 52px;
+                        border-bottom: 1px solid var(--border);
+                    "
+                >
+                    <!-- Spray Tool Options -->
+                    <div
+                        id="spray-options"
+                        style="display: none; align-items: center; gap: 16px"
+                    >
+                        <label style="font-weight: 500">Preset:</label>
+                        <select
+                            id="spray-preset"
+                            style="
+                                padding: 6px 12px;
+                                background: var(--ui-bg);
+                                color: var(--ui-text);
+                                border: 1px solid var(--ui-border);
+                                border-radius: 4px;
+                                cursor: pointer;
+                                font-size: 0.95em;
+                            "
+                        >
+                            <option value="artist">Artist</option>
+                            <option value="blocks">Blocks</option>
+                            <option value="dots">Dots</option>
+                            <option value="stipple">Stipple</option>
+                            <option value="heights">Heights</option>
+                            <option value="widths">Widths</option>
+                            <option value="stars">Stars</option>
+                            <option value="triangles">Triangles</option>
+                            <option value="crosses">Crosses</option>
+                            <option value="waves">Waves</option>
+                        </select>
+
+                        <label style="font-weight: 500">Size:</label>
+                        <select
+                            id="spray-radius"
+                            style="
+                                padding: 6px 12px;
+                                background: var(--ui-bg);
+                                color: var(--ui-text);
+                                border: 1px solid var(--ui-border);
+                                border-radius: 4px;
+                                cursor: pointer;
+                                font-size: 0.95em;
+                            "
+                        >
+                            <option value="2">Small</option>
+                            <option value="3" selected>Medium</option>
+                            <option value="5">Large</option>
+                        </select>
+
+                        <label style="font-weight: 500">Density:</label>
+                        <select
+                            id="spray-coverage"
+                            style="
+                                padding: 6px 12px;
+                                background: var(--ui-bg);
+                                color: var(--ui-text);
+                                border: 1px solid var(--ui-border);
+                                border-radius: 4px;
+                                cursor: pointer;
+                                font-size: 0.95em;
+                            "
+                        >
+                            <option value="0.025">Light</option>
+                            <option value="0.05" selected>Medium</option>
+                            <option value="0.1">Dense</option>
+                            <option value="0.5">Heavy</option>
+                        </select>
                     </div>
                 </div>
 

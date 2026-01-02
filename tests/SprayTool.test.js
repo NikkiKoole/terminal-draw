@@ -47,7 +47,7 @@ describe("SprayTool", () => {
 
     it("should have default radius and coverage", () => {
       expect(sprayTool.radius).toBe(3);
-      expect(sprayTool.coverage).toBe(0.1); // 10%
+      expect(sprayTool.coverage).toBe(0.05); // 5%
     });
 
     it("should have correct density sequence", () => {
@@ -154,7 +154,7 @@ describe("SprayTool", () => {
     });
 
     it("should select all cells when random returns values below coverage", () => {
-      Math.random.mockReturnValue(0.05); // Below 0.1 coverage
+      Math.random.mockReturnValue(0.01); // Below 0.05 coverage
 
       const inputCells = [
         { x: 1, y: 1 },
@@ -167,7 +167,7 @@ describe("SprayTool", () => {
     });
 
     it("should select no cells when random returns values above coverage", () => {
-      Math.random.mockReturnValue(0.15); // Above 0.1 coverage
+      Math.random.mockReturnValue(0.15); // Above 0.05 coverage
 
       const inputCells = [
         { x: 1, y: 1 },
@@ -202,8 +202,8 @@ describe("SprayTool", () => {
 
     describe("onCellDown", () => {
       it("should spray at the clicked location", () => {
-        // Mock random to ensure some cells are selected
-        vi.spyOn(Math, "random").mockReturnValue(0.05); // Below coverage threshold
+        // Mock random to ensure cells are selected
+        vi.spyOn(Math, "random").mockReturnValue(0.01); // Below 0.05 coverage
 
         const initialCommandCount = commandHistory.undoStack.length;
 
@@ -241,7 +241,7 @@ describe("SprayTool", () => {
     describe("density progression integration", () => {
       it("should upgrade cell density when spraying", () => {
         // Mock random to ensure the center cell gets selected
-        const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0.05);
+        const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0.01);
 
         // Set up a cell with '.' character
         activeLayer.setCell(5, 5, new Cell(".", 7, -1));
@@ -264,7 +264,7 @@ describe("SprayTool", () => {
         activeLayer.setCell(5, 5, new Cell(".", 7, 2)); // fg=7, bg=2
 
         // Mock random to ensure deterministic selection
-        const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0.05);
+        const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0.01);
 
         sprayTool.onCellDown(5, 5, scene, stateManager);
 
@@ -282,7 +282,7 @@ describe("SprayTool", () => {
         sprayTool.setCurrentCell({ ch: ".", fg: 3, bg: -1 }); // fg=3 (blue)
 
         // Mock random to ensure the center cell gets selected
-        const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0.05);
+        const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0.01);
 
         sprayTool.onCellDown(5, 5, scene, stateManager);
 
@@ -406,6 +406,190 @@ describe("SprayTool", () => {
       expect(() => {
         sprayTool.onCellDown(20, 20, scene, stateManager);
       }).not.toThrow();
+    });
+  });
+
+  describe("preset management", () => {
+    it("should have default artist preset", () => {
+      expect(sprayTool.getPreset()).toBe("artist");
+      expect(sprayTool.densitySequence).toEqual([
+        ".",
+        "-",
+        "+",
+        "*",
+        "%",
+        "m",
+        "#",
+      ]);
+    });
+
+    it("should switch to blocks preset", () => {
+      sprayTool.setPreset("blocks");
+      expect(sprayTool.getPreset()).toBe("blocks");
+      expect(sprayTool.densitySequence).toEqual(["░", "▒", "▓", "█"]);
+    });
+
+    it("should switch to dots preset", () => {
+      sprayTool.setPreset("dots");
+      expect(sprayTool.getPreset()).toBe("dots");
+      expect(sprayTool.densitySequence).toEqual(["·", "•", "○", "●"]);
+    });
+
+    it("should switch to stipple preset", () => {
+      sprayTool.setPreset("stipple");
+      expect(sprayTool.getPreset()).toBe("stipple");
+      expect(sprayTool.densitySequence).toEqual([",", ".", "·", ":"]);
+    });
+
+    it("should ignore invalid preset names", () => {
+      sprayTool.setPreset("artist");
+      expect(sprayTool.getPreset()).toBe("artist");
+
+      sprayTool.setPreset("invalid");
+      expect(sprayTool.getPreset()).toBe("artist"); // Should remain unchanged
+    });
+
+    it("should switch to heights preset", () => {
+      sprayTool.setPreset("heights");
+      expect(sprayTool.getPreset()).toBe("heights");
+      expect(sprayTool.densitySequence).toEqual([
+        "▁",
+        "▂",
+        "▃",
+        "▄",
+        "▅",
+        "▆",
+        "▇",
+        "█",
+      ]);
+    });
+
+    it("should switch to widths preset", () => {
+      sprayTool.setPreset("widths");
+      expect(sprayTool.getPreset()).toBe("widths");
+      expect(sprayTool.densitySequence).toEqual([
+        "▏",
+        "▎",
+        "▍",
+        "▌",
+        "▋",
+        "▊",
+        "▉",
+      ]);
+    });
+
+    it("should switch to stars preset", () => {
+      sprayTool.setPreset("stars");
+      expect(sprayTool.getPreset()).toBe("stars");
+      expect(sprayTool.densitySequence).toEqual(["·", "•", "✶", "✕"]);
+    });
+
+    it("should switch to triangles preset", () => {
+      sprayTool.setPreset("triangles");
+      expect(sprayTool.getPreset()).toBe("triangles");
+      expect(sprayTool.densitySequence).toEqual(["▴", "▵", "►", "◄", "▲", "▼"]);
+    });
+
+    it("should switch to crosses preset", () => {
+      sprayTool.setPreset("crosses");
+      expect(sprayTool.getPreset()).toBe("crosses");
+      expect(sprayTool.densitySequence).toEqual([
+        "·",
+        "÷",
+        "+",
+        "✕",
+        "×",
+        "X",
+        "╳",
+      ]);
+    });
+
+    it("should switch to waves preset", () => {
+      sprayTool.setPreset("waves");
+      expect(sprayTool.getPreset()).toBe("waves");
+      expect(sprayTool.densitySequence).toEqual(["~", "∼", "≈", "≋"]);
+    });
+
+    it("should have all ten presets defined", () => {
+      expect(sprayTool.presets).toHaveProperty("artist");
+      expect(sprayTool.presets).toHaveProperty("blocks");
+      expect(sprayTool.presets).toHaveProperty("dots");
+      expect(sprayTool.presets).toHaveProperty("stipple");
+      expect(sprayTool.presets).toHaveProperty("heights");
+      expect(sprayTool.presets).toHaveProperty("widths");
+      expect(sprayTool.presets).toHaveProperty("stars");
+      expect(sprayTool.presets).toHaveProperty("triangles");
+      expect(sprayTool.presets).toHaveProperty("crosses");
+      expect(sprayTool.presets).toHaveProperty("waves");
+    });
+  });
+
+  describe("radius control", () => {
+    it("should have default radius of 3", () => {
+      expect(sprayTool.getRadius()).toBe(3);
+    });
+
+    it("should allow setting radius to 2 (small)", () => {
+      sprayTool.setRadius(2);
+      expect(sprayTool.getRadius()).toBe(2);
+    });
+
+    it("should allow setting radius to 3 (medium)", () => {
+      sprayTool.setRadius(3);
+      expect(sprayTool.getRadius()).toBe(3);
+    });
+
+    it("should allow setting radius to 5 (large)", () => {
+      sprayTool.setRadius(5);
+      expect(sprayTool.getRadius()).toBe(5);
+    });
+
+    it("should ignore invalid radius values", () => {
+      sprayTool.setRadius(3);
+      expect(sprayTool.getRadius()).toBe(3);
+
+      sprayTool.setRadius(10); // Invalid
+      expect(sprayTool.getRadius()).toBe(3); // Should remain unchanged
+
+      sprayTool.setRadius(1); // Invalid
+      expect(sprayTool.getRadius()).toBe(3); // Should remain unchanged
+    });
+  });
+
+  describe("coverage control", () => {
+    it("should have default coverage of 0.05 (5%)", () => {
+      expect(sprayTool.getCoverage()).toBe(0.05);
+    });
+
+    it("should allow setting coverage to 0.025 (light)", () => {
+      sprayTool.setCoverage(0.025);
+      expect(sprayTool.getCoverage()).toBe(0.025);
+    });
+
+    it("should allow setting coverage to 0.05 (medium)", () => {
+      sprayTool.setCoverage(0.05);
+      expect(sprayTool.getCoverage()).toBe(0.05);
+    });
+
+    it("should allow setting coverage to 0.1 (dense)", () => {
+      sprayTool.setCoverage(0.1);
+      expect(sprayTool.getCoverage()).toBe(0.1);
+    });
+
+    it("should allow setting coverage to 0.5 (heavy)", () => {
+      sprayTool.setCoverage(0.5);
+      expect(sprayTool.getCoverage()).toBe(0.5);
+    });
+
+    it("should ignore invalid coverage values", () => {
+      sprayTool.setCoverage(0.05);
+      expect(sprayTool.getCoverage()).toBe(0.05);
+
+      sprayTool.setCoverage(0.99); // Invalid
+      expect(sprayTool.getCoverage()).toBe(0.05); // Should remain unchanged
+
+      sprayTool.setCoverage(0.01); // Invalid
+      expect(sprayTool.getCoverage()).toBe(0.05); // Should remain unchanged
     });
   });
 });

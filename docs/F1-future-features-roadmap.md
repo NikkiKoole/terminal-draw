@@ -66,6 +66,15 @@ This document outlines potential future development directions for Terminal Draw
   - ✅ UI dropdown for Normal/Smart Single Line/Smart Double Line modes
   - ⚠️ Mixed single/double intersections need polish (functional but not optimal)
 
+- **Smart Box-Drawing Eraser** ✅ **COMPLETED**
+  - ✅ Intelligent neighbor updates when erasing box-drawing characters
+  - ✅ Junctions and corners automatically simplify when connections are removed
+  - ✅ Simple lines (─ │) remain unchanged when neighbors are erased
+  - ✅ Color preservation during neighbor updates
+  - ✅ Full undo/redo support for eraser and neighbor updates
+  - ✅ Works with both single-line and double-line box-drawing characters
+  - ✅ Drag erasing smoothly handles multiple connected junctions
+
 - **Variety Brushes**
   - Random glyph selection from custom sets (e.g., ░▒▓█ for textures)
   - Random color variation within specified palettes
@@ -91,8 +100,9 @@ This document outlines potential future development directions for Terminal Draw
 - **Selective Cell Painting**: Implemented January 2025 with paint mode cycling (all/fg/bg/glyph), single toggle button UI, and complete undo/redo support. 9 new tests, 975 total tests passing.
 - **Rectangle Tool (M6)**: Implemented January 2025 with smart box-drawing support (normal/single/double line modes), paint mode integration, and anchor indicator preview (shows start point). 21 new tests, 996 total tests passing.
 - **Line Tool (M6)**: Implemented January 2025 with Bresenham algorithm, smart box-drawing for corners/edges, paint mode integration, and anchor indicator preview. 26 new tests, 1022 total tests passing.
+- **Smart Box-Drawing Eraser**: Implemented January 2025 with intelligent neighbor updates when erasing junctions/corners. Automatically simplifies box-drawing characters when connections are removed while preserving isolated lines. 9 new tests, 1031 total tests passing.
 
-**Smart Box-Drawing Completion Notes:** Implemented January 2025 with intelligent neighbor detection, automatic junction creation, and comprehensive test coverage (26 tests passing). Features dropdown UI integration and works with existing brush tool. Mixed single/double line intersections work functionally but need visual polish for optimal character selection.
+**Smart Box-Drawing Completion Notes:** Implemented January 2025 with intelligent neighbor detection, automatic junction creation, and comprehensive test coverage (26 tests passing). Features dropdown UI integration and works with existing brush tool. Mixed single/double line intersections work functionally but need visual polish for optimal character selection. Smart eraser completes the intelligent box-drawing system by handling cleanup automatically.
 
 ---
 

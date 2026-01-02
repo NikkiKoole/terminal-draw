@@ -317,4 +317,227 @@ describe("EraserTool", () => {
       expect(layer.getCell(2, 0).ch).toBe("C");
     });
   });
+
+  describe("smart box-drawing eraser", () => {
+    it("should update neighbors when erasing a box-drawing character", () => {
+      const layer = scene.getActiveLayer();
+
+      // Create a T-junction: ┬
+      //   │
+      //  ─┬─
+      //   │
+      layer.setCell(1, 0, new Cell("│", 7, -1)); // North
+      layer.setCell(1, 1, new Cell("┬", 7, -1)); // Center (T-junction)
+      layer.setCell(0, 1, new Cell("─", 7, -1)); // West
+      layer.setCell(2, 1, new Cell("─", 7, -1)); // East
+      layer.setCell(1, 2, new Cell("│", 7, -1)); // South
+
+      // Erase the center T-junction
+      eraser.onCellDown(1, 1, scene, stateManager);
+
+      // Center should be erased
+      expect(layer.getCell(1, 1).ch).toBe(" ");
+
+      // North vertical line should become endpoint
+      expect(layer.getCell(1, 0).ch).toBe("│");
+
+      // West horizontal line should become endpoint
+      expect(layer.getCell(0, 1).ch).toBe("─");
+
+      // East horizontal line should become endpoint
+      expect(layer.getCell(2, 1).ch).toBe("─");
+
+      // South vertical line should become endpoint
+      expect(layer.getCell(1, 2).ch).toBe("│");
+    });
+
+    it("should update corner when erasing adjacent line", () => {
+      const layer = scene.getActiveLayer();
+
+      // Create a corner:
+      //  ┌─
+      //  │
+      layer.setCell(0, 0, new Cell("┌", 7, -1)); // Corner
+      layer.setCell(1, 0, new Cell("─", 7, -1)); // Horizontal
+      layer.setCell(0, 1, new Cell("│", 7, -1)); // Vertical
+
+      // Erase the horizontal line
+      eraser.onCellDown(1, 0, scene, stateManager);
+
+      // Horizontal should be erased
+      expect(layer.getCell(1, 0).ch).toBe(" ");
+
+      // Corner should update to vertical endpoint
+      expect(layer.getCell(0, 0).ch).toBe("│");
+
+      // Vertical should remain unchanged
+      expect(layer.getCell(0, 1).ch).toBe("│");
+    });
+
+    it("should update cross junction when erasing one arm", () => {
+      const layer = scene.getActiveLayer();
+
+      // Create a cross:
+      //   │
+      //  ─┼─
+      //   │
+      layer.setCell(1, 0, new Cell("│", 7, -1)); // North
+      layer.setCell(0, 1, new Cell("─", 7, -1)); // West
+      layer.setCell(1, 1, new Cell("┼", 7, -1)); // Center (cross)
+      layer.setCell(2, 1, new Cell("─", 7, -1)); // East
+      layer.setCell(1, 2, new Cell("│", 7, -1)); // South
+
+      // Erase the east arm
+      eraser.onCellDown(2, 1, scene, stateManager);
+
+      // East should be erased
+      expect(layer.getCell(2, 1).ch).toBe(" ");
+
+      // Cross should become T-junction (┤) - connects north, south, west
+      expect(layer.getCell(1, 1).ch).toBe("┤");
+    });
+
+    it("should handle double-line box-drawing characters", () => {
+      const layer = scene.getActiveLayer();
+
+      // Create a double-line T-junction:
+      //   ║
+      //  ═╬═
+      //   ║
+      layer.setCell(1, 0, new Cell("║", 7, -1)); // North
+      layer.setCell(0, 1, new Cell("═", 7, -1)); // West
+      layer.setCell(1, 1, new Cell("╬", 7, -1)); // Center (cross)
+      layer.setCell(2, 1, new Cell("═", 7, -1)); // East
+      layer.setCell(1, 2, new Cell("║", 7, -1)); // South
+
+      // Erase the west arm
+      eraser.onCellDown(0, 1, scene, stateManager);
+
+      // West should be erased
+      expect(layer.getCell(0, 1).ch).toBe(" ");
+
+      // Cross should become T-junction (╠)
+      expect(layer.getCell(1, 1).ch).toBe("╠");
+    });
+
+    it("should not affect non-box-drawing characters", () => {
+      const layer = scene.getActiveLayer();
+
+      // Mix of box-drawing and regular characters
+      layer.setCell(0, 0, new Cell("A", 7, -1)); // Regular char
+      layer.setCell(1, 0, new Cell("─", 7, -1)); // Box-drawing
+      layer.setCell(2, 0, new Cell("B", 7, -1)); // Regular char
+
+      // Erase the box-drawing character
+      eraser.onCellDown(1, 0, scene, stateManager);
+
+      // Box-drawing should be erased
+      expect(layer.getCell(1, 0).ch).toBe(" ");
+
+      // Regular characters should not be affected
+      expect(layer.getCell(0, 0).ch).toBe("A");
+      expect(layer.getCell(2, 0).ch).toBe("B");
+    });
+
+    it("should preserve colors when updating neighbors", () => {
+      const layer = scene.getActiveLayer();
+
+      // Create a junction with specific colors
+      layer.setCell(0, 0, new Cell("─", 3, 5)); // Colored horizontal
+      layer.setCell(1, 0, new Cell("┬", 3, 5)); // Colored junction
+      layer.setCell(2, 0, new Cell("─", 3, 5)); // Colored horizontal
+      layer.setCell(1, 1, new Cell("│", 3, 5)); // Colored vertical
+
+      // Erase the junction
+      eraser.onCellDown(1, 0, scene, stateManager);
+
+      // Junction should be erased
+      expect(layer.getCell(1, 0).ch).toBe(" ");
+
+      // Neighbors should preserve their colors
+      expect(layer.getCell(0, 0).fg).toBe(3);
+      expect(layer.getCell(0, 0).bg).toBe(5);
+      expect(layer.getCell(2, 0).fg).toBe(3);
+      expect(layer.getCell(2, 0).bg).toBe(5);
+      expect(layer.getCell(1, 1).fg).toBe(3);
+      expect(layer.getCell(1, 1).bg).toBe(5);
+    });
+
+    it("should handle erasing isolated box-drawing character", () => {
+      const layer = scene.getActiveLayer();
+
+      // Create isolated box-drawing character
+      layer.setCell(5, 5, new Cell("─", 7, -1));
+
+      // Erase it
+      eraser.onCellDown(5, 5, scene, stateManager);
+
+      // Should be erased with no errors
+      expect(layer.getCell(5, 5).ch).toBe(" ");
+    });
+
+    it("should support undo/redo with neighbor updates", () => {
+      const layer = scene.getActiveLayer();
+
+      // Create a simple junction
+      layer.setCell(1, 0, new Cell("│", 7, -1));
+      layer.setCell(0, 1, new Cell("─", 7, -1));
+      layer.setCell(1, 1, new Cell("┌", 7, -1));
+
+      // Erase the corner
+      eraser.onCellDown(1, 1, scene, stateManager);
+
+      // Verify erased state
+      expect(layer.getCell(1, 1).ch).toBe(" ");
+      expect(layer.getCell(1, 0).ch).toBe("│"); // Should be updated
+      expect(layer.getCell(0, 1).ch).toBe("─"); // Should be updated
+
+      // Undo
+      commandHistory.undo();
+
+      // Should restore original state
+      expect(layer.getCell(1, 1).ch).toBe("┌");
+      expect(layer.getCell(1, 0).ch).toBe("│");
+      expect(layer.getCell(0, 1).ch).toBe("─");
+
+      // Redo
+      commandHistory.redo();
+
+      // Should return to erased state
+      expect(layer.getCell(1, 1).ch).toBe(" ");
+    });
+
+    it("should handle erasing during drag across box-drawing characters", () => {
+      const layer = scene.getActiveLayer();
+
+      // Create a horizontal line with junctions
+      //  ─┬─┬─
+      //   │ │
+      layer.setCell(0, 0, new Cell("─", 7, -1));
+      layer.setCell(1, 0, new Cell("┬", 7, -1));
+      layer.setCell(2, 0, new Cell("─", 7, -1));
+      layer.setCell(3, 0, new Cell("┬", 7, -1));
+      layer.setCell(4, 0, new Cell("─", 7, -1));
+      layer.setCell(1, 1, new Cell("│", 7, -1));
+      layer.setCell(3, 1, new Cell("│", 7, -1));
+
+      // Erase across the middle section
+      eraser.onCellDown(1, 0, scene, stateManager);
+      eraser.onCellDrag(2, 0, scene, stateManager);
+      eraser.onCellDrag(3, 0, scene, stateManager);
+
+      // Middle section should be erased
+      expect(layer.getCell(1, 0).ch).toBe(" ");
+      expect(layer.getCell(2, 0).ch).toBe(" ");
+      expect(layer.getCell(3, 0).ch).toBe(" ");
+
+      // End pieces should still be there
+      expect(layer.getCell(0, 0).ch).toBe("─");
+      expect(layer.getCell(4, 0).ch).toBe("─");
+
+      // Vertical lines should remain as endpoints
+      expect(layer.getCell(1, 1).ch).toBe("│");
+      expect(layer.getCell(3, 1).ch).toBe("│");
+    });
+  });
 });

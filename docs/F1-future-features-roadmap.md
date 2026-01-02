@@ -39,23 +39,7 @@ This document outlines potential future development directions for Terminal Draw
   - ✅ Single toggle button that cycles through paint modes (all/fg/bg/glyph)
   - ✅ Status bar updates showing current paint mode
 
-- **Smart Color Tools**
-  - Color replacement tool (replace all instances of a color)
-  - Gradient fill for backgrounds
-  - Color picker with "paint similar" option
-  - Eyedropper that can sample individual attributes
 
-- **Smart Glyph Management Panel**
-  - Recently Used section showing all glyphs in current drawing
-  - Frequency-based sorting (most used glyphs at top)
-  - Quick access to frequently used characters
-  - Visual history of your drawing's character palette
-  - One-click glyph selection for consistency
-  - Favorites/pinning system for preferred glyphs
-  - Glyph categories (box-drawing, blocks, symbols, letters)
-  - Search/filter glyphs by name or Unicode category
-  - Custom glyph sets for different art styles
-  - Session persistence of recently used glyphs
 
 #### Intelligent Brush System
 - **Smart Box-Drawing Brushes** ✅ **COMPLETED**

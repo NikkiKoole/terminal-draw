@@ -3,9 +3,11 @@
  *
  * The eraser tool allows users to clear cells on the active layer
  * by clicking or dragging. It resets cells to default state (space character,
- * white foreground, transparent background). Creates undoable commands for all operations.
- * When erasing box-drawing characters, intelligently updates neighboring box-drawing
- * characters to maintain proper connections.
+ * white foreground, transparent background). Respects paint mode to allow
+ * selective erasing (erase only glyph, fg, bg, or all). Creates undoable
+ * commands for all operations. When erasing box-drawing characters,
+ * intelligently updates neighboring box-drawing characters to maintain
+ * proper connections.
  */
 
 import { Tool } from "./Tool.js";
@@ -23,6 +25,7 @@ export class EraserTool extends Tool {
     this.commandHistory = commandHistory;
     this.currentStroke = null; // Track current eraser stroke for merging
     this.smartBoxDrawing = new SmartBoxDrawing();
+    this.paintMode = "all"; // "all", "fg", "bg", "glyph"
   }
 
   /**
@@ -31,6 +34,25 @@ export class EraserTool extends Tool {
    */
   setCommandHistory(commandHistory) {
     this.commandHistory = commandHistory;
+  }
+
+  /**
+   * Set paint mode for selective erasing
+   * @param {string} mode - Paint mode: "all", "fg", "bg", or "glyph"
+   */
+  setPaintMode(mode) {
+    const validModes = ["all", "fg", "bg", "glyph"];
+    if (validModes.includes(mode)) {
+      this.paintMode = mode;
+    }
+  }
+
+  /**
+   * Get current paint mode
+   * @returns {string} Current paint mode
+   */
+  getPaintMode() {
+    return this.paintMode;
   }
 
   /**
@@ -68,8 +90,25 @@ export class EraserTool extends Tool {
       beforeCell.ch,
     );
 
-    // Create default cell (space, white fg, transparent bg)
-    const afterCell = new Cell(" ", 7, -1);
+    // Create erased cell based on paint mode
+    let afterCell;
+    switch (this.paintMode) {
+      case "fg":
+        // Erase only foreground, preserve glyph and background
+        afterCell = new Cell(beforeCell.ch, 7, beforeCell.bg);
+        break;
+      case "bg":
+        // Erase only background, preserve glyph and foreground
+        afterCell = new Cell(beforeCell.ch, beforeCell.fg, -1);
+        break;
+      case "glyph":
+        // Erase only glyph (replace with space), preserve colors
+        afterCell = new Cell(" ", beforeCell.fg, beforeCell.bg);
+        break;
+      default: // "all"
+        // Erase all attributes (space, white fg, transparent bg)
+        afterCell = new Cell(" ", 7, -1);
+    }
 
     // Create command even if cell appears already erased - let the command system decide
 
@@ -86,9 +125,13 @@ export class EraserTool extends Tool {
 
     this.commandHistory.execute(command);
 
-    // If we erased a box-drawing character, update neighboring box-drawing characters
-    // that are junctions or corners (not simple lines that should remain unchanged)
-    if (isBoxDrawingChar) {
+    // If we erased a box-drawing character (and we're in glyph or all mode),
+    // update neighboring box-drawing characters that are junctions or corners
+    // (not simple lines that should remain unchanged)
+    if (
+      isBoxDrawingChar &&
+      (this.paintMode === "all" || this.paintMode === "glyph")
+    ) {
       // Check all four neighbors and update junctions/corners
       const directions = [
         { dx: 0, dy: -1, name: "north" },

@@ -21,7 +21,7 @@ This document outlines potential future development directions for Terminal Draw
 - Enhanced layer controls (visibility 👁️/➖, lock 🔓/🔒)
 - Undo/redo system, grid resize, project save/load
 - Copy/export as plain text, JSON project format
-- 911 tests passing with clean, maintainable codebase
+- 1062 tests passing with clean, maintainable codebase
 
 ---
 
@@ -74,6 +74,7 @@ This document outlines potential future development directions for Terminal Draw
   - ✅ Full undo/redo support for eraser and neighbor updates
   - ✅ Works with both single-line and double-line box-drawing characters
   - ✅ Drag erasing smoothly handles multiple connected junctions
+  - ✅ Paint mode support (erase all/fg/bg/glyph selectively)
 
 - **Variety Brushes**
   - Random glyph selection from custom sets (e.g., ░▒▓█ for textures)
@@ -101,6 +102,7 @@ This document outlines potential future development directions for Terminal Draw
 - **Rectangle Tool (M6)**: Implemented January 2025 with smart box-drawing support (normal/single/double line modes), paint mode integration, and anchor indicator preview (shows start point). 21 new tests, 996 total tests passing.
 - **Line Tool (M6)**: Implemented January 2025 with Bresenham algorithm, smart box-drawing for corners/edges, paint mode integration, and anchor indicator preview. 26 new tests, 1022 total tests passing.
 - **Smart Box-Drawing Eraser**: Implemented January 2025 with intelligent neighbor updates when erasing junctions/corners. Automatically simplifies box-drawing characters when connections are removed while preserving isolated lines. 9 new tests, 1031 total tests passing.
+- **Paint Mode Eraser**: Implemented January 2025 with selective erasing support (all/fg/bg/glyph modes). Eraser now respects paint mode toggle for flexible attribute removal. Smart box-drawing neighbor updates only trigger in glyph/all modes. 12 new tests, 1062 total tests passing.
 
 **Smart Box-Drawing Completion Notes:** Implemented January 2025 with intelligent neighbor detection, automatic junction creation, and comprehensive test coverage (26 tests passing). Features dropdown UI integration and works with existing brush tool. **Mixed single/double intersections completed with correct character mappings** using elegant bitwise tileset algorithm - all 10 mixed junction characters working perfectly (╫ ╪ ╞ ╡ ╟ ╢ ╤ ╥ ╧ ╨). Smart eraser completes the intelligent box-drawing system by handling cleanup automatically.
 

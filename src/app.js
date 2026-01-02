@@ -1571,6 +1571,9 @@ function initPaintMode() {
       if (lineTool) {
         lineTool.setPaintMode(newMode);
       }
+      if (eraserTool) {
+        eraserTool.setPaintMode(newMode);
+      }
 
       // Update button text based on mode
       const modeLabels = {
@@ -1600,6 +1603,9 @@ function initPaintMode() {
     }
     if (lineTool) {
       lineTool.setPaintMode("all");
+    }
+    if (eraserTool) {
+      eraserTool.setPaintMode("all");
     }
   }
 }

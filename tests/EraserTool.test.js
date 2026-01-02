@@ -540,4 +540,194 @@ describe("EraserTool", () => {
       expect(layer.getCell(3, 1).ch).toBe("│");
     });
   });
+
+  describe("paint mode support", () => {
+    it("should have default paint mode 'all'", () => {
+      expect(eraser.getPaintMode()).toBe("all");
+    });
+
+    it("should allow setting paint mode", () => {
+      eraser.setPaintMode("fg");
+      expect(eraser.getPaintMode()).toBe("fg");
+
+      eraser.setPaintMode("bg");
+      expect(eraser.getPaintMode()).toBe("bg");
+
+      eraser.setPaintMode("glyph");
+      expect(eraser.getPaintMode()).toBe("glyph");
+
+      eraser.setPaintMode("all");
+      expect(eraser.getPaintMode()).toBe("all");
+    });
+
+    it("should ignore invalid paint modes", () => {
+      eraser.setPaintMode("all");
+      eraser.setPaintMode("invalid");
+      expect(eraser.getPaintMode()).toBe("all");
+    });
+
+    it("should erase only glyph when paint mode is 'glyph'", () => {
+      const layer = scene.getActiveLayer();
+      // Set a cell with character and colors
+      layer.setCell(5, 5, new Cell("█", 3, 5));
+
+      eraser.setPaintMode("glyph");
+      eraser.onCellDown(5, 5, scene, stateManager);
+
+      const cell = layer.getCell(5, 5);
+      expect(cell.ch).toBe(" "); // Glyph erased to space
+      expect(cell.fg).toBe(3); // Foreground preserved
+      expect(cell.bg).toBe(5); // Background preserved
+    });
+
+    it("should erase only foreground when paint mode is 'fg'", () => {
+      const layer = scene.getActiveLayer();
+      layer.setCell(5, 5, new Cell("█", 3, 5));
+
+      eraser.setPaintMode("fg");
+      eraser.onCellDown(5, 5, scene, stateManager);
+
+      const cell = layer.getCell(5, 5);
+      expect(cell.ch).toBe("█"); // Glyph preserved
+      expect(cell.fg).toBe(7); // Foreground erased to default (white)
+      expect(cell.bg).toBe(5); // Background preserved
+    });
+
+    it("should erase only background when paint mode is 'bg'", () => {
+      const layer = scene.getActiveLayer();
+      layer.setCell(5, 5, new Cell("█", 3, 5));
+
+      eraser.setPaintMode("bg");
+      eraser.onCellDown(5, 5, scene, stateManager);
+
+      const cell = layer.getCell(5, 5);
+      expect(cell.ch).toBe("█"); // Glyph preserved
+      expect(cell.fg).toBe(3); // Foreground preserved
+      expect(cell.bg).toBe(-1); // Background erased to default (transparent)
+    });
+
+    it("should erase all attributes when paint mode is 'all'", () => {
+      const layer = scene.getActiveLayer();
+      layer.setCell(5, 5, new Cell("█", 3, 5));
+
+      eraser.setPaintMode("all");
+      eraser.onCellDown(5, 5, scene, stateManager);
+
+      const cell = layer.getCell(5, 5);
+      expect(cell.ch).toBe(" "); // Glyph erased
+      expect(cell.fg).toBe(7); // Foreground erased
+      expect(cell.bg).toBe(-1); // Background erased
+    });
+
+    it("should work with drag erasing in glyph mode", () => {
+      const layer = scene.getActiveLayer();
+      layer.setCell(5, 5, new Cell("A", 1, 2));
+      layer.setCell(6, 5, new Cell("B", 3, 4));
+      layer.setCell(7, 5, new Cell("C", 5, 6));
+
+      eraser.setPaintMode("glyph");
+      eraser.onCellDown(5, 5, scene, stateManager);
+      eraser.onCellDrag(6, 5, scene, stateManager);
+      eraser.onCellDrag(7, 5, scene, stateManager);
+
+      // All glyphs erased, colors preserved
+      expect(layer.getCell(5, 5).ch).toBe(" ");
+      expect(layer.getCell(5, 5).fg).toBe(1);
+      expect(layer.getCell(5, 5).bg).toBe(2);
+
+      expect(layer.getCell(6, 5).ch).toBe(" ");
+      expect(layer.getCell(6, 5).fg).toBe(3);
+      expect(layer.getCell(6, 5).bg).toBe(4);
+
+      expect(layer.getCell(7, 5).ch).toBe(" ");
+      expect(layer.getCell(7, 5).fg).toBe(5);
+      expect(layer.getCell(7, 5).bg).toBe(6);
+    });
+
+    it("should not update box-drawing neighbors when erasing in fg mode", () => {
+      const layer = scene.getActiveLayer();
+      // Create a T-junction
+      layer.setCell(5, 5, new Cell("┬", 7, -1));
+      layer.setCell(5, 6, new Cell("│", 7, -1));
+      layer.setCell(4, 5, new Cell("─", 7, -1));
+      layer.setCell(6, 5, new Cell("─", 7, -1));
+
+      eraser.setPaintMode("fg");
+      eraser.onCellDown(5, 5, scene, stateManager);
+
+      // Character should be preserved, only fg changed
+      expect(layer.getCell(5, 5).ch).toBe("┬");
+      expect(layer.getCell(5, 5).fg).toBe(7);
+
+      // Neighbors should NOT be updated since we're only erasing fg
+      expect(layer.getCell(5, 6).ch).toBe("│");
+      expect(layer.getCell(4, 5).ch).toBe("─");
+      expect(layer.getCell(6, 5).ch).toBe("─");
+    });
+
+    it("should not update box-drawing neighbors when erasing in bg mode", () => {
+      const layer = scene.getActiveLayer();
+      // Create a T-junction
+      layer.setCell(5, 5, new Cell("┬", 7, 5));
+      layer.setCell(5, 6, new Cell("│", 7, 5));
+      layer.setCell(4, 5, new Cell("─", 7, 5));
+      layer.setCell(6, 5, new Cell("─", 7, 5));
+
+      eraser.setPaintMode("bg");
+      eraser.onCellDown(5, 5, scene, stateManager);
+
+      // Character should be preserved, only bg changed
+      expect(layer.getCell(5, 5).ch).toBe("┬");
+      expect(layer.getCell(5, 5).bg).toBe(-1);
+
+      // Neighbors should NOT be updated since we're only erasing bg
+      expect(layer.getCell(5, 6).ch).toBe("│");
+      expect(layer.getCell(4, 5).ch).toBe("─");
+      expect(layer.getCell(6, 5).ch).toBe("─");
+    });
+
+    it("should update box-drawing neighbors when erasing in glyph mode", () => {
+      const layer = scene.getActiveLayer();
+      // Create a T-junction
+      layer.setCell(5, 5, new Cell("┬", 7, -1));
+      layer.setCell(5, 6, new Cell("│", 7, -1));
+      layer.setCell(4, 5, new Cell("─", 7, -1));
+      layer.setCell(6, 5, new Cell("─", 7, -1));
+
+      eraser.setPaintMode("glyph");
+      eraser.onCellDown(5, 5, scene, stateManager);
+
+      // Center cell glyph erased
+      expect(layer.getCell(5, 5).ch).toBe(" ");
+
+      // Neighbor to the south should update (┬ -> ─ since top connection is gone)
+      expect(layer.getCell(5, 6).ch).not.toBe("┬");
+
+      // Horizontal lines should remain unchanged
+      expect(layer.getCell(4, 5).ch).toBe("─");
+      expect(layer.getCell(6, 5).ch).toBe("─");
+    });
+
+    it("should update box-drawing neighbors when erasing in all mode", () => {
+      const layer = scene.getActiveLayer();
+      // Create a T-junction
+      layer.setCell(5, 5, new Cell("┬", 7, -1));
+      layer.setCell(5, 6, new Cell("│", 7, -1));
+      layer.setCell(4, 5, new Cell("─", 7, -1));
+      layer.setCell(6, 5, new Cell("─", 7, -1));
+
+      eraser.setPaintMode("all");
+      eraser.onCellDown(5, 5, scene, stateManager);
+
+      // Center cell fully erased
+      expect(layer.getCell(5, 5).ch).toBe(" ");
+
+      // Neighbor to the south should update
+      expect(layer.getCell(5, 6).ch).not.toBe("┬");
+
+      // Horizontal lines should remain unchanged
+      expect(layer.getCell(4, 5).ch).toBe("─");
+      expect(layer.getCell(6, 5).ch).toBe("─");
+    });
+  });
 });

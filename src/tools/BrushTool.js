@@ -24,6 +24,7 @@ export class BrushTool extends Tool {
     this.currentStroke = null; // Track current brush stroke for merging
     this.smartBoxDrawing = new SmartBoxDrawing();
     this.drawingMode = "normal"; // "normal", "single", or "double"
+    this.paintMode = "all"; // "all", "fg", "bg", "glyph"
   }
 
   /**
@@ -64,6 +65,38 @@ export class BrushTool extends Tool {
    */
   getDrawingMode() {
     return this.drawingMode;
+  }
+
+  /**
+   * Set the paint mode (which attributes to paint)
+   * @param {string} mode - Paint mode: "all", "fg", "bg", or "glyph"
+   */
+  setPaintMode(mode) {
+    const validModes = ["all", "fg", "bg", "glyph"];
+    if (validModes.includes(mode)) {
+      this.paintMode = mode;
+    }
+  }
+
+  /**
+   * Get the current paint mode
+   * @returns {string} Current paint mode
+   */
+  getPaintMode() {
+    return this.paintMode;
+  }
+
+  /**
+   * Cycle to the next paint mode
+   * Order: all -> fg -> bg -> glyph -> all
+   * @returns {string} The new paint mode
+   */
+  cyclePaintMode() {
+    const modes = ["all", "fg", "bg", "glyph"];
+    const currentIndex = modes.indexOf(this.paintMode);
+    const nextIndex = (currentIndex + 1) % modes.length;
+    this.paintMode = modes[nextIndex];
+    return this.paintMode;
   }
 
   /**
@@ -109,12 +142,29 @@ export class BrushTool extends Tool {
       return;
     }
 
-    // Create new cell with current brush settings
-    const afterCell = new Cell(
-      this.currentCell.ch,
-      this.currentCell.fg,
-      this.currentCell.bg,
-    );
+    // Create new cell based on paint mode
+    let afterCell;
+    switch (this.paintMode) {
+      case "fg":
+        // Paint only foreground, preserve glyph and background
+        afterCell = new Cell(beforeCell.ch, this.currentCell.fg, beforeCell.bg);
+        break;
+      case "bg":
+        // Paint only background, preserve glyph and foreground
+        afterCell = new Cell(beforeCell.ch, beforeCell.fg, this.currentCell.bg);
+        break;
+      case "glyph":
+        // Paint only glyph, preserve colors
+        afterCell = new Cell(this.currentCell.ch, beforeCell.fg, beforeCell.bg);
+        break;
+      default: // "all"
+        // Paint all attributes
+        afterCell = new Cell(
+          this.currentCell.ch,
+          this.currentCell.fg,
+          this.currentCell.bg,
+        );
+    }
 
     // Create and execute command
     const command = CellCommand.fromSingleCell({

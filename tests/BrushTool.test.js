@@ -260,6 +260,131 @@ describe("BrushTool", () => {
       const cell = scene.getActiveLayer().getCell(3, 3);
       expect(cell.bg).toBe(-1);
     });
+
+    describe("Paint Mode", () => {
+      it("should have default paint mode 'all'", () => {
+        expect(brush.getPaintMode()).toBe("all");
+      });
+
+      it("should set paint mode", () => {
+        brush.setPaintMode("fg");
+        expect(brush.getPaintMode()).toBe("fg");
+
+        brush.setPaintMode("bg");
+        expect(brush.getPaintMode()).toBe("bg");
+
+        brush.setPaintMode("glyph");
+        expect(brush.getPaintMode()).toBe("glyph");
+
+        brush.setPaintMode("all");
+        expect(brush.getPaintMode()).toBe("all");
+      });
+
+      it("should ignore invalid paint modes", () => {
+        brush.setPaintMode("fg");
+        brush.setPaintMode("invalid");
+        expect(brush.getPaintMode()).toBe("fg"); // Should not change
+      });
+
+      it("should cycle through paint modes", () => {
+        expect(brush.getPaintMode()).toBe("all");
+
+        let mode = brush.cyclePaintMode();
+        expect(mode).toBe("fg");
+        expect(brush.getPaintMode()).toBe("fg");
+
+        mode = brush.cyclePaintMode();
+        expect(mode).toBe("bg");
+        expect(brush.getPaintMode()).toBe("bg");
+
+        mode = brush.cyclePaintMode();
+        expect(mode).toBe("glyph");
+        expect(brush.getPaintMode()).toBe("glyph");
+
+        mode = brush.cyclePaintMode();
+        expect(mode).toBe("all");
+        expect(brush.getPaintMode()).toBe("all");
+      });
+
+      it("should paint only foreground in 'fg' mode", () => {
+        const layer = scene.getActiveLayer();
+        layer.setCell(5, 5, new Cell("X", 1, 2));
+
+        brush.setPaintMode("fg");
+        brush.setCurrentCell({ ch: "Y", fg: 3, bg: 4 });
+        brush.onCellDown(5, 5, scene, stateManager);
+
+        const cell = layer.getCell(5, 5);
+        expect(cell.ch).toBe("X"); // Preserved
+        expect(cell.fg).toBe(3); // Changed
+        expect(cell.bg).toBe(2); // Preserved
+      });
+
+      it("should paint only background in 'bg' mode", () => {
+        const layer = scene.getActiveLayer();
+        layer.setCell(5, 5, new Cell("X", 1, 2));
+
+        brush.setPaintMode("bg");
+        brush.setCurrentCell({ ch: "Y", fg: 3, bg: 4 });
+        brush.onCellDown(5, 5, scene, stateManager);
+
+        const cell = layer.getCell(5, 5);
+        expect(cell.ch).toBe("X"); // Preserved
+        expect(cell.fg).toBe(1); // Preserved
+        expect(cell.bg).toBe(4); // Changed
+      });
+
+      it("should paint only glyph in 'glyph' mode", () => {
+        const layer = scene.getActiveLayer();
+        layer.setCell(5, 5, new Cell("X", 1, 2));
+
+        brush.setPaintMode("glyph");
+        brush.setCurrentCell({ ch: "Y", fg: 3, bg: 4 });
+        brush.onCellDown(5, 5, scene, stateManager);
+
+        const cell = layer.getCell(5, 5);
+        expect(cell.ch).toBe("Y"); // Changed
+        expect(cell.fg).toBe(1); // Preserved
+        expect(cell.bg).toBe(2); // Preserved
+      });
+
+      it("should paint all attributes in 'all' mode", () => {
+        const layer = scene.getActiveLayer();
+        layer.setCell(5, 5, new Cell("X", 1, 2));
+
+        brush.setPaintMode("all");
+        brush.setCurrentCell({ ch: "Y", fg: 3, bg: 4 });
+        brush.onCellDown(5, 5, scene, stateManager);
+
+        const cell = layer.getCell(5, 5);
+        expect(cell.ch).toBe("Y"); // Changed
+        expect(cell.fg).toBe(3); // Changed
+        expect(cell.bg).toBe(4); // Changed
+      });
+
+      it("should work with undo/redo in different paint modes", () => {
+        const layer = scene.getActiveLayer();
+        layer.setCell(5, 5, new Cell("X", 1, 2));
+
+        // Paint foreground only
+        brush.setPaintMode("fg");
+        brush.setCurrentCell({ ch: "Y", fg: 3, bg: 4 });
+        brush.onCellDown(5, 5, scene, stateManager);
+
+        let cell = layer.getCell(5, 5);
+        expect(cell.fg).toBe(3);
+
+        // Undo
+        commandHistory.undo();
+        cell = layer.getCell(5, 5);
+        expect(cell.fg).toBe(1); // Back to original
+
+        // Redo
+        commandHistory.redo();
+        cell = layer.getCell(5, 5);
+        expect(cell.fg).toBe(3); // Forward again
+      });
+    });
   });
 
   describe("integration", () => {

@@ -1172,6 +1172,7 @@ function initUIComponents() {
   initLayerPanel();
   initInteractivePalette();
   initGlyphPicker();
+  initPaintMode();
   initSmartDrawingMode();
   initClipboard();
   initProject();
@@ -1407,6 +1408,42 @@ function initSmartDrawingMode() {
 
     // Set initial mode
     brushTool.setDrawingMode("normal");
+  }
+}
+
+/**
+ * Initialize paint mode toggle button
+ */
+function initPaintMode() {
+  const toggleBtn = document.getElementById("paint-mode-toggle");
+
+  if (toggleBtn && brushTool) {
+    toggleBtn.addEventListener("click", () => {
+      const newMode = brushTool.cyclePaintMode();
+
+      // Update button text based on mode
+      const modeLabels = {
+        all: "🎨 All",
+        fg: "F FG",
+        bg: "B BG",
+        glyph: "G Char",
+      };
+
+      toggleBtn.textContent = modeLabels[newMode] || "🎨 All";
+
+      // Update status message
+      const modeDescriptions = {
+        all: "Paint all attributes (glyph + colors)",
+        fg: "Paint foreground color only",
+        bg: "Paint background color only",
+        glyph: "Paint glyph character only",
+      };
+
+      updateStatus(`Paint Mode: ${modeDescriptions[newMode]}`);
+    });
+
+    // Set initial mode
+    brushTool.setPaintMode("all");
   }
 }
 

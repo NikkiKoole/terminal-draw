@@ -31,13 +31,13 @@ This document outlines potential future development directions for Terminal Draw
 
 **Goal:** Improve fundamental drawing capabilities with selective and intelligent painting
 
-#### Selective Cell Painting
-- **Targeted Attribute Painting**
-  - Paint only foreground color (preserve glyph and background)
-  - Paint only background color (preserve glyph and foreground)  
-  - Paint only glyph character (preserve colors)
-  - Dedicated tools/modes for each type of selective painting
-  - Visual indicators showing what will be modified
+#### Selective Cell Painting ✅ **COMPLETED**
+- **Targeted Attribute Painting** ✅ **COMPLETED**
+  - ✅ Paint only foreground color (preserve glyph and background)
+  - ✅ Paint only background color (preserve glyph and foreground)  
+  - ✅ Paint only glyph character (preserve colors)
+  - ✅ Single toggle button that cycles through paint modes (all/fg/bg/glyph)
+  - ✅ Status bar updates showing current paint mode
 
 - **Smart Color Tools**
   - Color replacement tool (replace all instances of a color)
@@ -86,7 +86,9 @@ This document outlines potential future development directions for Terminal Draw
 **Dependencies:** None  
 **Impact:** High - Fundamental improvement to core drawing experience
 
-**Completion Notes:** Implemented January 2025 with density progression system, random spray patterns, and full integration with existing tool architecture. 29 tests passing.
+**Completion Notes:** 
+- **Spray Can Tool**: Implemented January 2025 with density progression system, random spray patterns, and full integration with existing tool architecture. 30 tests passing.
+- **Selective Cell Painting**: Implemented January 2025 with paint mode cycling (all/fg/bg/glyph), single toggle button UI, and complete undo/redo support. 9 new tests, 975 total tests passing.
 
 **Smart Box-Drawing Completion Notes:** Implemented January 2025 with intelligent neighbor detection, automatic junction creation, and comprehensive test coverage (26 tests passing). Features dropdown UI integration and works with existing brush tool. Mixed single/double line intersections work functionally but need visual polish for optimal character selection.
 

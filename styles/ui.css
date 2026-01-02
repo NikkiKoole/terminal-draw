@@ -74,6 +74,43 @@
     border-color: var(--ui-accent);
 }
 
+/* Paint Mode Controls */
+.paint-mode-controls {
+    margin-top: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
+}
+
+.paint-mode-controls label {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--ui-text-secondary);
+    margin-bottom: var(--spacing-xs);
+}
+
+.paint-mode-btn {
+    width: 100%;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    background: var(--ui-bg);
+    border: 1px solid var(--ui-border);
+    border-radius: var(--radius-sm);
+    color: var(--ui-text);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+}
+
+.paint-mode-btn:hover {
+    border-color: var(--ui-accent);
+    background: var(--ui-bg-light);
+}
+
+.paint-mode-btn:active {
+    transform: translateY(1px);
+}
+
 /* Smart Drawing Mode Controls */
 .smart-drawing-controls {
     margin-top: var(--spacing-sm);

@@ -648,10 +648,14 @@ function setCurrentTool(tool) {
 
   // Hide all tool-specific options by default
   const sprayOptions = document.getElementById("spray-options");
+  const brushOptions = document.getElementById("brush-options");
   const rectangleOptions = document.getElementById("rectangle-options");
 
   if (sprayOptions) {
     sprayOptions.style.display = "none";
+  }
+  if (brushOptions) {
+    brushOptions.style.display = "none";
   }
   if (rectangleOptions) {
     rectangleOptions.style.display = "none";
@@ -659,6 +663,10 @@ function setCurrentTool(tool) {
 
   if (tool === brushTool) {
     document.getElementById("tool-brush")?.classList.add("active");
+    // Show brush options
+    if (brushOptions) {
+      brushOptions.style.display = "flex";
+    }
   } else if (tool === eraserTool) {
     document.getElementById("tool-eraser")?.classList.add("active");
   } else if (tool === pickerTool) {
@@ -1370,6 +1378,7 @@ function initUIComponents() {
   initSmartDrawingMode();
   initSpraySettings();
   initRectangleSettings();
+  initBrushSettings();
   initClipboard();
   initProject();
   initIOPanel();
@@ -1676,6 +1685,40 @@ function initPaintMode() {
     if (floodFillTool) {
       floodFillTool.setPaintMode("all");
     }
+  }
+}
+
+/**
+ * Initialize brush tool settings
+ */
+function initBrushSettings() {
+  const sizeSelect = document.getElementById("brush-size");
+  const shapeSelect = document.getElementById("brush-shape");
+
+  if (sizeSelect && brushTool) {
+    sizeSelect.addEventListener("change", (e) => {
+      const size = parseInt(e.target.value);
+      brushTool.setBrushSize(size);
+
+      let statusMessage = `Brush Size: ${size}x${size}`;
+      updateStatus(statusMessage, 2000);
+    });
+
+    // Set initial size
+    brushTool.setBrushSize(1);
+  }
+
+  if (shapeSelect && brushTool) {
+    shapeSelect.addEventListener("change", (e) => {
+      const shape = e.target.value;
+      brushTool.setBrushShape(shape);
+
+      let statusMessage = `Brush Shape: ${shape.charAt(0).toUpperCase() + shape.slice(1)}`;
+      updateStatus(statusMessage, 2000);
+    });
+
+    // Set initial shape
+    brushTool.setBrushShape("square");
   }
 }
 

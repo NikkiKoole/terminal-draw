@@ -180,6 +180,53 @@
                         </select>
                     </div>
 
+                    <!-- Brush Tool Options -->
+                    <div
+                        id="brush-options"
+                        style="display: none; align-items: center; gap: 16px"
+                    >
+                        <label style="font-weight: 500">Size:</label>
+                        <select
+                            id="brush-size"
+                            style="
+                                padding: 6px 12px;
+                                background: var(--ui-bg);
+                                color: var(--ui-text);
+                                border: 1px solid var(--ui-border);
+                                border-radius: 4px;
+                                cursor: pointer;
+                                font-size: 0.95em;
+                            "
+                        >
+                            <option value="1" selected>1x1</option>
+                            <option value="2">2x2</option>
+                            <option value="3">3x3</option>
+                            <option value="5">5x5</option>
+                            <option value="7">7x7</option>
+                        </select>
+
+                        <label style="font-weight: 500">Shape:</label>
+                        <select
+                            id="brush-shape"
+                            style="
+                                padding: 6px 12px;
+                                background: var(--ui-bg);
+                                color: var(--ui-text);
+                                border: 1px solid var(--ui-border);
+                                border-radius: 4px;
+                                cursor: pointer;
+                                font-size: 0.95em;
+                            "
+                        >
+                            <option value="square" selected>Square</option>
+                            <option value="circle">Circle</option>
+                            <option value="triangle">Triangle</option>
+                            <option value="cross">Cross (X)</option>
+                            <option value="plus">Plus (+)</option>
+                            <option value="minus">Minus (-)</option>
+                        </select>
+                    </div>
+
                     <!-- Rectangle Tool Options -->
                     <div
                         id="rectangle-options"

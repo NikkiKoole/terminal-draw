@@ -4,8 +4,7 @@ A web-based ASCII art editor that renders true text glyphs in the DOM for creati
 
 ## Features
 
-**Steps 1-9 Complete ✅ + Phase 1, 2 & 3: Professional Layer Management ✅**
-- ✅ Project Setup - Cell-based rendering, palettes, scaling
+ - ✅ Project Setup - Cell-based rendering, palettes, scaling
 - ✅ Core Data Models - Cell, Layer, Scene, StateManager, constants
 - ✅ Basic Rendering - LayerRenderer and Compositor
 - ✅ Hit Test Overlay - Mouse input and coordinate conversion
@@ -78,7 +77,7 @@ source ~/.nvm/nvm.sh && nvm use 20 && npm test -- --run
 
 **Important Development Notes:**
 
-⚠️ **Property Naming Consistency Issue**  
+⚠️ **Property Naming Consistency Issue**
 The codebase has an inconsistency between `width`/`height` and `w`/`h` property names:
 - Templates use `defaultDimensions: { w: 60, h: 25 }`
 - Some UI components expect `{ width: 60, height: 25 }`
@@ -86,14 +85,14 @@ The codebase has an inconsistency between `width`/`height` and `w`/`h` property 
 
 When debugging dimension-related issues, always check which naming convention the specific component expects.
 
-⚠️ **Dev Server Testing Workflow**  
+⚠️ **Dev Server Testing Workflow**
 Don't assume everything is working by just starting the dev server. Instead:
 - Keep the dev server running during development
-- Manually test UI interactions in the browser  
+- Manually test UI interactions in the browser
 - Ask for confirmation before assuming fixes work
 - Test edge cases (like dismissing dialogs, invalid inputs, etc.)
 
-✨ **Layer Management**  
+✨ **Layer Management**
 The project uses a simplified fixed-layer architecture:
 - **No Runtime Layer Changes**: Users pick 1, 2, or 3 layers at project start
 - **Visibility Toggle**: 👁️ (visible) / ➖ (hidden) - affects visual display and drawing
@@ -224,7 +223,7 @@ See [00-implementation-plan.md](./docs/00-implementation-plan.md) for detailed r
 ## User Interface
 
 ### Tools (Keyboard Shortcuts)
-- **[B] Brush** - Paint cells with current character and colors
+- **[B] Brush** - Paint cells with current character and colors (1x1, 2x2, 3x3, 5x5, 7x7 sizes; square/circle/triangle shapes)
 - **[E] Eraser** - Clear cells to default state
 - **[P] Picker** - Sample colors and characters from existing cells
 
@@ -415,7 +414,7 @@ Test pages are in `test-pages/`:
 
 **Phase 1 Achievements:**
 - ✅ **Template System Foundation** - 3 project templates with smart defaults
-- ✅ **Dynamic Rendering Infrastructure** - Auto-generated layer containers  
+- ✅ **Dynamic Rendering Infrastructure** - Auto-generated layer containers
 - ✅ **Tools & Systems Integration** - All systems verified to work with flexible layers
 - ✅ **178 new tests added** - Comprehensive coverage of template system
 

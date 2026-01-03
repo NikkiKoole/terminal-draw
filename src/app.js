@@ -380,6 +380,20 @@ function initInput() {
     }
   });
 
+  // Listen for rectangle tool preview events
+  stateManager.on("rectangle:preview", (data) => {
+    if (
+      data.x1 !== null &&
+      data.y1 !== null &&
+      data.x2 !== null &&
+      data.y2 !== null
+    ) {
+      showRectanglePreview(data.x1, data.y1, data.x2, data.y2, data.fillMode);
+    } else {
+      hideRectanglePreview();
+    }
+  });
+
   // Listen to tool:picked events from picker tool
   stateManager.on("tool:picked", handleToolPicked);
 
@@ -395,7 +409,9 @@ function initInput() {
  * Handle cell hover events - update status and visual feedback
  */
 function handleCellHover(data) {
-  if (data.x !== null && data.y !== null) {
+  if (!scene) return;
+
+  if (data && data.x !== undefined && data.y !== undefined) {
     // Update status bar with coordinates
     updateStatus(
       `Cell: (${data.x}, ${data.y}) • Grid: ${GRID_WIDTH}×${GRID_HEIGHT} • Scale: ${currentScale}%`,
@@ -403,12 +419,21 @@ function handleCellHover(data) {
 
     // Update hover indicator position
     updateHoverIndicator(data.x, data.y);
+
+    // Show brush preview if brush tool is active and size > 1 or shape != square
+    if (
+      currentTool === brushTool &&
+      (brushTool.getBrushSize() > 1 || brushTool.getBrushShape() !== "square")
+    ) {
+      showBrushPreview(data.x, data.y);
+    }
   } else {
     // Mouse left grid
     updateStatus(
       `Ready • Grid: ${GRID_WIDTH}×${GRID_HEIGHT} • Scale: ${currentScale}%`,
     );
     hideHoverIndicator();
+    hideBrushPreview();
   }
 }
 
@@ -556,8 +581,9 @@ function showCirclePreview(centerX, centerY, radius, fillMode) {
     previewCell.style.top = `${cell.y * cellDimensions.height}px`;
     previewCell.style.width = `${cellDimensions.width}px`;
     previewCell.style.height = `${cellDimensions.height}px`;
-    previewCell.style.border = "1px solid rgba(255, 255, 255, 0.5)";
-    previewCell.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+    previewCell.style.border = "1px solid rgba(100, 255, 150, 0.8)";
+    previewCell.style.backgroundColor = "rgba(100, 255, 150, 0.25)";
+    previewCell.style.borderRadius = "50%";
     previewCell.style.boxSizing = "border-box";
     previewOverlay.appendChild(previewCell);
   });
@@ -632,6 +658,153 @@ function addCirclePoints(points, centerX, centerY, x, y) {
   points.push({ x: centerX - y, y: centerY + x });
   points.push({ x: centerX + y, y: centerY - x });
   points.push({ x: centerX - y, y: centerY - x });
+}
+
+/**
+ * Show brush preview overlay during hover
+ */
+function showBrushPreview(x, y) {
+  hideBrushPreview(); // Clear any existing preview
+
+  if (!hitTestOverlay || !currentTool || !scene) return;
+
+  const cellDimensions = hitTestOverlay.getCellDimensions();
+  const container = document.querySelector(".grid-container");
+  if (!container) return;
+
+  // Create preview overlay if it doesn't exist
+  let previewOverlay = document.getElementById("brush-preview-overlay");
+  if (!previewOverlay) {
+    previewOverlay = document.createElement("div");
+    previewOverlay.id = "brush-preview-overlay";
+    previewOverlay.style.position = "absolute";
+    previewOverlay.style.pointerEvents = "none";
+    previewOverlay.style.zIndex = "10";
+    container.appendChild(previewOverlay);
+  }
+
+  // Get brush preview cells
+  const previewCells = brushTool.getBrushPreview(x, y, scene);
+
+  // Create visual elements for each preview cell
+  previewCells.forEach((cell) => {
+    const previewCell = document.createElement("div");
+    previewCell.className = "brush-preview-cell";
+    previewCell.style.position = "absolute";
+    previewCell.style.left = `${cell.x * cellDimensions.width}px`;
+    previewCell.style.top = `${cell.y * cellDimensions.height}px`;
+    previewCell.style.width = `${cellDimensions.width}px`;
+    previewCell.style.height = `${cellDimensions.height}px`;
+    previewCell.style.border = "1px solid rgba(100, 150, 255, 0.8)";
+    previewCell.style.backgroundColor = "rgba(100, 150, 255, 0.25)";
+    previewCell.style.borderRadius = "2px";
+    previewCell.style.boxSizing = "border-box";
+    previewOverlay.appendChild(previewCell);
+  });
+}
+
+/**
+ * Hide brush preview overlay
+ */
+function hideBrushPreview() {
+  const previewOverlay = document.getElementById("brush-preview-overlay");
+  if (previewOverlay) {
+    previewOverlay.innerHTML = "";
+  }
+}
+
+/**
+ * Show rectangle preview overlay during drag
+ */
+function showRectanglePreview(x1, y1, x2, y2, fillMode) {
+  hideRectanglePreview(); // Clear any existing preview
+
+  if (!hitTestOverlay) return;
+
+  const cellDimensions = hitTestOverlay.getCellDimensions();
+  const container = document.querySelector(".grid-container");
+  if (!container) return;
+
+  // Create preview overlay if it doesn't exist
+  let previewOverlay = document.getElementById("rectangle-preview-overlay");
+  if (!previewOverlay) {
+    previewOverlay = document.createElement("div");
+    previewOverlay.id = "rectangle-preview-overlay";
+    previewOverlay.style.position = "absolute";
+    previewOverlay.style.pointerEvents = "none";
+    previewOverlay.style.zIndex = "10";
+    container.appendChild(previewOverlay);
+  }
+
+  // Calculate rectangle preview cells
+  const previewCells = getRectanglePreviewCells(x1, y1, x2, y2, fillMode);
+
+  // Create visual elements for each preview cell
+  previewCells.forEach((cell) => {
+    const previewCell = document.createElement("div");
+    previewCell.className = "rectangle-preview-cell";
+    previewCell.style.position = "absolute";
+    previewCell.style.left = `${cell.x * cellDimensions.width}px`;
+    previewCell.style.top = `${cell.y * cellDimensions.height}px`;
+    previewCell.style.width = `${cellDimensions.width}px`;
+    previewCell.style.height = `${cellDimensions.height}px`;
+    previewCell.style.border = "1px solid rgba(255, 200, 100, 0.8)";
+    previewCell.style.backgroundColor = "rgba(255, 200, 100, 0.25)";
+    previewCell.style.borderRadius = "1px";
+    previewCell.style.boxSizing = "border-box";
+    previewOverlay.appendChild(previewCell);
+  });
+}
+
+/**
+ * Hide rectangle preview overlay
+ */
+function hideRectanglePreview() {
+  const previewOverlay = document.getElementById("rectangle-preview-overlay");
+  if (previewOverlay) {
+    previewOverlay.innerHTML = "";
+  }
+}
+
+/**
+ * Get rectangle preview cells
+ */
+function getRectanglePreviewCells(x1, y1, x2, y2, fillMode) {
+  const cells = [];
+
+  if (fillMode === "filled") {
+    // Filled rectangle
+    for (let y = y1; y <= y2; y++) {
+      for (let x = x1; x <= x2; x++) {
+        cells.push({ x, y });
+      }
+    }
+  } else {
+    // Outline rectangle
+    for (let y = y1; y <= y2; y++) {
+      for (let x = x1; x <= x2; x++) {
+        // Only include outline cells
+        if (y === y1 || y === y2 || x === x1 || x === x2) {
+          cells.push({ x, y });
+        }
+      }
+    }
+  }
+
+  return cells;
+}
+
+/**
+ * Update brush preview when brush settings change
+ */
+function updateBrushPreview() {
+  // Hide preview when switching away from brush or when brush is 1x1 square
+  if (
+    currentTool !== brushTool ||
+    (brushTool.getBrushSize() === 1 && brushTool.getBrushShape() === "square")
+  ) {
+    hideBrushPreview();
+  }
 }
 
 /**
@@ -782,6 +955,11 @@ function cycleLayer() {
  */
 function setCurrentTool(tool) {
   currentTool = tool;
+
+  // Clear all previews when switching tools
+  hideBrushPreview();
+  hideCirclePreview();
+  hideRectanglePreview();
 
   // Update cursor
   if (hitTestOverlay) {
@@ -1901,6 +2079,7 @@ function initBrushSettings() {
 
       let statusMessage = `Brush Size: ${size}x${size}`;
       updateStatus(statusMessage, 2000);
+      updateBrushPreview();
     });
 
     // Set initial size
@@ -1914,6 +2093,7 @@ function initBrushSettings() {
 
       let statusMessage = `Brush Shape: ${shape.charAt(0).toUpperCase() + shape.slice(1)}`;
       updateStatus(statusMessage, 2000);
+      updateBrushPreview();
     });
 
     // Set initial shape

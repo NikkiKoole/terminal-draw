@@ -147,6 +147,20 @@ export class BrushTool extends Tool {
   }
 
   /**
+   * Get brush preview for hover/drag events
+   * @param {number} x - X coordinate
+   * @param {number} y - Y coordinate
+   * @param {Scene} scene - Scene instance
+   * @returns {Array} Array of {x, y} preview positions
+   */
+  getBrushPreview(x, y, scene) {
+    return this._getBrushCells(x, y, scene).map((cell) => ({
+      x: cell.x,
+      y: cell.y,
+    }));
+  }
+
+  /**
    * Get cells to paint based on brush size and shape
    * @private
    */

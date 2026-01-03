@@ -149,6 +149,18 @@ export class RectangleTool extends Tool {
 
     this.currentX = x;
     this.currentY = y;
+
+    // Emit rectangle preview event with current coordinates and fill mode
+    if (stateManager) {
+      const coords = this._getRectangleCoords();
+      stateManager.emit("rectangle:preview", {
+        x1: coords.x1,
+        y1: coords.y1,
+        x2: coords.x2,
+        y2: coords.y2,
+        fillMode: this.fillMode,
+      });
+    }
   }
 
   /**
@@ -165,9 +177,15 @@ export class RectangleTool extends Tool {
     // Draw the actual rectangle
     this._drawRectangle(scene, stateManager);
 
-    // Hide anchor indicator
+    // Hide anchor indicator and preview
     if (stateManager) {
       stateManager.emit("rectangle:anchor", { x: null, y: null });
+      stateManager.emit("rectangle:preview", {
+        x1: null,
+        y1: null,
+        x2: null,
+        y2: null,
+      });
     }
 
     // Reset state

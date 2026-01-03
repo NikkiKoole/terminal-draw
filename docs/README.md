@@ -61,27 +61,19 @@ This convention ensures the documentation remains organized and navigable as the
 - ✅ **Enhanced UX**: Fixed template-based layers (1/2/3) with visibility/lock controls
 - ✅ **Test Coverage**: 911 tests passing with dramatically cleaner codebase
 
-## Recent Completion: M4-P1 Spray Can Tool
+## Recent Completion: M4 Enhanced Painting Tools
 
-**M4-P1-spray-tool-completion.md** documents the first feature implementation of M4: Enhanced Painting Tools:
-
-### What Was Completed:
-- ✅ **Spray Can Tool**: Density progression system with organic texture creation
-- ✅ **Integration**: Full tool system integration with keyboard shortcut [S]
-- ✅ **Architecture**: Clean implementation following existing patterns
-- ✅ **Test Coverage**: 29 comprehensive tests covering all functionality
-- ✅ **Performance**: Efficient ~3 hour implementation (50% under estimate)
-
-## Recent Completion: M4-P2 Smart Box-Drawing
-
-**M4-P2-smart-box-drawing-completion.md** documents the second feature implementation of M4: Enhanced Painting Tools:
+**M4-enhanced-painting-tools-completion.md** documents the full completion of M4: Enhanced Painting Tools:
 
 ### What Was Completed:
-- ✅ **Smart Box-Drawing Brushes**: Intelligent junction detection with automatic character placement
-- ✅ **UI Integration**: Dropdown for Normal/Smart Single Line/Smart Double Line modes
-- ✅ **Neighbor Updates**: Existing characters automatically become junctions when new connections are made
-- ✅ **Test Coverage**: 26 comprehensive tests covering all smart drawing scenarios
-- ✅ **Mixed Line Support**: Single/double line intersection (functional, needs visual polish)
+- ✅ **Selective Cell Painting**: Paint mode system (all/fg/bg/glyph) with single toggle button
+- ✅ **Smart Box-Drawing**: Intelligent junction detection with automatic character placement
+- ✅ **Spray Can Tool**: Density progression system with 10 artistic presets
+- ✅ **Variety Brushes**: 10 character sets (Artist, Blocks, Dots, etc.) with configurable settings
+- ✅ **Smart Eraser**: Intelligent neighbor updates when erasing box-drawing characters
+- ✅ **Bonus Tools**: Rectangle and Line tools (from M6) completed ahead of schedule
+- ✅ **Test Coverage**: 101+ new tests added, 1091+ total tests passing
+- ✅ **Architecture**: Paint mode system, tool options bar, and anchor indicators
 
 ### Key Architecture Change:
 **Before**: Complex dynamic layer management (unlimited runtime add/remove/reorder)

@@ -1,8 +1,8 @@
 # F1: Future Features Roadmap
 
-**Document Type:** Feature Planning Roadmap  
-**Created:** January 2025  
-**Status:** 🎯 **PLANNING**  
+**Document Type:** Feature Planning Roadmap
+**Created:** January 2025
+**Status:** 🎯 **PLANNING**
 
 ## Overview
 
@@ -12,8 +12,9 @@ This document outlines potential future development directions for Terminal Draw
 
 **Completed Milestones:**
 - ✅ **M1**: Core editor (tools, layers, UI, save/load)
-- ✅ **M2**: Advanced editing (undo/redo, grid resize, clear operations)  
+- ✅ **M2**: Advanced editing (undo/redo, grid resize, clear operations)
 - ✅ **M3**: Simplified layer architecture (templates, startup dialog, visibility/lock controls)
+- ✅ **M4**: Enhanced painting tools (selective painting, smart box-drawing, spray can) - See `M4-enhanced-painting-tools-completion.md`
 
 **Current Capabilities:**
 - 3 project templates (Simple/Standard/Advanced with 1/2/3 fixed layers)
@@ -25,88 +26,7 @@ This document outlines potential future development directions for Terminal Draw
 
 ---
 
-## High Priority Features (M4-M6)
-
-### 🎯 **M4: Enhanced Painting Tools** ✅ **FULLY COMPLETED**
-
-**Goal:** Improve fundamental drawing capabilities with selective and intelligent painting
-
-#### Selective Cell Painting ✅ **COMPLETED**
-- **Targeted Attribute Painting** ✅ **COMPLETED**
-  - ✅ Paint only foreground color (preserve glyph and background)
-  - ✅ Paint only background color (preserve glyph and foreground)  
-  - ✅ Paint only glyph character (preserve colors)
-  - ✅ Single toggle button that cycles through paint modes (all/fg/bg/glyph)
-  - ✅ Status bar updates showing current paint mode
-
-
-
-#### Intelligent Brush System
-- **Smart Box-Drawing Brushes** ✅ **COMPLETED**
-  - ✅ Single line style: ─│┌┐└┘├┤┬┴┼
-  - ✅ Double line style: ═║╔╗╚╝╠╣╦╩╬
-  - ✅ Context-aware glyph placement based on neighbors
-  - ✅ Auto-connects to existing lines with proper junctions
-  - ✅ UI dropdown for Normal/Smart Single Line/Smart Double Line modes
-  - ✅ Mixed single/double intersections (╫ ╪ ╞ ╡ ╟ ╢ ╤ ╥ ╧ ╨) - fully working with bitwise tileset algorithm
-
-- **Smart Box-Drawing Eraser** ✅ **COMPLETED**
-  - ✅ Intelligent neighbor updates when erasing box-drawing characters
-  - ✅ Junctions and corners automatically simplify when connections are removed
-  - ✅ Simple lines (─ │) remain unchanged when neighbors are erased
-  - ✅ Color preservation during neighbor updates
-  - ✅ Full undo/redo support for eraser and neighbor updates
-  - ✅ Works with both single-line and double-line box-drawing characters
-  - ✅ Drag erasing smoothly handles multiple connected junctions
-  - ✅ Paint mode support (erase all/fg/bg/glyph selectively)
-
-- **Variety Brushes** ✅ **COMPLETED**
-  - ✅ 10 character set presets integrated into Spray Can tool
-  - ✅ Artist preset: `. - + * % m #` (progressive density, default)
-  - ✅ Blocks preset: `░ ▒ ▓ █`
-  - ✅ Dots preset: `· • ○ ●`
-  - ✅ Stipple preset: `, . · :`
-  - ✅ Heights preset: `▁ ▂ ▃ ▄ ▅ ▆ ▇ █`
-  - ✅ Widths preset: `▏ ▎ ▍ ▌ ▋ ▊ ▉`
-  - ✅ Stars preset: `· • ✶ ✕`
-  - ✅ Triangles preset: `▴ ▵ ► ◄ ▲ ▼`
-  - ✅ Crosses preset: `· ÷ + ✕ × X ╳`
-  - ✅ Waves preset: `~ ∼ ≈ ≋`
-  - ✅ Configurable spray radius: Small (2), Medium (3), Large (5)
-  - ✅ Configurable spray density: Light (2.5%), Medium (5%), Heavy (50%)
-  - ✅ Dedicated tool options bar in header (appears when spray tool active)
-  - ✅ Clean UI with contextual controls
-
-- **Spray Can Tool** *(inspired by Emacs artist mode)* ✅ **COMPLETED**
-  - ✅ Random character distribution in circular area around cursor
-  - ✅ Character progression system with 10 artistic presets
-  - ✅ Configurable spray radius: Small (2), Medium (3), Large (5)
-  - ✅ Configurable spray density: Light (2.5%), Medium (5%), Heavy (50%)
-  - ✅ Perfect for creating organic textures, clouds, stippled effects, waves
-  - ✅ Integrated with tool system, undo/redo, and layer management
-  - ✅ Keyboard shortcut `[S]` and comprehensive test coverage
-  - ✅ Settings shown in dedicated tool options bar (second row in header)
-  - ✅ Preset, Size, and Density controls all in one convenient location
-
-**Estimated Effort:** ~~6-8 hours~~ ✅ **COMPLETED**  
-**Dependencies:** None  
-**Impact:** High - Fundamental improvement to core drawing experience  
-**Status:** ✅ **M4 FULLY COMPLETED - All painting tools and variety brushes implemented**
-
-**Completion Notes:** 
-- **Spray Can Tool**: Implemented January 2025 with density progression system, random spray patterns, and full integration with existing tool architecture. 30 tests passing.
-- **Selective Cell Painting**: Implemented January 2025 with paint mode cycling (all/fg/bg/glyph), single toggle button UI, and complete undo/redo support. 9 new tests, 975 total tests passing.
-- **Rectangle Tool (M6)**: Implemented January 2025 with smart box-drawing support (normal/single/double line modes), paint mode integration, and anchor indicator preview (shows start point). 21 new tests, 996 total tests passing.
-- **Line Tool (M6)**: Implemented January 2025 with Bresenham algorithm, smart box-drawing for corners/edges, paint mode integration, and anchor indicator preview. 26 new tests, 1022 total tests passing.
-- **Smart Box-Drawing Eraser**: Implemented January 2025 with intelligent neighbor updates when erasing junctions/corners. Automatically simplifies box-drawing characters when connections are removed while preserving isolated lines. 9 new tests, 1031 total tests passing.
-- **Paint Mode Eraser**: Implemented January 2025 with selective erasing support (all/fg/bg/glyph modes). Eraser now respects paint mode toggle for flexible attribute removal. Smart box-drawing neighbor updates only trigger in glyph/all modes. 12 new tests, 1062 total tests passing.
-- **Variety Brushes via Spray Can**: Implemented January 2025 with 10 character set presets (Artist, Blocks, Dots, Stipple, Heights, Widths, Stars, Triangles, Crosses, Waves), configurable radius (Small/Medium/Large), and density control (Light/Medium/Heavy). Dedicated tool options bar in header shows contextual settings. Renamed "Density" preset to "Artist" to avoid confusion with density control. 19 new tests, 1084 total tests passing.
-- **Filled Rectangle Support**: Implemented January 2025 with Fill toggle in tool options bar (Outline/Filled modes). Filled mode fills entire rectangle area with current glyph, works with all paint modes and smart box-drawing modes. Settings shown when rectangle tool is active. 6 new tests, 1091 total tests passing.
-- **Flood Fill Tool**: Implemented January 2025 with paint-mode-aware filling using breadth-first search algorithm. Respects paint mode (all/fg/bg/glyph) for flexible filling behavior. All mode fills cells matching all attributes, fg/bg modes fill by color, glyph mode replaces characters. Keyboard shortcut [F]. Full undo/redo support. ⚠️ **NOT FULLY TESTED** - implementation complete but requires browser testing to verify all edge cases and interactions. No automated tests added yet.
-
-**Smart Box-Drawing Completion Notes:** Implemented January 2025 with intelligent neighbor detection, automatic junction creation, and comprehensive test coverage (26 tests passing). Features dropdown UI integration and works with existing brush tool. **Mixed single/double intersections completed with correct character mappings** using elegant bitwise tileset algorithm - all 10 mixed junction characters working perfectly (╫ ╪ ╞ ╡ ╟ ╢ ╤ ╥ ╧ ╨). Smart eraser completes the intelligent box-drawing system by handling cleanup automatically.
-
----
+## High Priority Features (M5-M6)
 
 ### 🎯 **M5: Selection & Region Operations**
 
@@ -119,7 +39,7 @@ This document outlines potential future development directions for Terminal Draw
   - Selection coordinates display
   - Keyboard shortcuts (S for select mode)
 
-#### Selection Operations  
+#### Selection Operations
 - **Copy/Cut/Paste Selected Region**
   - Standard Ctrl+C, Ctrl+X, Ctrl+V shortcuts
   - Paste positioning with ghost preview
@@ -128,7 +48,7 @@ This document outlines potential future development directions for Terminal Draw
 
 - **Move Selected Content**
   - Drag selected regions to new positions
-  - Arrow key nudging (pixel-perfect positioning)  
+  - Arrow key nudging (pixel-perfect positioning)
   - Undo/redo support for all move operations
   - Collision detection and merge strategies
 
@@ -142,8 +62,8 @@ This document outlines potential future development directions for Terminal Draw
   - Select similar characters or colors
   - Invert selection
 
-**Estimated Effort:** 8-12 hours  
-**Dependencies:** None  
+**Estimated Effort:** 8-12 hours
+**Dependencies:** None
 **Impact:** High - Major productivity improvement
 
 ---
@@ -224,7 +144,7 @@ This document outlines potential future development directions for Terminal Draw
   - Custom brush patterns
   - Pressure sensitivity (if supported)
 
-**Estimated Effort:** 12-18 hours  
+**Estimated Effort:** 12-18 hours
 **Dependencies:** M4 smart painting tools, M5 selection system helpful but not required
 **Impact:** High - Professional algorithmic drawing capabilities with classic computer graphics tools
 
@@ -261,8 +181,8 @@ This document outlines potential future development directions for Terminal Draw
   - Template sharing and import
   - Template preview system
 
-**Estimated Effort:** 6-10 hours  
-**Dependencies:** None  
+**Estimated Effort:** 6-10 hours
+**Dependencies:** None
 **Impact:** Medium - Quality of life improvements
 
 ---
@@ -275,7 +195,7 @@ This document outlines potential future development directions for Terminal Draw
   - Font embedding options
   - CSS styling preservation
 
-- **PNG Export** 
+- **PNG Export**
   - High-quality raster output
   - Custom font rendering
   - Configurable resolution/DPI
@@ -296,8 +216,8 @@ This document outlines potential future development directions for Terminal Draw
   - Interactive features
   - Responsive design options
 
-**Estimated Effort:** 8-12 hours  
-**Dependencies:** None  
+**Estimated Effort:** 8-12 hours
+**Dependencies:** None
 **Impact:** Medium - Professional output options
 
 ---
@@ -323,8 +243,8 @@ This document outlines potential future development directions for Terminal Draw
   - Ligature support per layer
   - Custom font loading system
 
-**Estimated Effort:** 12-15 hours  
-**Dependencies:** Profiling and performance analysis  
+**Estimated Effort:** 12-15 hours
+**Dependencies:** Profiling and performance analysis
 **Impact:** Medium - Enables complex projects
 
 ---
@@ -353,8 +273,8 @@ This document outlines potential future development directions for Terminal Draw
   - Dockable/floating windows
   - Workspace presets
 
-**Estimated Effort:** 10-15 hours  
-**Dependencies:** UI framework considerations  
+**Estimated Effort:** 10-15 hours
+**Dependencies:** UI framework considerations
 **Impact:** Medium - Broader audience appeal
 
 ---
@@ -387,8 +307,8 @@ Based on original design document Phase 2 plans:
   - Game integration formats
   - API for external applications
 
-**Estimated Effort:** 20-30 hours  
-**Dependencies:** Major architecture expansion  
+**Estimated Effort:** 20-30 hours
+**Dependencies:** Major architecture expansion
 **Impact:** High - Unique differentiator
 
 ---
@@ -407,8 +327,8 @@ Based on original design document Phase 2 plans:
   - Backup and versioning
   - Sharing and permissions
 
-**Estimated Effort:** 25-40 hours  
-**Dependencies:** Backend infrastructure  
+**Estimated Effort:** 25-40 hours
+**Dependencies:** Backend infrastructure
 **Impact:** High - Enterprise/team features
 
 ---
@@ -422,8 +342,8 @@ Based on original design document Phase 2 plans:
 4. **Market Demand** - User-requested features and competitive analysis
 
 ### Recommended Development Order
-1. **M4: Enhanced Painting Tools** - ✅ **Spray Can + Smart Box-Drawing completed** - Continue with Smart Glyph Management
-2. **M5: Selection System** - Highest impact for productivity  
+1. ✅ **M4: Enhanced Painting Tools** - **COMPLETED** - See `M4-enhanced-painting-tools-completion.md`
+2. **M5: Selection System** - Highest impact for productivity
 3. **M6: Advanced Drawing Tools** - Natural progression for professional use
 4. **M7: Enhanced Project Management** - Quality of life improvements
 5. **M8: Export Formats** - Professional output requirements
@@ -456,8 +376,8 @@ Based on original design document Phase 2 plans:
 
 ---
 
-**Last Updated:** January 2025  
-**Next Review:** After M4 completion  
+**Last Updated:** January 2025
+**Next Review:** After M5 completion
 **Maintainer:** Development Team
 
 *This roadmap is a living document and will evolve based on user feedback, technical discoveries, and changing priorities.*

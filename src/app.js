@@ -373,8 +373,27 @@ function initInput() {
 
   // Listen for circle tool preview events
   stateManager.on("circle:preview", (data) => {
-    if (data.centerX !== null && data.centerY !== null && data.radius > 0) {
-      showCirclePreview(data.centerX, data.centerY, data.radius, data.fillMode);
+    if (data.centerX !== null && data.centerY !== null) {
+      if (data.ellipseMode && (data.radiusX > 0 || data.radiusY > 0)) {
+        showCirclePreview(
+          data.centerX,
+          data.centerY,
+          data.radiusX,
+          data.fillMode,
+          true,
+          data.radiusY,
+        );
+      } else if (!data.ellipseMode && data.radius > 0) {
+        showCirclePreview(
+          data.centerX,
+          data.centerY,
+          data.radius,
+          data.fillMode,
+          false,
+        );
+      } else {
+        hideCirclePreview();
+      }
     } else {
       hideCirclePreview();
     }
@@ -544,7 +563,14 @@ function hideAnchorIndicator() {
 /**
  * Show circle preview overlay during drag
  */
-function showCirclePreview(centerX, centerY, radius, fillMode) {
+function showCirclePreview(
+  centerX,
+  centerY,
+  radiusOrRadiusX,
+  fillMode,
+  ellipseMode = false,
+  radiusY = null,
+) {
   hideCirclePreview(); // Clear any existing preview
 
   if (!hitTestOverlay) return;
@@ -560,7 +586,7 @@ function showCirclePreview(centerX, centerY, radius, fillMode) {
     previewOverlay.id = "circle-preview-overlay";
     previewOverlay.style.position = "absolute";
     previewOverlay.style.pointerEvents = "none";
-    previewOverlay.style.zIndex = "10";
+    previewOverlay.style.zIndex = "1000";
     container.appendChild(previewOverlay);
   }
 
@@ -568,8 +594,10 @@ function showCirclePreview(centerX, centerY, radius, fillMode) {
   const previewCells = getCirclePreviewCells(
     centerX,
     centerY,
-    radius,
+    radiusOrRadiusX,
     fillMode,
+    ellipseMode,
+    radiusY,
   );
 
   // Create visual elements for each preview cell
@@ -583,7 +611,7 @@ function showCirclePreview(centerX, centerY, radius, fillMode) {
     previewCell.style.height = `${cellDimensions.height}px`;
     previewCell.style.border = "1px solid rgba(100, 255, 150, 0.8)";
     previewCell.style.backgroundColor = "rgba(100, 255, 150, 0.25)";
-    previewCell.style.borderRadius = "50%";
+    previewCell.style.borderRadius = "1px";
     previewCell.style.boxSizing = "border-box";
     previewOverlay.appendChild(previewCell);
   });
@@ -600,50 +628,183 @@ function hideCirclePreview() {
 }
 
 /**
- * Get circle preview cells using simplified Bresenham algorithm
+ * Get circle/ellipse preview cells using Bresenham algorithms
  */
-function getCirclePreviewCells(centerX, centerY, radius, fillMode) {
+function getCirclePreviewCells(
+  centerX,
+  centerY,
+  radiusOrRadiusX,
+  fillMode,
+  ellipseMode = false,
+  radiusY = null,
+) {
   const cells = [];
 
-  if (radius === 0) {
-    cells.push({ x: centerX, y: centerY });
-    return cells;
-  }
+  if (ellipseMode && radiusY !== null) {
+    // Ellipse mode
+    const radiusX = radiusOrRadiusX;
 
-  if (fillMode === "filled") {
-    // Filled circle - check each point in bounding box
-    for (let y = centerY - radius; y <= centerY + radius; y++) {
-      for (let x = centerX - radius; x <= centerX + radius; x++) {
-        const dx = x - centerX;
-        const dy = y - centerY;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        if (distance <= radius) {
-          cells.push({ x, y });
+    if (radiusX === 0 && radiusY === 0) {
+      cells.push({ x: centerX, y: centerY });
+      return cells;
+    }
+
+    if (fillMode === "filled") {
+      // Filled ellipse
+      for (let y = centerY - radiusY; y <= centerY + radiusY; y++) {
+        for (let x = centerX - radiusX; x <= centerX + radiusX; x++) {
+          const dx = x - centerX;
+          const dy = y - centerY;
+          const ellipseValue =
+            (dx * dx) / (radiusX * radiusX) + (dy * dy) / (radiusY * radiusY);
+          if (ellipseValue <= 1) {
+            cells.push({ x, y });
+          }
         }
       }
+    } else {
+      // Outline ellipse - use proper Bresenham-like algorithm for preview
+      const ellipsePoints = getEllipseOutlinePoints(
+        centerX,
+        centerY,
+        radiusX,
+        radiusY,
+      );
+      ellipsePoints.forEach((point) => cells.push(point));
     }
   } else {
-    // Outline circle - use Bresenham algorithm
-    let x = 0;
-    let y = radius;
-    let d = 3 - 2 * radius;
+    // Circle mode
+    const radius = radiusOrRadiusX;
 
-    // Add initial points
-    addCirclePoints(cells, centerX, centerY, x, y);
+    if (radius === 0) {
+      cells.push({ x: centerX, y: centerY });
+      return cells;
+    }
 
-    while (y >= x) {
-      x++;
-      if (d > 0) {
-        y--;
-        d = d + 4 * (x - y) + 10;
-      } else {
-        d = d + 4 * x + 6;
+    if (fillMode === "filled") {
+      // Filled circle - check each point in bounding box
+      for (let y = centerY - radius; y <= centerY + radius; y++) {
+        for (let x = centerX - radius; x <= centerX + radius; x++) {
+          const dx = x - centerX;
+          const dy = y - centerY;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          if (distance <= radius) {
+            cells.push({ x, y });
+          }
+        }
       }
+    } else {
+      // Outline circle - use Bresenham algorithm
+      let x = 0;
+      let y = radius;
+      let d = 3 - 2 * radius;
+
+      // Add initial points
       addCirclePoints(cells, centerX, centerY, x, y);
+
+      while (y >= x) {
+        x++;
+        if (d > 0) {
+          y--;
+          d = d + 4 * (x - y) + 10;
+        } else {
+          d = d + 4 * x + 6;
+        }
+        addCirclePoints(cells, centerX, centerY, x, y);
+      }
     }
   }
 
   return cells;
+}
+
+/**
+ * Get ellipse outline points using Bresenham-like algorithm for preview
+ */
+function getEllipseOutlinePoints(centerX, centerY, radiusX, radiusY) {
+  const points = [];
+
+  if (radiusX === 0 && radiusY === 0) {
+    points.push({ x: centerX, y: centerY });
+    return points;
+  }
+
+  if (radiusX === 0) {
+    // Vertical line
+    for (let y = centerY - radiusY; y <= centerY + radiusY; y++) {
+      points.push({ x: centerX, y: y });
+    }
+    return points;
+  }
+
+  if (radiusY === 0) {
+    // Horizontal line
+    for (let x = centerX - radiusX; x <= centerX + radiusX; x++) {
+      points.push({ x: x, y: centerY });
+    }
+    return points;
+  }
+
+  let x = 0;
+  let y = radiusY;
+  let radiusX2 = radiusX * radiusX;
+  let radiusY2 = radiusY * radiusY;
+  let twoRadiusX2 = 2 * radiusX2;
+  let twoRadiusY2 = 2 * radiusY2;
+  let p;
+  let px = 0;
+  let py = twoRadiusX2 * y;
+
+  // Add initial points
+  addEllipsePoints(points, centerX, centerY, x, y);
+
+  // Region 1
+  p = Math.round(radiusY2 - radiusX2 * radiusY + 0.25 * radiusX2);
+
+  while (px < py) {
+    x++;
+    px += twoRadiusY2;
+    if (p < 0) {
+      p += radiusY2 + px;
+    } else {
+      y--;
+      py -= twoRadiusX2;
+      p += radiusY2 + px - py;
+    }
+    addEllipsePoints(points, centerX, centerY, x, y);
+  }
+
+  // Region 2
+  p = Math.round(
+    radiusY2 * (x + 0.5) * (x + 0.5) +
+      radiusX2 * (y - 1) * (y - 1) -
+      radiusX2 * radiusY2,
+  );
+
+  while (y > 0) {
+    y--;
+    py -= twoRadiusX2;
+    if (p > 0) {
+      p += radiusX2 - py;
+    } else {
+      x++;
+      px += twoRadiusY2;
+      p += radiusX2 - py + px;
+    }
+    addEllipsePoints(points, centerX, centerY, x, y);
+  }
+
+  return points;
+}
+
+/**
+ * Add 4-fold symmetric points for ellipse preview
+ */
+function addEllipsePoints(points, centerX, centerY, x, y) {
+  points.push({ x: centerX + x, y: centerY + y });
+  points.push({ x: centerX - x, y: centerY + y });
+  points.push({ x: centerX + x, y: centerY - y });
+  points.push({ x: centerX - x, y: centerY - y });
 }
 
 /**
@@ -679,7 +840,7 @@ function showBrushPreview(x, y) {
     previewOverlay.id = "brush-preview-overlay";
     previewOverlay.style.position = "absolute";
     previewOverlay.style.pointerEvents = "none";
-    previewOverlay.style.zIndex = "10";
+    previewOverlay.style.zIndex = "1000";
     container.appendChild(previewOverlay);
   }
 
@@ -732,7 +893,7 @@ function showRectanglePreview(x1, y1, x2, y2, fillMode) {
     previewOverlay.id = "rectangle-preview-overlay";
     previewOverlay.style.position = "absolute";
     previewOverlay.style.pointerEvents = "none";
-    previewOverlay.style.zIndex = "10";
+    previewOverlay.style.zIndex = "1000";
     container.appendChild(previewOverlay);
   }
 
@@ -2201,6 +2362,7 @@ function initRectangleSettings() {
  */
 function initCircleSettings() {
   const fillSelect = document.getElementById("circle-fill");
+  const ellipseCheckbox = document.getElementById("circle-ellipse");
 
   if (fillSelect && circleTool) {
     fillSelect.addEventListener("change", (e) => {
@@ -2217,6 +2379,19 @@ function initCircleSettings() {
 
     // Set initial fill mode
     circleTool.setFillMode("outline");
+  }
+
+  if (ellipseCheckbox && circleTool) {
+    ellipseCheckbox.addEventListener("change", (e) => {
+      const ellipseMode = e.target.checked;
+      circleTool.setEllipseMode(ellipseMode);
+
+      const modeLabel = ellipseMode ? "Ellipse" : "Circle";
+      updateStatus(`Circle Tool: ${modeLabel} Mode`);
+    });
+
+    // Set initial ellipse mode
+    circleTool.setEllipseMode(false);
   }
 }
 

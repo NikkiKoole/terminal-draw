@@ -23,6 +23,7 @@ export class CircleTool extends Tool {
     this.drawingMode = "normal"; // "normal", "single", or "double"
     this.paintMode = "all"; // "all", "fg", "bg", "glyph"
     this.fillMode = "outline"; // "outline" or "filled"
+    this.ellipseMode = false; // false for circle, true for ellipse
 
     // Circle state
     this.isDrawing = false;
@@ -111,6 +112,22 @@ export class CircleTool extends Tool {
   }
 
   /**
+   * Set ellipse mode
+   * @param {boolean} enabled - True for ellipse, false for circle
+   */
+  setEllipseMode(enabled) {
+    this.ellipseMode = enabled;
+  }
+
+  /**
+   * Get current ellipse mode
+   * @returns {boolean} True if ellipse mode, false if circle mode
+   */
+  getEllipseMode() {
+    return this.ellipseMode;
+  }
+
+  /**
    * Start drawing a circle
    */
   onCellDown(x, y, scene, stateManager, eventData = {}) {
@@ -148,15 +165,28 @@ export class CircleTool extends Tool {
     this.currentX = x;
     this.currentY = y;
 
-    // Emit circle preview event with current radius and center
+    // Emit circle preview event with current radius/ellipse data and center
     if (stateManager) {
-      const radius = this._getRadius();
-      stateManager.emit("circle:preview", {
-        centerX: this.centerX,
-        centerY: this.centerY,
-        radius: radius,
-        fillMode: this.fillMode,
-      });
+      if (this.ellipseMode) {
+        const { radiusX, radiusY } = this._getEllipseRadii();
+        stateManager.emit("circle:preview", {
+          centerX: this.centerX,
+          centerY: this.centerY,
+          radiusX: radiusX,
+          radiusY: radiusY,
+          fillMode: this.fillMode,
+          ellipseMode: true,
+        });
+      } else {
+        const radius = this._getRadius();
+        stateManager.emit("circle:preview", {
+          centerX: this.centerX,
+          centerY: this.centerY,
+          radius: radius,
+          fillMode: this.fillMode,
+          ellipseMode: false,
+        });
+      }
     }
   }
 
@@ -214,6 +244,17 @@ export class CircleTool extends Tool {
   }
 
   /**
+   * Get ellipse dimensions from center to current drag position
+   * @returns {object} {radiusX, radiusY} Ellipse radii
+   * @private
+   */
+  _getEllipseRadii() {
+    const dx = Math.abs(this.currentX - this.centerX);
+    const dy = Math.abs(this.currentY - this.centerY);
+    return { radiusX: dx, radiusY: dy };
+  }
+
+  /**
    * Get cells for circle using Bresenham circle algorithm
    * @param {Scene} scene - Scene instance
    * @returns {Array} Array of {x, y, cell} objects
@@ -239,6 +280,10 @@ export class CircleTool extends Tool {
 
     if (!activeLayer) {
       return cells;
+    }
+
+    if (this.ellipseMode) {
+      return this._getOutlineEllipseCells(scene);
     }
 
     const radius = this._getRadius();
@@ -275,6 +320,55 @@ export class CircleTool extends Tool {
   }
 
   /**
+   * Get cells for ellipse outline
+   * @param {Scene} scene - Scene instance
+   * @returns {Array} Array of {x, y, cell} objects
+   * @private
+   */
+  _getOutlineEllipseCells(scene) {
+    const cells = [];
+    const activeLayer = scene.getActiveLayer();
+
+    if (!activeLayer) {
+      return cells;
+    }
+
+    const { radiusX, radiusY } = this._getEllipseRadii();
+
+    if (radiusX === 0 && radiusY === 0) {
+      // Single point
+      const char = this._getCircleChar();
+      const beforeCell =
+        activeLayer.getCell(this.centerX, this.centerY) || new Cell(" ", 7, -1);
+      const afterCell = this._applyPaintMode(char, beforeCell);
+      cells.push({ x: this.centerX, y: this.centerY, cell: afterCell });
+      return cells;
+    }
+
+    // Generate ellipse outline points
+    const ellipsePoints = this._bresenhamEllipse(
+      this.centerX,
+      this.centerY,
+      radiusX,
+      radiusY,
+    );
+
+    for (const point of ellipsePoints) {
+      const { x, y } = point;
+
+      // Check bounds
+      if (x >= 0 && x < scene.w && y >= 0 && y < scene.h) {
+        const char = this._getCircleChar();
+        const beforeCell = activeLayer.getCell(x, y) || new Cell(" ", 7, -1);
+        const afterCell = this._applyPaintMode(char, beforeCell);
+        cells.push({ x, y, cell: afterCell });
+      }
+    }
+
+    return cells;
+  }
+
+  /**
    * Get cells for filled circle
    * @param {Scene} scene - Scene instance
    * @returns {Array} Array of {x, y, cell} objects
@@ -288,11 +382,16 @@ export class CircleTool extends Tool {
       return cells;
     }
 
+    if (this.ellipseMode) {
+      return this._getFilledEllipseCells(scene);
+    }
+
     const radius = this._getRadius();
     if (radius === 0) {
       // Single point circle
-      const char = this.currentCell.ch;
-      const beforeCell = activeLayer.getCell(this.centerX, this.centerY);
+      const char = this._getCircleChar();
+      const beforeCell =
+        activeLayer.getCell(this.centerX, this.centerY) || new Cell(" ", 7, -1);
       const afterCell = this._applyPaintMode(char, beforeCell);
       cells.push({ x: this.centerX, y: this.centerY, cell: afterCell });
       return cells;
@@ -312,6 +411,59 @@ export class CircleTool extends Tool {
 
         // Include point if it's inside or on the circle
         if (distance <= radius) {
+          const char = this._getCircleChar();
+          const beforeCell = activeLayer.getCell(x, y) || new Cell(" ", 7, -1);
+          const afterCell = this._applyPaintMode(char, beforeCell);
+          cells.push({ x, y, cell: afterCell });
+        }
+      }
+    }
+
+    return cells;
+  }
+
+  /**
+   * Get cells for filled ellipse
+   * @param {Scene} scene - Scene instance
+   * @returns {Array} Array of {x, y, cell} objects
+   * @private
+   */
+  _getFilledEllipseCells(scene) {
+    const cells = [];
+    const activeLayer = scene.getActiveLayer();
+
+    if (!activeLayer) {
+      return cells;
+    }
+
+    const { radiusX, radiusY } = this._getEllipseRadii();
+
+    if (radiusX === 0 && radiusY === 0) {
+      // Single point
+      const char = this._getCircleChar();
+      const beforeCell =
+        activeLayer.getCell(this.centerX, this.centerY) || new Cell(" ", 7, -1);
+      const afterCell = this._applyPaintMode(char, beforeCell);
+      cells.push({ x: this.centerX, y: this.centerY, cell: afterCell });
+      return cells;
+    }
+
+    // Fill ellipse by checking each point within bounding box
+    const minX = Math.max(0, this.centerX - radiusX);
+    const maxX = Math.min(scene.w - 1, this.centerX + radiusX);
+    const minY = Math.max(0, this.centerY - radiusY);
+    const maxY = Math.min(scene.h - 1, this.centerY + radiusY);
+
+    for (let y = minY; y <= maxY; y++) {
+      for (let x = minX; x <= maxX; x++) {
+        const dx = x - this.centerX;
+        const dy = y - this.centerY;
+
+        // Ellipse equation: (dx/radiusX)² + (dy/radiusY)² <= 1
+        const ellipseValue =
+          (dx * dx) / (radiusX * radiusX) + (dy * dy) / (radiusY * radiusY);
+
+        if (ellipseValue <= 1) {
           const char = this._getCircleChar();
           const beforeCell = activeLayer.getCell(x, y) || new Cell(" ", 7, -1);
           const afterCell = this._applyPaintMode(char, beforeCell);
@@ -354,6 +506,105 @@ export class CircleTool extends Tool {
     }
 
     return points;
+  }
+
+  /**
+   * Bresenham ellipse algorithm to get ellipse outline points
+   * @param {number} centerX - Ellipse center X coordinate
+   * @param {number} centerY - Ellipse center Y coordinate
+   * @param {number} radiusX - Horizontal radius
+   * @param {number} radiusY - Vertical radius
+   * @returns {Array} Array of {x, y} points on ellipse outline
+   * @private
+   */
+  _bresenhamEllipse(centerX, centerY, radiusX, radiusY) {
+    const points = [];
+
+    if (radiusX === 0 && radiusY === 0) {
+      points.push({ x: centerX, y: centerY });
+      return points;
+    }
+
+    if (radiusX === 0) {
+      // Vertical line
+      for (let y = centerY - radiusY; y <= centerY + radiusY; y++) {
+        points.push({ x: centerX, y: y });
+      }
+      return points;
+    }
+
+    if (radiusY === 0) {
+      // Horizontal line
+      for (let x = centerX - radiusX; x <= centerX + radiusX; x++) {
+        points.push({ x: x, y: centerY });
+      }
+      return points;
+    }
+
+    let x = 0;
+    let y = radiusY;
+    let radiusX2 = radiusX * radiusX;
+    let radiusY2 = radiusY * radiusY;
+    let twoRadiusX2 = 2 * radiusX2;
+    let twoRadiusY2 = 2 * radiusY2;
+    let p;
+    let px = 0;
+    let py = twoRadiusX2 * y;
+
+    // Region 1
+    this._addEllipsePoints(points, centerX, centerY, x, y);
+    p = Math.round(radiusY2 - radiusX2 * radiusY + 0.25 * radiusX2);
+
+    while (px < py) {
+      x++;
+      px += twoRadiusY2;
+      if (p < 0) {
+        p += radiusY2 + px;
+      } else {
+        y--;
+        py -= twoRadiusX2;
+        p += radiusY2 + px - py;
+      }
+      this._addEllipsePoints(points, centerX, centerY, x, y);
+    }
+
+    // Region 2
+    p = Math.round(
+      radiusY2 * (x + 0.5) * (x + 0.5) +
+        radiusX2 * (y - 1) * (y - 1) -
+        radiusX2 * radiusY2,
+    );
+
+    while (y > 0) {
+      y--;
+      py -= twoRadiusX2;
+      if (p > 0) {
+        p += radiusX2 - py;
+      } else {
+        x++;
+        px += twoRadiusY2;
+        p += radiusX2 - py + px;
+      }
+      this._addEllipsePoints(points, centerX, centerY, x, y);
+    }
+
+    return points;
+  }
+
+  /**
+   * Add 4-fold symmetric points for ellipse
+   * @param {Array} points - Array to add points to
+   * @param {number} centerX - Ellipse center X
+   * @param {number} centerY - Ellipse center Y
+   * @param {number} x - Current x offset
+   * @param {number} y - Current y offset
+   * @private
+   */
+  _addEllipsePoints(points, centerX, centerY, x, y) {
+    points.push({ x: centerX + x, y: centerY + y });
+    points.push({ x: centerX - x, y: centerY + y });
+    points.push({ x: centerX + x, y: centerY - y });
+    points.push({ x: centerX - x, y: centerY - y });
   }
 
   /**

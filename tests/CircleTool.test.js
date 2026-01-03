@@ -119,6 +119,20 @@ describe("CircleTool", () => {
     });
   });
 
+  describe("ellipse mode", () => {
+    it("should have default ellipse mode 'false'", () => {
+      expect(circle.getEllipseMode()).toBe(false);
+    });
+
+    it("should set ellipse mode", () => {
+      circle.setEllipseMode(true);
+      expect(circle.getEllipseMode()).toBe(true);
+
+      circle.setEllipseMode(false);
+      expect(circle.getEllipseMode()).toBe(false);
+    });
+  });
+
   describe("onCellDown", () => {
     it("should start drawing when clicked", () => {
       const mockStateManager = { emit: vi.fn() };

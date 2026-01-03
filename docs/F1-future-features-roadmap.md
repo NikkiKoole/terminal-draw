@@ -24,10 +24,10 @@ This document outlines potential future development directions for Terminal Draw
   - Paint modes (all/foreground/background/glyph)
   - Smart box-drawing, spray tool, eraser, picker
 - Enhanced layer controls (visibility 👁️/➖, lock 🔓/🔒)
-- Advanced shape tools (line, rectangle, flood fill)
+- Advanced shape tools (line, rectangle, circle, flood fill)
 - Undo/redo system, grid resize, project save/load
 - Copy/export as plain text, JSON project format
-- 1120 tests passing with clean, maintainable codebase
+- 1158 tests passing with clean, maintainable codebase including CircleTool
 
 ---
 
@@ -112,11 +112,17 @@ This document outlines potential future development directions for Terminal Draw
   - ✅ Tool options bar shows Fill toggle when rectangle tool is active
   - ✅ Full undo/redo support
 
-- **Circle Tool (Bresenham Circle Algorithm)**
-  - Perfect circular outlines using ASCII approximation
-  - Filled circles with customizable fill characters
-  - Ellipse support with width/height ratio control
-  - Character selection for circle styles (○●◯⬤)
+- **Circle Tool (Bresenham Circle Algorithm)** ✅ **COMPLETED**
+  - ✅ Perfect circular outlines using ASCII approximation
+  - ✅ Filled circles with customizable fill characters
+  - ✅ Smart drawing mode integration (single/double box-drawing)
+  - ✅ Paint mode support (fg/bg/glyph/all)
+  - ✅ Uses selected glyph character (identical to rectangle tool behavior)
+  - ✅ Keyboard shortcut [C]
+  - ✅ Click-drag interaction with anchor indicator preview
+  - ✅ Real-time circle preview during drag
+  - ✅ Tool options bar shows Fill toggle when circle tool is active
+  - ✅ Full undo/redo support
 
 - **Flood Fill Tool** ⚠️ **IMPLEMENTED BUT UNTESTED**
   - ✅ Paint-mode-aware flood fill (respects all/fg/bg/glyph modes)

@@ -41,6 +41,9 @@
                     <button id="tool-line" class="tool-btn">
                         ╱ <span class="key">[L]</span>ine
                     </button>
+                    <button id="tool-circle" class="tool-btn">
+                        ○ <span class="key">[C]</span>ircle
+                    </button>
                     <button id="tool-floodfill" class="tool-btn">
                         🪣 <span class="key">[F]</span>ill
                     </button>
@@ -235,6 +238,29 @@
                         <label style="font-weight: 500">Fill:</label>
                         <select
                             id="rectangle-fill"
+                            style="
+                                padding: 6px 12px;
+                                background: var(--ui-bg);
+                                color: var(--ui-text);
+                                border: 1px solid var(--ui-border);
+                                border-radius: 4px;
+                                cursor: pointer;
+                                font-size: 0.95em;
+                            "
+                        >
+                            <option value="outline" selected>Outline</option>
+                            <option value="filled">Filled</option>
+                        </select>
+                    </div>
+
+                    <!-- Circle Tool Options -->
+                    <div
+                        id="circle-options"
+                        style="display: none; align-items: center; gap: 16px"
+                    >
+                        <label style="font-weight: 500">Fill:</label>
+                        <select
+                            id="circle-fill"
                             style="
                                 padding: 6px 12px;
                                 background: var(--ui-bg);

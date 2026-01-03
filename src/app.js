@@ -22,6 +22,7 @@ import { PickerTool } from "./tools/PickerTool.js";
 import { SprayTool } from "./tools/SprayTool.js";
 import { RectangleTool } from "./tools/RectangleTool.js";
 import { LineTool } from "./tools/LineTool.js";
+import { CircleTool } from "./tools/CircleTool.js";
 import { FloodFillTool } from "./tools/FloodFillTool.js";
 import { LayerPanel } from "./ui/LayerPanel.js";
 import { GlyphPicker } from "./ui/GlyphPicker.js";
@@ -62,6 +63,7 @@ let pickerTool = null;
 let sprayTool = null;
 let rectangleTool = null;
 let lineTool = null;
+let circleTool = null;
 let floodFillTool = null;
 let currentTool = null;
 
@@ -360,6 +362,24 @@ function initInput() {
     }
   });
 
+  // Listen for circle tool anchor events
+  stateManager.on("circle:anchor", (data) => {
+    if (data.x !== null && data.y !== null) {
+      showAnchorIndicator(data.x, data.y);
+    } else {
+      hideAnchorIndicator();
+    }
+  });
+
+  // Listen for circle tool preview events
+  stateManager.on("circle:preview", (data) => {
+    if (data.centerX !== null && data.centerY !== null && data.radius > 0) {
+      showCirclePreview(data.centerX, data.centerY, data.radius, data.fillMode);
+    } else {
+      hideCirclePreview();
+    }
+  });
+
   // Listen to tool:picked events from picker tool
   stateManager.on("tool:picked", handleToolPicked);
 
@@ -497,6 +517,124 @@ function hideAnchorIndicator() {
 }
 
 /**
+ * Show circle preview overlay during drag
+ */
+function showCirclePreview(centerX, centerY, radius, fillMode) {
+  hideCirclePreview(); // Clear any existing preview
+
+  if (!hitTestOverlay) return;
+
+  const cellDimensions = hitTestOverlay.getCellDimensions();
+  const container = document.querySelector(".grid-container");
+  if (!container) return;
+
+  // Create preview overlay if it doesn't exist
+  let previewOverlay = document.getElementById("circle-preview-overlay");
+  if (!previewOverlay) {
+    previewOverlay = document.createElement("div");
+    previewOverlay.id = "circle-preview-overlay";
+    previewOverlay.style.position = "absolute";
+    previewOverlay.style.pointerEvents = "none";
+    previewOverlay.style.zIndex = "10";
+    container.appendChild(previewOverlay);
+  }
+
+  // Calculate circle preview cells using Bresenham algorithm
+  const previewCells = getCirclePreviewCells(
+    centerX,
+    centerY,
+    radius,
+    fillMode,
+  );
+
+  // Create visual elements for each preview cell
+  previewCells.forEach((cell) => {
+    const previewCell = document.createElement("div");
+    previewCell.className = "circle-preview-cell";
+    previewCell.style.position = "absolute";
+    previewCell.style.left = `${cell.x * cellDimensions.width}px`;
+    previewCell.style.top = `${cell.y * cellDimensions.height}px`;
+    previewCell.style.width = `${cellDimensions.width}px`;
+    previewCell.style.height = `${cellDimensions.height}px`;
+    previewCell.style.border = "1px solid rgba(255, 255, 255, 0.5)";
+    previewCell.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+    previewCell.style.boxSizing = "border-box";
+    previewOverlay.appendChild(previewCell);
+  });
+}
+
+/**
+ * Hide circle preview overlay
+ */
+function hideCirclePreview() {
+  const previewOverlay = document.getElementById("circle-preview-overlay");
+  if (previewOverlay) {
+    previewOverlay.innerHTML = "";
+  }
+}
+
+/**
+ * Get circle preview cells using simplified Bresenham algorithm
+ */
+function getCirclePreviewCells(centerX, centerY, radius, fillMode) {
+  const cells = [];
+
+  if (radius === 0) {
+    cells.push({ x: centerX, y: centerY });
+    return cells;
+  }
+
+  if (fillMode === "filled") {
+    // Filled circle - check each point in bounding box
+    for (let y = centerY - radius; y <= centerY + radius; y++) {
+      for (let x = centerX - radius; x <= centerX + radius; x++) {
+        const dx = x - centerX;
+        const dy = y - centerY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        if (distance <= radius) {
+          cells.push({ x, y });
+        }
+      }
+    }
+  } else {
+    // Outline circle - use Bresenham algorithm
+    let x = 0;
+    let y = radius;
+    let d = 3 - 2 * radius;
+
+    // Add initial points
+    addCirclePoints(cells, centerX, centerY, x, y);
+
+    while (y >= x) {
+      x++;
+      if (d > 0) {
+        y--;
+        d = d + 4 * (x - y) + 10;
+      } else {
+        d = d + 4 * x + 6;
+      }
+      addCirclePoints(cells, centerX, centerY, x, y);
+    }
+  }
+
+  return cells;
+}
+
+/**
+ * Add 8-fold symmetric points for circle preview
+ */
+function addCirclePoints(points, centerX, centerY, x, y) {
+  points.push({ x: centerX + x, y: centerY + y });
+  points.push({ x: centerX - x, y: centerY + y });
+  points.push({ x: centerX + x, y: centerY - y });
+  points.push({ x: centerX - x, y: centerY - y });
+  points.push({ x: centerX + y, y: centerY + x });
+  points.push({ x: centerX - y, y: centerY + x });
+  points.push({ x: centerX + y, y: centerY - x });
+  points.push({ x: centerX - y, y: centerY - x });
+}
+
+/**
  * Initialize tools
  */
 function initTools() {
@@ -507,6 +645,7 @@ function initTools() {
   sprayTool = new SprayTool({ ch: ".", fg: 7, bg: -1 }, commandHistory);
   rectangleTool = new RectangleTool({ ch: "█", fg: 7, bg: -1 }, commandHistory);
   lineTool = new LineTool({ ch: "█", fg: 7, bg: -1 }, commandHistory);
+  circleTool = new CircleTool({ ch: "█", fg: 7, bg: -1 }, commandHistory);
   floodFillTool = new FloodFillTool({ ch: "█", fg: 7, bg: -1 }, commandHistory);
 
   // Set initial tool
@@ -519,6 +658,7 @@ function initTools() {
   const sprayBtn = document.getElementById("tool-spray");
   const rectangleBtn = document.getElementById("tool-rectangle");
   const lineBtn = document.getElementById("tool-line");
+  const circleBtn = document.getElementById("tool-circle");
   const floodFillBtn = document.getElementById("tool-floodfill");
 
   if (brushBtn) {
@@ -538,6 +678,9 @@ function initTools() {
   }
   if (lineBtn) {
     lineBtn.addEventListener("click", () => setCurrentTool(lineTool));
+  }
+  if (circleBtn) {
+    circleBtn.addEventListener("click", () => setCurrentTool(circleTool));
   }
   if (floodFillBtn) {
     floodFillBtn.addEventListener("click", () => setCurrentTool(floodFillTool));
@@ -604,6 +747,9 @@ function initKeyboardShortcuts() {
       case "l":
         setCurrentTool(lineTool);
         break;
+      case "c":
+        setCurrentTool(circleTool);
+        break;
       case "f":
         setCurrentTool(floodFillTool);
         break;
@@ -650,6 +796,7 @@ function setCurrentTool(tool) {
   const sprayOptions = document.getElementById("spray-options");
   const brushOptions = document.getElementById("brush-options");
   const rectangleOptions = document.getElementById("rectangle-options");
+  const circleOptions = document.getElementById("circle-options");
 
   if (sprayOptions) {
     sprayOptions.style.display = "none";
@@ -659,6 +806,9 @@ function setCurrentTool(tool) {
   }
   if (rectangleOptions) {
     rectangleOptions.style.display = "none";
+  }
+  if (circleOptions) {
+    circleOptions.style.display = "none";
   }
 
   if (tool === brushTool) {
@@ -685,6 +835,12 @@ function setCurrentTool(tool) {
     }
   } else if (tool === lineTool) {
     document.getElementById("tool-line")?.classList.add("active");
+  } else if (tool === circleTool) {
+    document.getElementById("tool-circle")?.classList.add("active");
+    // Show circle options
+    if (circleOptions) {
+      circleOptions.style.display = "flex";
+    }
   } else if (tool === floodFillTool) {
     document.getElementById("tool-floodfill")?.classList.add("active");
   }
@@ -834,6 +990,15 @@ function selectFgColor(colorIndex) {
     });
   }
 
+  // Update circle tool
+  if (circleTool) {
+    const circleCell = circleTool.getCurrentCell();
+    circleTool.setCurrentCell({
+      ...circleCell,
+      fg: colorIndex,
+    });
+  }
+
   // Update flood fill tool
   if (floodFillTool) {
     const floodFillCell = floodFillTool.getCurrentCell();
@@ -887,6 +1052,15 @@ function selectBgColor(colorIndex) {
     const lineCell = lineTool.getCurrentCell();
     lineTool.setCurrentCell({
       ...lineCell,
+      bg: colorIndex,
+    });
+  }
+
+  // Update circle tool
+  if (circleTool) {
+    const circleCell = circleTool.getCurrentCell();
+    circleTool.setCurrentCell({
+      ...circleCell,
       bg: colorIndex,
     });
   }
@@ -996,6 +1170,15 @@ function initGlyphPicker() {
       const lineCell = lineTool.getCurrentCell();
       lineTool.setCurrentCell({
         ...lineCell,
+        ch: data.char,
+      });
+    }
+
+    // Sync character to circle tool
+    if (circleTool && data.char) {
+      const circleCell = circleTool.getCurrentCell();
+      circleTool.setCurrentCell({
+        ...circleCell,
         ch: data.char,
       });
     }
@@ -1271,6 +1454,9 @@ function updateToolsCommandHistory() {
   if (lineTool && commandHistory) {
     lineTool.setCommandHistory(commandHistory);
   }
+  if (circleTool && commandHistory) {
+    circleTool.setCommandHistory(commandHistory);
+  }
   if (floodFillTool && commandHistory) {
     floodFillTool.setCommandHistory(commandHistory);
   }
@@ -1378,6 +1564,7 @@ function initUIComponents() {
   initSmartDrawingMode();
   initSpraySettings();
   initRectangleSettings();
+  initCircleSettings();
   initBrushSettings();
   initClipboard();
   initProject();
@@ -1606,6 +1793,9 @@ function initSmartDrawingMode() {
       if (lineTool) {
         lineTool.setDrawingMode(mode);
       }
+      if (circleTool) {
+        circleTool.setDrawingMode(mode);
+      }
 
       let statusMessage = `Drawing Mode: ${mode.charAt(0).toUpperCase() + mode.slice(1)}`;
       if (mode === "single") {
@@ -1625,6 +1815,9 @@ function initSmartDrawingMode() {
     if (lineTool) {
       lineTool.setDrawingMode("normal");
     }
+    if (circleTool) {
+      circleTool.setDrawingMode("normal");
+    }
   }
 }
 
@@ -1642,6 +1835,9 @@ function initPaintMode() {
       }
       if (lineTool) {
         lineTool.setPaintMode(newMode);
+      }
+      if (circleTool) {
+        circleTool.setPaintMode(newMode);
       }
       if (eraserTool) {
         eraserTool.setPaintMode(newMode);
@@ -1678,6 +1874,9 @@ function initPaintMode() {
     }
     if (lineTool) {
       lineTool.setPaintMode("all");
+    }
+    if (circleTool) {
+      circleTool.setPaintMode("all");
     }
     if (eraserTool) {
       eraserTool.setPaintMode("all");
@@ -1814,6 +2013,30 @@ function initRectangleSettings() {
 
     // Set initial fill mode
     rectangleTool.setFillMode("outline");
+  }
+}
+
+/**
+ * Initialize circle tool settings
+ */
+function initCircleSettings() {
+  const fillSelect = document.getElementById("circle-fill");
+
+  if (fillSelect && circleTool) {
+    fillSelect.addEventListener("change", (e) => {
+      const fillMode = e.target.value;
+      circleTool.setFillMode(fillMode);
+
+      const fillLabels = {
+        outline: "Outline",
+        filled: "Filled",
+      };
+
+      updateStatus(`Circle Fill: ${fillLabels[fillMode]}`);
+    });
+
+    // Set initial fill mode
+    circleTool.setFillMode("outline");
   }
 }
 

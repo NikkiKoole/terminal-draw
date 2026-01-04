@@ -164,6 +164,51 @@ This document outlines potential future development directions for Terminal Draw
 
 ---
 
+### ✅ **M8.5: Text Input Tool** - **COMPLETED**
+
+**Status:** ✅ **PRODUCTION READY** - Full text input functionality implemented and tested
+**Goal:** Enable direct text input for labels, titles, and mixed text/graphics ASCII art
+
+#### ✅ **Text Tool Core Features Delivered**
+- ✅ **Text Tool (T key)**
+  - Click to position text cursor with blinking green visual indicator
+  - Type characters that replace cells and advance cursor right
+  - Enter key creates new line, cursor returns to original X position
+  - Characters outside grid boundaries are ignored (like drawing outside)
+
+- ✅ **Simple Text Editing**
+  - Backspace support - erase previous char, move cursor back, works across word boundaries
+  - Arrow key cursor movement for precise cursor positioning
+  - Escape key to exit typing mode cleanly
+  - Word-based undo batching with improved granularity (space/punctuation triggers commit)
+
+- ✅ **Integration with Existing Systems**
+  - Respects all current paint modes (all/fg/bg/glyph) for flexible text styling
+  - Text placed on active layer with full layer system integration (lock/visibility)
+  - Smart keyboard shortcut management while typing (prevents tool conflicts)
+  - Real-time visual feedback with blinking cursor and immediate text rendering
+
+#### ✅ **Use Cases Enabled**
+- ✅ **Labeling ASCII Diagrams** - Add titles, labels, and annotations seamlessly
+- ✅ **Mixed Content Creation** - Combine text with geometric shapes and art
+- ✅ **Technical Drawings** - Add dimensions, notes, and specifications
+- ✅ **ASCII Art Enhancement** - Include captions, signatures, or explanatory text
+
+#### **Technical Implementation**
+- **Click-to-Type Interface:** Simple, intuitive text placement with visual cursor feedback
+- **Word-Based Undo System:** Efficient history management with smart batching and individual deletions
+- **Clean Tool Integration:** Proper state management and cleanup when switching tools
+- **Comprehensive Testing:** 29 test cases covering all functionality including edge cases
+
+**Actual Effort:** 6 hours (including comprehensive testing and undo system refinement)
+**Dependencies:** ✅ All satisfied - clean integration with existing tool architecture
+**Impact:** ✅ **HIGH DELIVERED** - Essential functionality for labeled diagrams and mixed-content ASCII art
+
+**Implementation Date:** January 2025
+**Status:** Ready for production use with full feature set
+
+---
+
 ## Advanced Features (M9+)
 
 ### 🎯 **M9: Performance & Large Projects**
@@ -285,11 +330,12 @@ Based on original design document Phase 2 plans:
 
 ### Recommended Development Order
 1. ✅ **M4: Enhanced Painting Tools** - **COMPLETED** - See `M4-enhanced-painting-tools-completion.md`
-2. **M5: Selection System** - Highest impact for productivity
-3. **M6: Advanced Drawing Tools** - Natural progression for professional use
-4. **M7: Enhanced Project Management** - Quality of life improvements
-5. **M8: Export Formats** - Professional output requirements
-6. **M9+: Performance & Advanced Features** - Scaling and specialization
+2. ✅ **M6: Advanced Drawing Tools** - **COMPLETED** - See `M6-advanced-drawing-tools-completion.md`
+3. ✅ **M8.5: Text Input Tool** - **COMPLETED** - Essential text functionality delivered
+4. **M5: Selection System** - Highest remaining impact for productivity
+5. **M7: Enhanced Project Management** - Quality of life improvements
+6. **M8: Export Formats** - Professional output requirements
+7. **M9+: Performance & Advanced Features** - Scaling and specialization
 
 ### Development Approach
 - **Incremental Implementation** - Build features in small, testable chunks

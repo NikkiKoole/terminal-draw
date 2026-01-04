@@ -25,12 +25,14 @@ M6: Advanced Drawing Tools has been successfully completed, delivering a compreh
 - **Line Tool** ✅ **COMPLETED**
   - ✅ Click-and-drag line creation with perfect accuracy
   - ✅ Bresenham algorithm for lines at any angle
+  - ✅ **Connected Bresenham algorithm** - Eliminates diagonal gaps in smart drawing modes
   - ✅ Smart line mode (single/double box-drawing with automatic corners)
   - ✅ Normal mode (any selected glyph character)
   - ✅ Paint mode support (fg/bg/glyph/all)
   - ✅ Keyboard shortcut [L] for quick access
   - ✅ Anchor indicator preview (shows start point during drag)
   - ✅ Full undo/redo support with proper command integration
+  - ✅ **Simplified architecture** - Removed complex post-processing by generating connected points directly
 
 - **Complex Shape Creation** ✅ **ACHIEVED WITH EXISTING TOOLS**
   - ✅ Create polygonal shapes by drawing connected lines
@@ -59,7 +61,9 @@ M6: Advanced Drawing Tools has been successfully completed, delivering a compreh
   - ✅ Perfect circular outlines using ASCII approximation
   - ✅ **Ellipse support** with width/height ratio control via checkbox toggle
   - ✅ Filled circles and ellipses with mathematical precision
-  - ✅ Smart drawing mode integration (single/double box-drawing)
+  - ✅ **Connected Bresenham for circles/ellipses** - Ensures proper connectivity in smart modes
+  - ✅ **Smart box-drawing character selection** - Intelligent corner/line character choice based on neighbors
+  - ✅ Smart drawing mode integration (single/double box-drawing) with **perfect symmetry preservation**
   - ✅ Paint mode support (fg/bg/glyph/all)
   - ✅ Uses selected glyph character (identical to rectangle tool behavior)
   - ✅ Keyboard shortcut [C] for quick access
@@ -153,8 +157,12 @@ The Visual Preview System is a groundbreaking feature that provides real-time vi
 
 ### **Algorithms Implemented**
 - **Bresenham Line Algorithm**: Perfect lines at any angle with pixel precision
+- **Connected Bresenham Line Algorithm**: 4-connectivity ensuring no diagonal gaps in smart modes
 - **Bresenham Circle Algorithm**: Mathematically perfect circles
+- **Connected Bresenham Circle Algorithm**: Smart circle drawing with proper box-drawing connections
 - **Bresenham Ellipse Algorithm**: Professional ellipse drawing with no gaps
+- **Connected Bresenham Ellipse Algorithm**: 4-connectivity for smart ellipse drawing
+- **Smart Character Selection**: Intelligent box-drawing character choice based on neighboring connections
 - **Breadth-First Search**: Efficient flood fill preventing stack overflow
 - **Multi-cell Brush Algorithms**: Optimized painting for large brush sizes
 
@@ -227,6 +235,8 @@ The Visual Preview System is a groundbreaking feature that provides real-time vi
 3. **Phase 3**: Circle Tool with Bresenham circle algorithm (3 hours)
 4. **Phase 4**: Visual Preview System implementation (3 hours)
 5. **Phase 5**: Ellipse support and preview fixes (2 hours)
+6. **Phase 6**: Connected Bresenham algorithms for smart drawing (1.5 hours)
+7. **Phase 7**: Smart circle box-drawing character selection (1 hour)
 
 ### **Key Milestones**
 - **Week 1**: Core shape tools (Line, Rectangle, Circle) completed
@@ -239,9 +249,10 @@ The Visual Preview System is a groundbreaking feature that provides real-time vi
 ## Testing Strategy
 
 ### **Test Coverage Breakdown**
-- **Line Tool**: 26 tests covering all drawing modes and edge cases
+- **Line Tool**: 26 tests covering all drawing modes, edge cases, and connected algorithm
 - **Rectangle Tool**: 27 tests including fill modes and smart drawing
-- **Circle Tool**: 40 tests including ellipse mode and all algorithms  
+- **Circle Tool**: 40 tests including ellipse mode, all algorithms, and smart connectivity
+- **Connected Bresenham**: Comprehensive testing of 4-connectivity for all shape tools
 - **Integration Tests**: Cross-tool functionality and system integration
 - **Performance Tests**: Large grid and complex operation validation
 

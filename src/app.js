@@ -24,6 +24,7 @@ import { RectangleTool } from "./tools/RectangleTool.js";
 import { LineTool } from "./tools/LineTool.js";
 import { CircleTool } from "./tools/CircleTool.js";
 import { FloodFillTool } from "./tools/FloodFillTool.js";
+import { TextTool } from "./tools/TextTool.js";
 import { LayerPanel } from "./ui/LayerPanel.js";
 import { GlyphPicker } from "./ui/GlyphPicker.js";
 import { ClipboardManager } from "./export/ClipboardManager.js";
@@ -91,7 +92,11 @@ let rectangleTool = null;
 let lineTool = null;
 let circleTool = null;
 let floodFillTool = null;
+let textTool = null;
 let currentTool = null;
+
+// Keyboard shortcut state
+let keyboardShortcutsEnabled = true;
 
 // Tool configuration - centralizes tool setup to eliminate repetitive code
 const TOOL_CONFIG = [
@@ -159,6 +164,14 @@ const TOOL_CONFIG = [
     args: [{ ch: "█", fg: 7, bg: -1 }],
     hasOptions: false,
   },
+  {
+    name: "textTool",
+    class: TextTool,
+    id: "text",
+    key: "t",
+    args: [{ ch: " ", fg: 7, bg: -1 }],
+    hasOptions: false,
+  },
 ];
 
 // Startup Dialog
@@ -188,6 +201,9 @@ let anchorIndicator = null;
 function initScene() {
   // Create scene with default template (advanced 3-layer setup for compatibility)
   scene = new Scene(GRID_WIDTH, GRID_HEIGHT, currentPalette);
+
+  // Make globally accessible for TextTool
+  window.currentScene = scene;
   renderer = new LayerRenderer();
 
   // Create dynamic layer containers
@@ -422,6 +438,9 @@ function initInput() {
   // Create state manager
   stateManager = new StateManager();
 
+  // Make globally accessible for TextTool
+  window.currentStateManager = stateManager;
+
   // Create hit test overlay
   hitTestOverlay = new HitTestOverlay(
     hitTestElement,
@@ -490,6 +509,26 @@ function initInput() {
       }
     } else {
       hideCirclePreview();
+    }
+  });
+
+  // Listen for text tool cursor events
+  stateManager.on("text:cursor", (data) => {
+    if (data.visible && data.x !== null && data.y !== null) {
+      showTextCursor(data.x, data.y);
+    } else {
+      hideTextCursor();
+    }
+  });
+
+  // Listen for text tool typing state events
+  stateManager.on("text:typing", (data) => {
+    if (data.active) {
+      // Disable keyboard shortcuts while typing
+      disableKeyboardShortcuts();
+    } else {
+      // Re-enable keyboard shortcuts
+      enableKeyboardShortcuts();
     }
   });
 
@@ -714,6 +753,76 @@ function hideCirclePreview() {
   if (previewOverlay) {
     previewOverlay.innerHTML = "";
   }
+}
+
+/**
+ * Show text cursor at specified position
+ */
+function showTextCursor(x, y) {
+  hideTextCursor(); // Clear any existing cursor
+
+  if (!hitTestOverlay) return;
+
+  const cellDimensions = hitTestOverlay.getCellDimensions();
+  const container = document.querySelector(".grid-container");
+  if (!container) return;
+
+  // Create cursor overlay
+  const cursorOverlay = getOrCreatePreviewOverlay(
+    "text-cursor-overlay",
+    container,
+  );
+
+  // Create blinking cursor element
+  const cursor = document.createElement("div");
+  cursor.className = "text-cursor";
+  cursor.style.position = "absolute";
+  cursor.style.left = `${x * cellDimensions.width}px`;
+  cursor.style.top = `${y * cellDimensions.height}px`;
+  cursor.style.width = "2px";
+  cursor.style.height = `${cellDimensions.height}px`;
+  cursor.style.backgroundColor = "#00ff00";
+  cursor.style.animation = "blink 1s infinite";
+  cursor.style.zIndex = "1001";
+
+  cursorOverlay.appendChild(cursor);
+
+  // Add CSS animation if not already present
+  if (!document.getElementById("text-cursor-style")) {
+    const style = document.createElement("style");
+    style.id = "text-cursor-style";
+    style.textContent = `
+      @keyframes blink {
+        0%, 50% { opacity: 1; }
+        51%, 100% { opacity: 0; }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+}
+
+/**
+ * Hide text cursor
+ */
+function hideTextCursor() {
+  const cursorOverlay = document.getElementById("text-cursor-overlay");
+  if (cursorOverlay) {
+    cursorOverlay.innerHTML = "";
+  }
+}
+
+/**
+ * Disable keyboard shortcuts (for text tool typing mode)
+ */
+function disableKeyboardShortcuts() {
+  keyboardShortcutsEnabled = false;
+}
+
+/**
+ * Enable keyboard shortcuts
+ */
+function enableKeyboardShortcuts() {
+  keyboardShortcutsEnabled = true;
 }
 
 /**
@@ -1067,12 +1176,14 @@ function initTools() {
     else if (config.name === "lineTool") lineTool = tool;
     else if (config.name === "circleTool") circleTool = tool;
     else if (config.name === "floodFillTool") floodFillTool = tool;
+    else if (config.name === "textTool") textTool = tool;
   });
 
   // Set initial tool
   setCurrentTool(brushTool);
 
   // Setup tool buttons (using configuration)
+  // Update tool buttons after creation
   TOOL_CONFIG.forEach((config) => {
     const button = document.getElementById(`tool-${config.id}`);
     if (button) {
@@ -1085,6 +1196,7 @@ function initTools() {
       else if (config.name === "lineTool") tool = lineTool;
       else if (config.name === "circleTool") tool = circleTool;
       else if (config.name === "floodFillTool") tool = floodFillTool;
+      else if (config.name === "textTool") tool = textTool;
 
       button.addEventListener("click", () => setCurrentTool(tool));
     }
@@ -1101,6 +1213,11 @@ function initKeyboardShortcuts() {
   document.addEventListener("keydown", (e) => {
     // Don't trigger shortcuts if user is typing in an input/textarea
     if (e.target.matches("input, textarea")) {
+      return;
+    }
+
+    // Don't trigger shortcuts if they're disabled (e.g., text tool typing)
+    if (!keyboardShortcutsEnabled) {
       return;
     }
 
@@ -1144,6 +1261,7 @@ function initKeyboardShortcuts() {
       else if (toolConfig.name === "lineTool") tool = lineTool;
       else if (toolConfig.name === "circleTool") tool = circleTool;
       else if (toolConfig.name === "floodFillTool") tool = floodFillTool;
+      else if (toolConfig.name === "textTool") tool = textTool;
 
       if (tool) {
         setCurrentTool(tool);
@@ -1176,12 +1294,18 @@ function cycleLayer() {
  * Set the current active tool
  */
 function setCurrentTool(tool) {
+  // Stop typing if switching away from text tool
+  if (currentTool && currentTool.name === "Text" && currentTool.isTyping) {
+    currentTool.stopTyping(stateManager);
+  }
+
   currentTool = tool;
 
   // Clear all previews when switching tools
   hideBrushPreview();
   hideCirclePreview();
   hideRectanglePreview();
+  hideTextCursor();
 
   // Update cursor
   if (hitTestOverlay) {
@@ -1664,6 +1788,9 @@ async function loadProjectFile(file, statusElement) {
 function replaceScene(newScene) {
   // Update scene reference
   scene = newScene;
+
+  // Update global reference for TextTool
+  window.currentScene = scene;
 
   // Update all components that reference the scene
   if (projectManager) {

@@ -3,10 +3,8 @@ import { Scene } from "../src/core/Scene.js";
 import { StateManager } from "../src/core/StateManager.js";
 import { CommandHistory } from "../src/commands/CommandHistory.js";
 import { CellCommand } from "../src/commands/CellCommand.js";
-import { ResizeCommand } from "../src/commands/ResizeCommand.js";
 import { ClearCommand } from "../src/commands/ClearCommand.js";
 import { Cell } from "../src/core/Cell.js";
-import { GridResizer } from "../src/core/GridResizer.js";
 import { LAYER_BG, LAYER_MID, LAYER_FG } from "../src/core/constants.js";
 
 describe("Milestone 2 Integration Tests", () => {
@@ -45,17 +43,7 @@ describe("Milestone 2 Integration Tests", () => {
       });
       commandHistory.execute(paintCommand);
 
-      // 2. Resize grid
-      const resizeCommand = ResizeCommand.create({
-        scene,
-        newWidth: 12,
-        newHeight: 10,
-        strategy: "pad",
-        stateManager,
-      });
-      commandHistory.execute(resizeCommand);
-
-      // 3. Clear layer
+      // 2. Clear layer
       const clearCommand = ClearCommand.clearLayer({
         scene,
         layer: midLayer,
@@ -63,7 +51,7 @@ describe("Milestone 2 Integration Tests", () => {
       });
       commandHistory.execute(clearCommand);
 
-      // 4. Paint more cells
+      // 3. Paint more cells
       const paintCommand2 = CellCommand.fromSingleCell({
         layer: bgLayer,
         index: 15,
@@ -75,74 +63,71 @@ describe("Milestone 2 Integration Tests", () => {
       });
       commandHistory.execute(paintCommand2);
 
-      expect(commandHistory.getUndoStack()).toHaveLength(4);
+      expect(commandHistory.getUndoStack()).toHaveLength(3);
 
       // Verify all operations can be undone in reverse order
       expect(commandHistory.undo()).toBe(true); // Undo paint
       expect(commandHistory.undo()).toBe(true); // Undo clear
-      expect(commandHistory.undo()).toBe(true); // Undo resize
       expect(commandHistory.undo()).toBe(true); // Undo paint
 
       // Verify final state matches original
-      expect(scene.w).toBe(10);
-      expect(scene.h).toBe(8);
       expect(bgLayer.getCell(0, 0).isEmpty()).toBe(true);
     });
 
-    it("should handle undo/redo after grid resize", () => {
+    it("should handle undo/redo with cell operations", () => {
       const layer = scene.getActiveLayer();
 
-      // Paint content before resize
+      // Paint content
       layer.setCell(5, 4, new Cell("X", 3, 2));
       layer.setCell(8, 6, new Cell("Y", 4, 3));
 
-      // Resize to larger grid
-      const resizeCommand = ResizeCommand.create({
-        scene,
-        newWidth: 15,
-        newHeight: 12,
-        strategy: "pad",
-        stateManager,
-      });
-      commandHistory.execute(resizeCommand);
-
-      // Verify resize worked
-      expect(scene.w).toBe(15);
-      expect(scene.h).toBe(12);
-      expect(layer.getCell(5, 4).ch).toBe("X");
-      expect(layer.getCell(8, 6).ch).toBe("Y");
-
-      // Paint new content in expanded area
+      // Paint with command
       const paintCommand = CellCommand.fromSingleCell({
         layer,
-        index: scene.getCellIndex(12, 10),
-        before: layer.getCell(12, 10),
-        after: new Cell("Z", 5, 4),
+        index: scene.getCellIndex(2, 3),
+        before: layer.getCell(2, 3),
+        after: new Cell("Z", 5, 1),
         tool: "brush",
         stateManager,
         scene,
       });
       commandHistory.execute(paintCommand);
 
+      expect(layer.getCell(2, 3).ch).toBe("Z");
+
+      // Clear layer
+      const clearCommand = ClearCommand.clearLayer({
+        scene,
+        layer,
+        stateManager,
+      });
+      commandHistory.execute(clearCommand);
+
+      expect(layer.getCell(5, 4).ch).toBe(" ");
+      expect(layer.getCell(8, 6).ch).toBe(" ");
+      expect(layer.getCell(2, 3).ch).toBe(" ");
+
+      // Undo clear
+      commandHistory.undo();
+      expect(layer.getCell(5, 4).ch).toBe("X");
+      expect(layer.getCell(8, 6).ch).toBe("Y");
+      expect(layer.getCell(2, 3).ch).toBe("Z");
+
       // Undo paint
       commandHistory.undo();
-      expect(layer.getCell(12, 10).isEmpty()).toBe(true);
-
-      // Undo resize
-      commandHistory.undo();
-      expect(scene.w).toBe(10);
-      expect(scene.h).toBe(8);
-      expect(layer.getCell(5, 4).ch).toBe("X"); // Original content preserved
-
-      // Redo resize
-      commandHistory.redo();
-      expect(scene.w).toBe(15);
-      expect(scene.h).toBe(12);
-      expect(layer.getCell(5, 4).ch).toBe("X");
+      expect(layer.getCell(2, 3).ch).toBe(" ");
+      expect(layer.getCell(5, 4).ch).toBe("X"); // Unchanged
+      expect(layer.getCell(8, 6).ch).toBe("Y"); // Unchanged
 
       // Redo paint
       commandHistory.redo();
-      expect(layer.getCell(12, 10).ch).toBe("Z");
+      expect(layer.getCell(2, 3).ch).toBe("Z");
+
+      // Redo clear
+      commandHistory.redo();
+      expect(layer.getCell(5, 4).ch).toBe(" ");
+      expect(layer.getCell(8, 6).ch).toBe(" ");
+      expect(layer.getCell(2, 3).ch).toBe(" ");
     });
 
     it("should handle clear operations with proper history", () => {
@@ -356,36 +341,6 @@ describe("Milestone 2 Integration Tests", () => {
       expect(layer.getCell(0, 0).isEmpty()).toBe(true);
     });
 
-    it("should handle resize errors without corrupting state", () => {
-      const originalWidth = scene.w;
-      const originalHeight = scene.h;
-
-      // Set up some content
-      const layer = scene.getActiveLayer();
-      layer.setCell(5, 4, new Cell("X", 1, 0));
-
-      try {
-        // Attempt invalid resize (negative dimensions)
-        const invalidResize = ResizeCommand.create({
-          scene,
-          newWidth: -5,
-          newHeight: 10,
-          strategy: "pad",
-          stateManager,
-        });
-        commandHistory.execute(invalidResize);
-      } catch (error) {
-        // Should fail validation
-        expect(error.message).toContain("Width must be at least 1");
-      }
-
-      // Scene should remain unchanged
-      expect(scene.w).toBe(originalWidth);
-      expect(scene.h).toBe(originalHeight);
-      expect(layer.getCell(5, 4).ch).toBe("X");
-      expect(commandHistory.getUndoStack()).toHaveLength(0);
-    });
-
     it("should handle clear operation errors gracefully", () => {
       const layer = scene.getActiveLayer();
       layer.setCell(3, 3, new Cell("T", 2, 1));
@@ -426,17 +381,7 @@ describe("Milestone 2 Integration Tests", () => {
       });
       commandHistory.execute(paintCommand);
 
-      // 2. Resize operation
-      const resizeCommand = ResizeCommand.create({
-        scene,
-        newWidth: 12,
-        newHeight: 10,
-        strategy: "pad",
-        stateManager,
-      });
-      commandHistory.execute(resizeCommand);
-
-      // 3. Clear operation
+      // 2. Clear operation
       const clearCommand = ClearCommand.clearLayer({
         scene,
         layer,
@@ -509,41 +454,16 @@ describe("Milestone 2 Integration Tests", () => {
       midLayer.setCell(2, 2, new Cell("2", 2, 1));
       fgLayer.setCell(3, 3, new Cell("3", 3, 2));
 
-      // Test resize command
-      const resizeCommand = ResizeCommand.create({
-        scene,
-        newWidth: 15,
-        newHeight: 12,
-        strategy: "center",
-        stateManager,
-      });
-      commandHistory.execute(resizeCommand);
-
-      // Verify layers maintained and content preserved
+      // Verify layers are maintained
       expect(scene.layers).toHaveLength(3);
       expect(scene.getLayer(LAYER_BG)).toBeTruthy();
       expect(scene.getLayer(LAYER_MID)).toBeTruthy();
       expect(scene.getLayer(LAYER_FG)).toBeTruthy();
-      expect(scene.w).toBe(15);
-      expect(scene.h).toBe(12);
 
-      // Content should be preserved (center strategy may shift positions)
-      let foundBgContent = false;
-      let foundMidContent = false;
-      let foundFgContent = false;
-
-      // Check if content exists somewhere in the resized grid
-      for (let y = 0; y < scene.h; y++) {
-        for (let x = 0; x < scene.w; x++) {
-          if (bgLayer.getCell(x, y).ch === "1") foundBgContent = true;
-          if (midLayer.getCell(x, y).ch === "2") foundMidContent = true;
-          if (fgLayer.getCell(x, y).ch === "3") foundFgContent = true;
-        }
-      }
-
-      expect(foundBgContent).toBe(true);
-      expect(foundMidContent).toBe(true);
-      expect(foundFgContent).toBe(true);
+      // Verify content is preserved
+      expect(bgLayer.getCell(1, 1).ch).toBe("1");
+      expect(midLayer.getCell(2, 2).ch).toBe("2");
+      expect(fgLayer.getCell(3, 3).ch).toBe("3");
 
       // Test clear operation
       const clearCommand = ClearCommand.clearLayer({
@@ -559,11 +479,7 @@ describe("Milestone 2 Integration Tests", () => {
 
       // Test undo operations
       commandHistory.undo(); // Undo clear
-      expect(foundMidContent).toBe(true); // Should have content again
-
-      commandHistory.undo(); // Undo resize
-      expect(scene.w).toBe(10);
-      expect(scene.h).toBe(8);
+      expect(midLayer.getCell(2, 2).ch).toBe("2"); // Should have content again
     });
 
     it("should handle active layer changes during operations", () => {
@@ -619,18 +535,7 @@ describe("Milestone 2 Integration Tests", () => {
         commands.push(command);
       }
 
-      // 2. User realizes they need more space
-      const resizeCommand = ResizeCommand.create({
-        scene,
-        newWidth: 20,
-        newHeight: 15,
-        strategy: "pad",
-        stateManager,
-      });
-      commandHistory.execute(resizeCommand);
-      commands.push(resizeCommand);
-
-      // 3. User draws foreground elements
+      // 2. User draws foreground elements
       scene.setActiveLayer(LAYER_MID);
       for (let i = 0; i < 3; i++) {
         const index = 100 + i;
@@ -664,8 +569,8 @@ describe("Milestone 2 Integration Tests", () => {
       commandHistory.undo();
 
       // Verify workflow integrity
-      expect(scene.w).toBe(20);
-      expect(scene.h).toBe(15);
+      expect(scene.w).toBe(10);
+      expect(scene.h).toBe(8);
       expect(commandHistory.canUndo()).toBe(true);
       expect(commandHistory.canRedo()).toBe(true);
     });

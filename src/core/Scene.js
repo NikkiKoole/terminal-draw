@@ -338,25 +338,6 @@ export class Scene {
   }
 
   /**
-   * Resize all layers in the scene
-   * @param {number} newWidth - New width in cells
-   * @param {number} newHeight - New height in cells
-   * @param {string} strategy - Resize strategy ('pad', 'crop', 'center')
-   */
-  resizeAllLayers(newWidth, newHeight, strategy = "pad") {
-    this.w = newWidth;
-    this.h = newHeight;
-
-    this.layers.forEach((layer) => {
-      // For now, we'll need to implement layer resize differently
-      // since Layer doesn't have a resize method yet
-      layer.width = newWidth;
-      layer.height = newHeight;
-      // TODO: Implement proper layer resizing with cell preservation
-    });
-  }
-
-  /**
    * Clear all layers in the scene
    */
   clearAll() {

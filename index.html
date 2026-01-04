@@ -50,6 +50,9 @@
                     <button id="tool-text" class="tool-btn">
                         📝 <span class="key">[T]</span>ext
                     </button>
+                    <button id="tool-selection" class="tool-btn">
+                        🔲 <span class="key">[V]</span>select
+                    </button>
 
                     <!-- Undo/Redo buttons -->
                     <div class="toolbar-separator"></div>
@@ -286,6 +289,60 @@
                             />
                             Ellipse
                         </label>
+                    </div>
+
+                    <!-- Selection Tool Options -->
+                    <div
+                        id="selection-options"
+                        style="display: none; align-items: center; gap: 16px"
+                    >
+                        <label style="font-weight: 500">Selection:</label>
+                        <span
+                            id="selection-info"
+                            style="font-size: 0.9em; color: var(--text-muted)"
+                        >
+                            No selection
+                        </span>
+
+                        <div
+                            style="
+                                border-left: 1px solid var(--border);
+                                padding-left: 16px;
+                                margin-left: 8px;
+                            "
+                        >
+                            <button
+                                id="flip-horizontal-btn"
+                                class="tool-btn"
+                                title="Flip Selection Horizontally"
+                                disabled
+                            >
+                                ↔️ Flip H
+                            </button>
+                            <button
+                                id="flip-vertical-btn"
+                                class="tool-btn"
+                                title="Flip Selection Vertically"
+                                disabled
+                            >
+                                ↕️ Flip V
+                            </button>
+                        </div>
+
+                        <div
+                            style="
+                                border-left: 1px solid var(--border);
+                                padding-left: 16px;
+                                margin-left: 8px;
+                                font-size: 0.9em;
+                                color: var(--text-muted);
+                            "
+                        >
+                            <span id="keyboard-shortcuts-hint"
+                                >Copy: Ctrl+C • Cut: Ctrl+X • Paste: Ctrl+V •
+                                Exit: Esc</span
+                            >
+                        </div>
                     </div>
                 </div>
 

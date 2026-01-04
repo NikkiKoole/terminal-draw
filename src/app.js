@@ -25,11 +25,13 @@ import { LineTool } from "./tools/LineTool.js";
 import { CircleTool } from "./tools/CircleTool.js";
 import { FloodFillTool } from "./tools/FloodFillTool.js";
 import { TextTool } from "./tools/TextTool.js";
+import { SelectionTool } from "./tools/SelectionTool.js";
 import { LayerPanel } from "./ui/LayerPanel.js";
 import { GlyphPicker } from "./ui/GlyphPicker.js";
 import { ClipboardManager } from "./export/ClipboardManager.js";
 import { ProjectManager } from "./io/ProjectManager.js";
 import { CommandHistory } from "./commands/CommandHistory.js";
+import { SelectionManager } from "./core/SelectionManager.js";
 
 import { ClearCommand } from "./commands/ClearCommand.js";
 
@@ -93,7 +95,66 @@ let lineTool = null;
 let circleTool = null;
 let floodFillTool = null;
 let textTool = null;
+let selectionTool = null;
 let currentTool = null;
+
+// Selection and clipboard management
+let selectionManager = null;
+
+// Platform detection for keyboard shortcuts
+const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
+const modifierKey = isMac ? "Cmd" : "Ctrl";
+
+// Global function to update selection panel visibility
+function updateSelectionPanelVisibility() {
+  if (!selectionManager) return;
+
+  const hasSelection = selectionManager.hasSelection();
+  const selectionOptions = document.getElementById("selection-options");
+  const isSelectionTool = currentTool === selectionTool;
+
+  // Show/hide entire selection options panel
+  if (selectionOptions) {
+    selectionOptions.style.display = isSelectionTool ? "flex" : "none";
+  }
+
+  // Hide persistent selection when switching away from selection tool
+  if (!isSelectionTool) {
+    const overlay = document.getElementById("persistent-selection-overlay");
+    if (overlay) {
+      overlay.innerHTML = "";
+    }
+  }
+
+  // Enable/disable transform buttons based on selection state
+  const flipHorizontalBtn = document.getElementById("flip-horizontal-btn");
+  const flipVerticalBtn = document.getElementById("flip-vertical-btn");
+
+  const buttons = [flipHorizontalBtn, flipVerticalBtn];
+
+  buttons.forEach((btn) => {
+    if (btn) {
+      btn.disabled = !hasSelection;
+    }
+  });
+
+  // Update selection info
+  const selectionInfo = document.getElementById("selection-info");
+  if (selectionInfo) {
+    const info = selectionManager.getSelectionInfo();
+    if (info && info.hasData) {
+      selectionInfo.textContent = `${info.width}×${info.height} at (${info.x}, ${info.y})`;
+      selectionInfo.style.color = "var(--text-primary)";
+    } else if (selectionManager.hasSelection()) {
+      const sel = selectionManager.selection;
+      selectionInfo.textContent = `${sel.width}×${sel.height} at (${sel.x}, ${sel.y})`;
+      selectionInfo.style.color = "var(--text-muted)";
+    } else {
+      selectionInfo.textContent = "No selection";
+      selectionInfo.style.color = "var(--text-muted)";
+    }
+  }
+}
 
 // Keyboard shortcut state
 let keyboardShortcutsEnabled = true;
@@ -171,6 +232,14 @@ const TOOL_CONFIG = [
     key: "t",
     args: [{ ch: " ", fg: 7, bg: -1 }],
     hasOptions: false,
+  },
+  {
+    name: "selectionTool",
+    class: SelectionTool,
+    id: "selection",
+    key: "v",
+    args: [],
+    hasOptions: true,
   },
 ];
 
@@ -543,6 +612,15 @@ function initInput() {
       showRectanglePreview(data.x1, data.y1, data.x2, data.y2, data.fillMode);
     } else {
       hideRectanglePreview();
+    }
+  });
+
+  // Listen for selection tool preview events
+  stateManager.on("tool:preview", (data) => {
+    if (data.tool === "selection" && data.cells && data.cells.length > 0) {
+      showSelectionPreview(data.cells);
+    } else if (data.tool === "selection") {
+      hideSelectionPreview();
     }
   });
 
@@ -1144,6 +1222,52 @@ function getRectanglePreviewCells(x1, y1, x2, y2, fillMode) {
 }
 
 /**
+ * Show selection preview overlay
+ */
+function showSelectionPreview(previewCells) {
+  hideSelectionPreview(); // Clear any existing preview
+
+  if (!hitTestOverlay || !scene) return;
+
+  const cellDimensions = hitTestOverlay.getCellDimensions();
+  const container = document.querySelector(".grid-container");
+  if (!container) return;
+
+  // Create preview overlay
+  const previewOverlay = getOrCreatePreviewOverlay(
+    "selection-preview-overlay",
+    container,
+  );
+
+  // Create visual elements for each preview cell
+  previewCells.forEach((cell) => {
+    const previewCell = document.createElement("div");
+    previewCell.className = "selection-preview-cell";
+    previewCell.style.position = "absolute";
+    previewCell.style.left = `${cell.x * cellDimensions.width}px`;
+    previewCell.style.top = `${cell.y * cellDimensions.height}px`;
+    previewCell.style.width = `${cellDimensions.width}px`;
+    previewCell.style.height = `${cellDimensions.height}px`;
+    previewCell.style.border = "1px dashed #0ff";
+    previewCell.style.backgroundColor = "rgba(0, 255, 255, 0.1)";
+    previewCell.style.boxSizing = "border-box";
+    previewCell.style.pointerEvents = "none";
+
+    previewOverlay.appendChild(previewCell);
+  });
+}
+
+/**
+ * Hide selection preview overlay
+ */
+function hideSelectionPreview() {
+  const overlay = document.getElementById("selection-preview-overlay");
+  if (overlay) {
+    overlay.innerHTML = "";
+  }
+}
+
+/**
  * Update brush preview when brush settings change
  */
 function updateBrushPreview() {
@@ -1177,6 +1301,7 @@ function initTools() {
     else if (config.name === "circleTool") circleTool = tool;
     else if (config.name === "floodFillTool") floodFillTool = tool;
     else if (config.name === "textTool") textTool = tool;
+    else if (config.name === "selectionTool") selectionTool = tool;
   });
 
   // Set initial tool
@@ -1197,6 +1322,7 @@ function initTools() {
       else if (config.name === "circleTool") tool = circleTool;
       else if (config.name === "floodFillTool") tool = floodFillTool;
       else if (config.name === "textTool") tool = textTool;
+      else if (config.name === "selectionTool") tool = selectionTool;
 
       button.addEventListener("click", () => setCurrentTool(tool));
     }
@@ -1248,23 +1374,26 @@ function initKeyboardShortcuts() {
       return;
     }
 
-    // Tool shortcuts (using configuration)
-    const key = e.key.toLowerCase();
-    const toolConfig = TOOL_CONFIG.find((config) => config.key === key);
-    if (toolConfig) {
-      let tool;
-      if (toolConfig.name === "brushTool") tool = brushTool;
-      else if (toolConfig.name === "eraserTool") tool = eraserTool;
-      else if (toolConfig.name === "pickerTool") tool = pickerTool;
-      else if (toolConfig.name === "sprayTool") tool = sprayTool;
-      else if (toolConfig.name === "rectangleTool") tool = rectangleTool;
-      else if (toolConfig.name === "lineTool") tool = lineTool;
-      else if (toolConfig.name === "circleTool") tool = circleTool;
-      else if (toolConfig.name === "floodFillTool") tool = floodFillTool;
-      else if (toolConfig.name === "textTool") tool = textTool;
+    // Tool shortcuts (using configuration) - only when no modifier keys
+    if (!e.ctrlKey && !e.metaKey && !e.altKey) {
+      const key = e.key.toLowerCase();
+      const toolConfig = TOOL_CONFIG.find((config) => config.key === key);
+      if (toolConfig) {
+        let tool;
+        if (toolConfig.name === "brushTool") tool = brushTool;
+        else if (toolConfig.name === "eraserTool") tool = eraserTool;
+        else if (toolConfig.name === "pickerTool") tool = pickerTool;
+        else if (toolConfig.name === "sprayTool") tool = sprayTool;
+        else if (toolConfig.name === "rectangleTool") tool = rectangleTool;
+        else if (toolConfig.name === "lineTool") tool = lineTool;
+        else if (toolConfig.name === "circleTool") tool = circleTool;
+        else if (toolConfig.name === "floodFillTool") tool = floodFillTool;
+        else if (toolConfig.name === "textTool") tool = textTool;
+        else if (toolConfig.name === "selectionTool") tool = selectionTool;
 
-      if (tool) {
-        setCurrentTool(tool);
+        if (tool) {
+          setCurrentTool(tool);
+        }
       }
     }
   });
@@ -1306,6 +1435,7 @@ function setCurrentTool(tool) {
   hideCirclePreview();
   hideRectanglePreview();
   hideTextCursor();
+  hideSelectionPreview();
 
   // Update cursor
   if (hitTestOverlay) {
@@ -1338,6 +1468,9 @@ function setCurrentTool(tool) {
   updateStatus(
     `Tool: ${tool.name} • Grid: ${GRID_WIDTH}×${GRID_HEIGHT} • Scale: ${currentScale}%`,
   );
+
+  // Update selection panel visibility
+  updateSelectionPanelVisibility();
 }
 
 /**
@@ -1942,12 +2075,330 @@ function init() {
 }
 
 /**
+ * Initialize selection system
+ */
+function initSelection() {
+  selectionManager = new SelectionManager(stateManager);
+
+  // Add keyboard shortcuts for selection operations
+  document.addEventListener("keydown", (e) => {
+    // Don't trigger if user is typing in an input/textarea
+    if (e.target.matches("input, textarea")) return;
+
+    // Don't trigger if shortcuts are disabled
+    if (!keyboardShortcutsEnabled) return;
+
+    // Ctrl+C / Cmd+C - Copy selection
+    if ((e.ctrlKey || e.metaKey) && e.key === "c" && !e.shiftKey && !e.altKey) {
+      if (selectionManager.hasSelection()) {
+        e.preventDefault();
+        selectionManager
+          .copySelection(scene)
+          .then(() => {
+            updateStatus(
+              `Selection copied • Switch projects and press ${modifierKey}+V to paste`,
+              3000,
+            );
+          })
+          .catch((error) => {
+            updateStatus(`Copy failed: ${error.message}`, 3000);
+          });
+      }
+      return;
+    }
+
+    // Ctrl+X / Cmd+X - Cut selection
+    if ((e.ctrlKey || e.metaKey) && e.key === "x" && !e.shiftKey && !e.altKey) {
+      if (selectionManager.hasSelection()) {
+        e.preventDefault();
+        selectionManager
+          .cutSelection(scene)
+          .then(() => {
+            updateStatus(
+              `Selection cut • Switch projects and press ${modifierKey}+V to paste`,
+              3000,
+            );
+          })
+          .catch((error) => {
+            updateStatus(`Cut failed: ${error.message}`, 3000);
+          });
+      }
+      return;
+    }
+
+    // Ctrl+V / Cmd+V - Paste from clipboard
+    if ((e.ctrlKey || e.metaKey) && e.key === "v" && !e.shiftKey && !e.altKey) {
+      if (selectionManager && selectionManager.hasClipboardData()) {
+        e.preventDefault();
+        try {
+          const pasteX = selectionManager.hasSelection()
+            ? selectionManager.getSelectionInfo().x
+            : Math.floor(scene.w / 2);
+          const pasteY = selectionManager.hasSelection()
+            ? selectionManager.getSelectionInfo().y
+            : Math.floor(scene.h / 2);
+
+          selectionManager.pasteAtPosition(
+            scene,
+            pasteX,
+            pasteY,
+            scene.activeLayerId,
+          );
+
+          // Auto-switch to selection tool and select the pasted content
+          if (currentTool !== selectionTool) {
+            setCurrentTool(selectionTool);
+            updateStatus(
+              `Pasted and switched to selection tool • Use arrows to move`,
+              3000,
+            );
+          } else {
+            updateStatus(
+              `Selection pasted • Use arrows to move, ${modifierKey}+C to copy again`,
+              3000,
+            );
+          }
+        } catch (error) {
+          updateStatus(`Paste failed: ${error.message}`, 3000);
+        }
+      }
+      return;
+    }
+
+    // Delete/Backspace - Clear selection
+    if (
+      (e.key === "Delete" || e.key === "Backspace") &&
+      !e.ctrlKey &&
+      !e.metaKey &&
+      !e.altKey &&
+      !e.shiftKey
+    ) {
+      if (selectionManager.hasSelection()) {
+        e.preventDefault();
+        selectionManager.clearSelectedArea(scene);
+        updateStatus("Selection cleared", 2000);
+      }
+      return;
+    }
+
+    // Escape - Clear selection and exit selection mode
+    if (
+      e.key === "Escape" &&
+      !e.ctrlKey &&
+      !e.metaKey &&
+      !e.altKey &&
+      !e.shiftKey
+    ) {
+      if (currentTool === selectionTool) {
+        e.preventDefault();
+        if (selectionManager.hasSelection()) {
+          selectionManager.clearSelection();
+          updateStatus(
+            "Selection cleared • Press Escape again to exit selection mode",
+            2500,
+          );
+        } else {
+          // Exit selection mode and return to brush tool
+          setCurrentTool(brushTool);
+          updateStatus(
+            "Exited selection mode • Press [V] to return to selection",
+            2000,
+          );
+        }
+      }
+      return;
+    }
+  });
+
+  // Initialize transform buttons
+  const flipHorizontalBtn = document.getElementById("flip-horizontal-btn");
+  const flipVerticalBtn = document.getElementById("flip-vertical-btn");
+
+  // Selection info display
+  const selectionInfo = document.getElementById("selection-info");
+
+  // Transform button event listeners
+  if (flipHorizontalBtn) {
+    flipHorizontalBtn.addEventListener("click", () => {
+      if (selectionManager.hasSelection()) {
+        selectionManager.flipHorizontal(scene);
+        updateStatus("Selection flipped horizontally", 1500);
+      }
+    });
+  }
+
+  if (flipVerticalBtn) {
+    flipVerticalBtn.addEventListener("click", () => {
+      if (selectionManager.hasSelection()) {
+        selectionManager.flipVertical(scene);
+        updateStatus("Selection flipped vertically", 1500);
+      }
+    });
+  }
+
+  // Helper function to move selection
+  function moveSelection(dx, dy) {
+    const info = selectionManager.getSelectionInfo();
+    if (!info) return;
+
+    const newX = Math.max(0, Math.min(info.x + dx, scene.w - info.width));
+    const newY = Math.max(0, Math.min(info.y + dy, scene.h - info.height));
+
+    if (newX !== info.x || newY !== info.y) {
+      // Use direct move method to avoid clipboard dependency
+      const success = selectionManager.moveSelectionTo(scene, newX, newY);
+
+      if (success) {
+        updateStatus(`Moved selection to (${newX}, ${newY})`, 1500);
+        updateSelectionInfo();
+        showPersistentSelection();
+      } else {
+        updateStatus("Cannot move selection there", 1500);
+      }
+    }
+  }
+
+  // Function to show/hide selection options panel and update button states
+  function updateTransformButtonsVisibility() {
+    updateSelectionPanelVisibility();
+  }
+
+  // Function to update selection info display
+  function updateSelectionInfo() {
+    updateSelectionPanelVisibility();
+  }
+
+  // Listen for selection events
+  stateManager.on("selectionmanager:changed", (rect) => {
+    updateSelectionPanelVisibility();
+    showPersistentSelection();
+  });
+
+  stateManager.on("selectionmanager:cleared", () => {
+    updateSelectionPanelVisibility();
+    hidePersistentSelection();
+  });
+
+  stateManager.on("selection:needsData", (rect) => {
+    if (selectionManager && scene) {
+      selectionManager.extractSelectedData(scene);
+      updateSelectionPanelVisibility();
+      showPersistentSelection();
+      updateStatus(
+        `Selection ready: ${rect.width}×${rect.height} • Use ${modifierKey}+C to copy, arrows to move`,
+        3000,
+      );
+    }
+  });
+
+  stateManager.on("selection:completed", (rect) => {
+    updateStatus(
+      `Selected ${rect.width}×${rect.height} region • ${modifierKey}+C to copy`,
+      2500,
+    );
+  });
+
+  // Add arrow key support for moving selections
+  document.addEventListener("keydown", (e) => {
+    // Only handle when selection tool is active and we have a selection
+    if (currentTool !== selectionTool || !selectionManager.hasSelection())
+      return;
+    if (e.target.matches("input, textarea")) return;
+    if (!keyboardShortcutsEnabled) return;
+
+    let dx = 0,
+      dy = 0;
+
+    switch (e.key) {
+      case "ArrowUp":
+        dy = -1;
+        break;
+      case "ArrowDown":
+        dy = 1;
+        break;
+      case "ArrowLeft":
+        dx = -1;
+        break;
+      case "ArrowRight":
+        dx = 1;
+        break;
+      default:
+        return;
+    }
+
+    e.preventDefault();
+    moveSelection(dx, dy);
+  });
+
+  // Initial state
+  updateSelectionPanelVisibility();
+
+  // Update keyboard shortcuts hint based on platform
+  const shortcutsHint = document.getElementById("keyboard-shortcuts-hint");
+  if (shortcutsHint) {
+    shortcutsHint.textContent = `Copy: ${modifierKey}+C • Cut: ${modifierKey}+X • Paste: ${modifierKey}+V • Exit: Esc`;
+  }
+
+  // Functions for persistent selection display
+  function showPersistentSelection() {
+    if (!selectionManager.hasSelection()) return;
+
+    const selection = selectionManager.selection;
+    const persistentOverlay = getOrCreatePreviewOverlay(
+      "persistent-selection-overlay",
+      document.querySelector(".grid-container"),
+    );
+
+    // Clear existing selection
+    persistentOverlay.innerHTML = "";
+
+    if (!hitTestOverlay || !scene) return;
+    const cellDimensions = hitTestOverlay.getCellDimensions();
+
+    // Create selection border
+    for (let py = selection.y; py < selection.y + selection.height; py++) {
+      for (let px = selection.x; px < selection.x + selection.width; px++) {
+        const isTopBorder = py === selection.y;
+        const isBottomBorder = py === selection.y + selection.height - 1;
+        const isLeftBorder = px === selection.x;
+        const isRightBorder = px === selection.x + selection.width - 1;
+
+        if (isTopBorder || isBottomBorder || isLeftBorder || isRightBorder) {
+          const borderCell = document.createElement("div");
+          borderCell.className = "persistent-selection-border";
+          borderCell.style.position = "absolute";
+          borderCell.style.left = `${px * cellDimensions.width}px`;
+          borderCell.style.top = `${py * cellDimensions.height}px`;
+          borderCell.style.width = `${cellDimensions.width}px`;
+          borderCell.style.height = `${cellDimensions.height}px`;
+          borderCell.style.border = "2px solid #00ffff";
+          borderCell.style.backgroundColor = "rgba(0, 255, 255, 0.1)";
+          borderCell.style.boxSizing = "border-box";
+          borderCell.style.pointerEvents = "none";
+          borderCell.style.animation = "selection-pulse 2s infinite";
+
+          persistentOverlay.appendChild(borderCell);
+        }
+      }
+    }
+  }
+
+  function hidePersistentSelection() {
+    const overlay = document.getElementById("persistent-selection-overlay");
+    if (overlay) {
+      overlay.innerHTML = "";
+    }
+  }
+}
+
+/**
  * Initialize UI components after scene is created
  */
 function initUIComponents() {
   initInput();
   initCommandHistory();
   initTools();
+  initSelection();
   initLayerPanel();
   initInteractivePalette();
   initGlyphPicker();

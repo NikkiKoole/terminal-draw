@@ -14,65 +14,40 @@ This document outlines potential future development directions for Terminal Draw
 - ✅ **M1**: Core editor (tools, layers, UI, save/load)
 - ✅ **M2**: Advanced editing (undo/redo, grid resize, clear operations)
 - ✅ **M3**: Simplified layer architecture (templates, startup dialog, visibility/lock controls)
-- ✅ **M4**: Enhanced painting tools (selective painting, smart box-drawing, spray can) - See `M4-enhanced-painting-tools-completion.md`
-- ✅ **M6**: Advanced drawing tools (line, rectangle, circle, flood fill) with visual preview system - See `M6-advanced-drawing-tools-completion.md`
+- ✅ **M4**: Enhanced painting tools - See `M4-enhanced-painting-tools-completion.md`
+- ✅ **M5**: Selection & region operations - See `M5-selection-region-operations-completion.md`
+- ✅ **M6**: Advanced drawing tools - See `M6-advanced-drawing-tools-completion.md`
+- ✅ **M8.5**: Text input tool - See existing completion document
 
 **Current Capabilities:**
 - 3 project templates (Simple/Standard/Advanced with 1/2/3 fixed layers)
-- Professional drawing tools with advanced capabilities:
-  - Variable brush sizes (1x1, 2x2, 3x3, 5x5, 7x7) with live preview
-  - 6 brush shapes (square, circle, triangle, cross, plus, minus) with visual footprint
-  - Complete shape tool suite: line, rectangle, circle, flood fill
-  - Real-time preview overlays for all drawing operations
-  - Paint modes (all/foreground/background/glyph)
-  - Smart box-drawing, spray tool, eraser, picker
-- Enhanced layer controls (visibility 👁️/➖, lock 🔓/🔒)
-- Visual feedback system with color-coded tool previews
+- Professional drawing tools with advanced capabilities (M4, M6)
+- Complete selection and manipulation system (M5)
+- Cross-project clipboard functionality
+- Text input tool for labels and annotations (M8.5)
+- Enhanced layer controls with visibility and lock toggles
+- Visual feedback system with real-time previews
 - Undo/redo system, grid resize, project save/load
-- Copy/export as plain text, JSON project format
-- 1158+ tests passing with clean, maintainable codebase (complete test coverage for all drawing tools)
+- 1130+ tests passing with clean, maintainable codebase
 
 ---
 
 ## High Priority Features (M5-M6)
 
-### 🎯 **M5: Selection & Region Operations**
+### ✅ **M5: Selection & Region Operations - COMPLETED**
 
-**Goal:** Enable users to select, manipulate, and reposition content efficiently
+**Status:** ✅ **PRODUCTION READY** - See `M5-selection-region-operations-completion.md` for full details
 
-#### Core Selection System
-- **Rectangle Selection Tool**
-  - Click-drag selection with visual feedback
-  - Marching ants or dashed border outline
-  - Selection coordinates display
-  - Keyboard shortcuts (S for select mode)
+**Delivered:** Complete selection and manipulation system with cross-project clipboard functionality
+- ✅ Rectangle selection tool (V key) with visual feedback
+- ✅ Arrow key movement for precise positioning
+- ✅ Flip horizontal/vertical transform operations
+- ✅ Cross-project copy/paste using localStorage
+- ✅ Platform-aware keyboard shortcuts (Cmd on Mac, Ctrl on PC)
+- ✅ Auto-tool switching on paste for immediate manipulation
+- ✅ 42 comprehensive tests ensuring production reliability
 
-#### Selection Operations
-- **Copy/Cut/Paste Selected Region**
-  - Standard Ctrl+C, Ctrl+X, Ctrl+V shortcuts
-  - Paste positioning with ghost preview
-  - Multi-layer selection support
-  - Clipboard integration with external apps
-
-- **Move Selected Content**
-  - Drag selected regions to new positions
-  - Arrow key nudging (pixel-perfect positioning)
-  - Undo/redo support for all move operations
-  - Collision detection and merge strategies
-
-#### Advanced Selection Features
-- **Transform Operations**
-  - Flip horizontal/vertical
-  - Rotate 90/180/270 degrees (if applicable for ASCII)
-  - Mirror operations
-- **Selection Modification**
-  - Expand/contract selection
-  - Select similar characters or colors
-  - Invert selection
-
-**Estimated Effort:** 8-12 hours
-**Dependencies:** None
-**Impact:** High - Major productivity improvement
+**Impact:** Major productivity improvement enabling professional selection workflows and unique cross-project content sharing capabilities.
 
 ---
 
@@ -80,15 +55,7 @@ This document outlines potential future development directions for Terminal Draw
 
 **Status:** ✅ **PRODUCTION READY** - See `M6-advanced-drawing-tools-completion.md` for full details
 
-**Delivered:** Complete professional drawing tool suite with visual preview system
-- ✅ Line Tool with Bresenham algorithm and smart box-drawing
-- ✅ Rectangle Tool with outline/filled modes and real-time preview
-- ✅ Circle/Ellipse Tool with mathematical precision and visual feedback
-- ✅ Flood Fill Tool with paint-mode awareness
-- ✅ Revolutionary Visual Preview System for all drawing operations
-- ✅ 200+ comprehensive tests ensuring production reliability
-
-**Impact:** Professional drawing capabilities that rival desktop graphics applications
+**Impact:** Professional drawing capabilities with complete shape tool suite and visual preview system
 
 ---
 
@@ -166,46 +133,9 @@ This document outlines potential future development directions for Terminal Draw
 
 ### ✅ **M8.5: Text Input Tool** - **COMPLETED**
 
-**Status:** ✅ **PRODUCTION READY** - Full text input functionality implemented and tested
-**Goal:** Enable direct text input for labels, titles, and mixed text/graphics ASCII art
+**Status:** ✅ **PRODUCTION READY** - See existing completion document for full details
 
-#### ✅ **Text Tool Core Features Delivered**
-- ✅ **Text Tool (T key)**
-  - Click to position text cursor with blinking green visual indicator
-  - Type characters that replace cells and advance cursor right
-  - Enter key creates new line, cursor returns to original X position
-  - Characters outside grid boundaries are ignored (like drawing outside)
-
-- ✅ **Simple Text Editing**
-  - Backspace support - erase previous char, move cursor back, works across word boundaries
-  - Arrow key cursor movement for precise cursor positioning
-  - Escape key to exit typing mode cleanly
-  - Word-based undo batching with improved granularity (space/punctuation triggers commit)
-
-- ✅ **Integration with Existing Systems**
-  - Respects all current paint modes (all/fg/bg/glyph) for flexible text styling
-  - Text placed on active layer with full layer system integration (lock/visibility)
-  - Smart keyboard shortcut management while typing (prevents tool conflicts)
-  - Real-time visual feedback with blinking cursor and immediate text rendering
-
-#### ✅ **Use Cases Enabled**
-- ✅ **Labeling ASCII Diagrams** - Add titles, labels, and annotations seamlessly
-- ✅ **Mixed Content Creation** - Combine text with geometric shapes and art
-- ✅ **Technical Drawings** - Add dimensions, notes, and specifications
-- ✅ **ASCII Art Enhancement** - Include captions, signatures, or explanatory text
-
-#### **Technical Implementation**
-- **Click-to-Type Interface:** Simple, intuitive text placement with visual cursor feedback
-- **Word-Based Undo System:** Efficient history management with smart batching and individual deletions
-- **Clean Tool Integration:** Proper state management and cleanup when switching tools
-- **Comprehensive Testing:** 29 test cases covering all functionality including edge cases
-
-**Actual Effort:** 6 hours (including comprehensive testing and undo system refinement)
-**Dependencies:** ✅ All satisfied - clean integration with existing tool architecture
-**Impact:** ✅ **HIGH DELIVERED** - Essential functionality for labeled diagrams and mixed-content ASCII art
-
-**Implementation Date:** January 2025
-**Status:** Ready for production use with full feature set
+**Impact:** Essential text functionality for labels, annotations, and mixed content creation
 
 ---
 
@@ -329,17 +259,19 @@ Based on original design document Phase 2 plans:
 4. **Market Demand** - User-requested features and competitive analysis
 
 ### Recommended Development Order
-1. ✅ **M4: Enhanced Painting Tools** - **COMPLETED** - See `M4-enhanced-painting-tools-completion.md`
-2. ✅ **M6: Advanced Drawing Tools** - **COMPLETED** - See `M6-advanced-drawing-tools-completion.md`
-3. ✅ **M8.5: Text Input Tool** - **COMPLETED** - Essential text functionality delivered
-4. **M5: Selection System** - Highest remaining impact for productivity
+1. ✅ **M4: Enhanced Painting Tools** - **COMPLETED**
+2. ✅ **M5: Selection & Region Operations** - **COMPLETED**
+3. ✅ **M6: Advanced Drawing Tools** - **COMPLETED**
+4. ✅ **M8.5: Text Input Tool** - **COMPLETED**
 5. **M7: Enhanced Project Management** - Quality of life improvements
-6. **M8: Export Formats** - Professional output requirements
+6. **M8: Export Formats** - Professional output requirements  
 7. **M9+: Performance & Advanced Features** - Scaling and specialization
+
+**Note:** With core milestones M4, M5, M6, and M8.5 completed, Terminal Draw now offers a comprehensive ASCII art creation and manipulation environment that rivals professional graphics applications, featuring unique cross-project capabilities.
 
 ### Development Approach
 - **Incremental Implementation** - Build features in small, testable chunks
-- **Test-Driven Development** - Maintain high test coverage (currently 911 tests)
+- **Test-Driven Development** - Maintain high test coverage (currently 1130+ tests)
 - **User Feedback Integration** - Validate features with real users before full implementation
 - **Backward Compatibility** - Preserve existing functionality and project formats
 

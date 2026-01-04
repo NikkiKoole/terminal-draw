@@ -268,11 +268,19 @@ export class Scene {
   // Layer management methods removed - using fixed layers from project templates
 
   /**
-   * Get layer count
+   * Get the number of layers
    * @returns {number} Number of layers
    */
   getLayerCount() {
     return this.layers.length;
+  }
+
+  /**
+   * Get array of layer IDs
+   * @returns {string[]} Array of layer IDs
+   */
+  getLayerIds() {
+    return this.layers.map((layer) => layer.id);
   }
 
   /**

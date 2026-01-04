@@ -1311,6 +1311,26 @@ function initInteractivePalette() {
 }
 
 /**
+ * Update all tools with a specific property
+ */
+function updateAllToolsProperty(property, value) {
+  const tools = [
+    brushTool,
+    sprayTool,
+    rectangleTool,
+    lineTool,
+    circleTool,
+    floodFillTool,
+  ];
+  tools.forEach((tool) => {
+    if (tool) {
+      const currentCell = tool.getCurrentCell();
+      tool.setCurrentCell({ ...currentCell, [property]: value });
+    }
+  });
+}
+
+/**
  * Select foreground color
  */
 function selectFgColor(colorIndex) {
@@ -1321,57 +1341,8 @@ function selectFgColor(colorIndex) {
 
   selectedFg = colorIndex;
 
-  // Update brush tool
-  const currentCell = brushTool.getCurrentCell();
-  brushTool.setCurrentCell({
-    ...currentCell,
-    fg: colorIndex,
-  });
-
-  // Update spray tool
-  if (sprayTool) {
-    const sprayCell = sprayTool.getCurrentCell();
-    sprayTool.setCurrentCell({
-      ...sprayCell,
-      fg: colorIndex,
-    });
-  }
-
-  // Update rectangle tool
-  if (rectangleTool) {
-    const rectangleCell = rectangleTool.getCurrentCell();
-    rectangleTool.setCurrentCell({
-      ...rectangleCell,
-      fg: colorIndex,
-    });
-  }
-
-  // Update line tool
-  if (lineTool) {
-    const lineCell = lineTool.getCurrentCell();
-    lineTool.setCurrentCell({
-      ...lineCell,
-      fg: colorIndex,
-    });
-  }
-
-  // Update circle tool
-  if (circleTool) {
-    const circleCell = circleTool.getCurrentCell();
-    circleTool.setCurrentCell({
-      ...circleCell,
-      fg: colorIndex,
-    });
-  }
-
-  // Update flood fill tool
-  if (floodFillTool) {
-    const floodFillCell = floodFillTool.getCurrentCell();
-    floodFillTool.setCurrentCell({
-      ...floodFillCell,
-      fg: colorIndex,
-    });
-  }
+  // Update all tools with new foreground color
+  updateAllToolsProperty("fg", colorIndex);
 
   // Update UI
   updatePaletteSelection();
@@ -1387,57 +1358,8 @@ function selectFgColor(colorIndex) {
 function selectBgColor(colorIndex) {
   selectedBg = colorIndex;
 
-  // Update brush tool
-  const currentCell = brushTool.getCurrentCell();
-  brushTool.setCurrentCell({
-    ...currentCell,
-    bg: colorIndex,
-  });
-
-  // Update spray tool (preserve background for spray tool)
-  if (sprayTool) {
-    const sprayCell = sprayTool.getCurrentCell();
-    sprayTool.setCurrentCell({
-      ...sprayCell,
-      bg: colorIndex,
-    });
-  }
-
-  // Update rectangle tool
-  if (rectangleTool) {
-    const rectangleCell = rectangleTool.getCurrentCell();
-    rectangleTool.setCurrentCell({
-      ...rectangleCell,
-      bg: colorIndex,
-    });
-  }
-
-  // Update line tool
-  if (lineTool) {
-    const lineCell = lineTool.getCurrentCell();
-    lineTool.setCurrentCell({
-      ...lineCell,
-      bg: colorIndex,
-    });
-  }
-
-  // Update circle tool
-  if (circleTool) {
-    const circleCell = circleTool.getCurrentCell();
-    circleTool.setCurrentCell({
-      ...circleCell,
-      bg: colorIndex,
-    });
-  }
-
-  // Update flood fill tool
-  if (floodFillTool) {
-    const floodFillCell = floodFillTool.getCurrentCell();
-    floodFillTool.setCurrentCell({
-      ...floodFillCell,
-      bg: colorIndex,
-    });
-  }
+  // Update all tools with new background color
+  updateAllToolsProperty("bg", colorIndex);
 
   // Update UI
   updatePaletteSelection();
@@ -1512,49 +1434,9 @@ function initGlyphPicker() {
 
   // Listen to glyph selection events to update preview and sync tools
   stateManager.on("glyph:selected", (data) => {
-    // Sync character to spray tool
-    if (sprayTool && data.char) {
-      const sprayCell = sprayTool.getCurrentCell();
-      sprayTool.setCurrentCell({
-        ...sprayCell,
-        ch: data.char,
-      });
-    }
-
-    // Sync character to rectangle tool
-    if (rectangleTool && data.char) {
-      const rectangleCell = rectangleTool.getCurrentCell();
-      rectangleTool.setCurrentCell({
-        ...rectangleCell,
-        ch: data.char,
-      });
-    }
-
-    // Sync character to line tool
-    if (lineTool && data.char) {
-      const lineCell = lineTool.getCurrentCell();
-      lineTool.setCurrentCell({
-        ...lineCell,
-        ch: data.char,
-      });
-    }
-
-    // Sync character to circle tool
-    if (circleTool && data.char) {
-      const circleCell = circleTool.getCurrentCell();
-      circleTool.setCurrentCell({
-        ...circleCell,
-        ch: data.char,
-      });
-    }
-
-    // Sync character to flood fill tool
-    if (floodFillTool && data.char) {
-      const floodFillCell = floodFillTool.getCurrentCell();
-      floodFillTool.setCurrentCell({
-        ...floodFillCell,
-        ch: data.char,
-      });
+    // Sync character to all tools
+    if (data.char) {
+      updateAllToolsProperty("ch", data.char);
     }
 
     updateColorPreview();

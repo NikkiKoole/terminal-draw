@@ -26,7 +26,7 @@
     /* Transparent but receives pointer events */
     background: transparent;
     /* Match font settings to calculate 1ch correctly */
-    font-family: "JetBrains Mono", monospace;
+    font-family: var(--font-mono);
     font-size: var(--cell-size);
 }
 
@@ -43,7 +43,7 @@
     border: 1px solid rgba(255, 255, 0, 0.6);
     box-sizing: border-box;
     display: none;
-    font-family: "JetBrains Mono", monospace;
+    font-family: var(--font-mono);
     font-size: var(--cell-size);
 }
 
@@ -79,7 +79,7 @@
     height: calc(var(--grid-h) * var(--cell-height));
     background-color: var(--color-bg-0);
     z-index: 0;
-    font-family: "JetBrains Mono", monospace;
+    font-family: var(--font-mono);
     font-size: var(--cell-size);
 }
 
@@ -90,7 +90,7 @@
     left: 0;
     pointer-events: none;
     user-select: none;
-    font-family: "JetBrains Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 0;
     line-height: 0;
     z-index: 1;
@@ -129,7 +129,7 @@
 /* Individual Cells - text only, no background */
 .cell {
     display: inline-block;
-    font-family: "JetBrains Mono", monospace;
+    font-family: var(--font-mono);
     font-size: var(--cell-size);
     line-height: var(--cell-height);
     width: 1ch;

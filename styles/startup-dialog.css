@@ -327,7 +327,7 @@
 
 /* Border preview */
 .border-preview {
-    font-family: "JetBrains Mono", "Fira Code", "Consolas", monospace;
+    font-family: var(--font-mono), "Fira Code", "Consolas", monospace;
     font-size: 12px;
     line-height: 1.2;
     background: rgba(0, 0, 0, 0.1);

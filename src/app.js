@@ -67,6 +67,54 @@ let circleTool = null;
 let floodFillTool = null;
 let currentTool = null;
 
+// Tool configuration - centralizes tool setup to eliminate repetitive code
+const TOOL_CONFIG = [
+  {
+    name: "brushTool",
+    class: BrushTool,
+    id: "brush",
+    key: "b",
+    args: [{ ch: "█", fg: 7, bg: -1 }],
+  },
+  { name: "eraserTool", class: EraserTool, id: "eraser", key: "e", args: [] },
+  { name: "pickerTool", class: PickerTool, id: "picker", key: "p", args: [] },
+  {
+    name: "sprayTool",
+    class: SprayTool,
+    id: "spray",
+    key: "s",
+    args: [{ ch: ".", fg: 7, bg: -1 }],
+  },
+  {
+    name: "rectangleTool",
+    class: RectangleTool,
+    id: "rectangle",
+    key: "r",
+    args: [{ ch: "█", fg: 7, bg: -1 }],
+  },
+  {
+    name: "lineTool",
+    class: LineTool,
+    id: "line",
+    key: "l",
+    args: [{ ch: "█", fg: 7, bg: -1 }],
+  },
+  {
+    name: "circleTool",
+    class: CircleTool,
+    id: "circle",
+    key: "c",
+    args: [{ ch: "█", fg: 7, bg: -1 }],
+  },
+  {
+    name: "floodFillTool",
+    class: FloodFillTool,
+    id: "floodfill",
+    key: "f",
+    args: [{ ch: "█", fg: 7, bg: -1 }],
+  },
+];
+
 // Startup Dialog
 let startupDialog = null;
 
@@ -972,53 +1020,40 @@ function updateBrushPreview() {
  * Initialize tools
  */
 function initTools() {
-  // Create tool instances with command history
-  brushTool = new BrushTool({ ch: "█", fg: 7, bg: -1 }, commandHistory);
-  eraserTool = new EraserTool(commandHistory);
-  pickerTool = new PickerTool(commandHistory);
-  sprayTool = new SprayTool({ ch: ".", fg: 7, bg: -1 }, commandHistory);
-  rectangleTool = new RectangleTool({ ch: "█", fg: 7, bg: -1 }, commandHistory);
-  lineTool = new LineTool({ ch: "█", fg: 7, bg: -1 }, commandHistory);
-  circleTool = new CircleTool({ ch: "█", fg: 7, bg: -1 }, commandHistory);
-  floodFillTool = new FloodFillTool({ ch: "█", fg: 7, bg: -1 }, commandHistory);
+  // Create tool instances with command history (using configuration)
+  TOOL_CONFIG.forEach((config) => {
+    const tool = new config.class(...config.args, commandHistory);
+    // Assign to module-level variable by name
+    if (config.name === "brushTool") brushTool = tool;
+    else if (config.name === "eraserTool") eraserTool = tool;
+    else if (config.name === "pickerTool") pickerTool = tool;
+    else if (config.name === "sprayTool") sprayTool = tool;
+    else if (config.name === "rectangleTool") rectangleTool = tool;
+    else if (config.name === "lineTool") lineTool = tool;
+    else if (config.name === "circleTool") circleTool = tool;
+    else if (config.name === "floodFillTool") floodFillTool = tool;
+  });
 
   // Set initial tool
   setCurrentTool(brushTool);
 
-  // Setup tool buttons
-  const brushBtn = document.getElementById("tool-brush");
-  const eraserBtn = document.getElementById("tool-eraser");
-  const pickerBtn = document.getElementById("tool-picker");
-  const sprayBtn = document.getElementById("tool-spray");
-  const rectangleBtn = document.getElementById("tool-rectangle");
-  const lineBtn = document.getElementById("tool-line");
-  const circleBtn = document.getElementById("tool-circle");
-  const floodFillBtn = document.getElementById("tool-floodfill");
+  // Setup tool buttons (using configuration)
+  TOOL_CONFIG.forEach((config) => {
+    const button = document.getElementById(`tool-${config.id}`);
+    if (button) {
+      let tool;
+      if (config.name === "brushTool") tool = brushTool;
+      else if (config.name === "eraserTool") tool = eraserTool;
+      else if (config.name === "pickerTool") tool = pickerTool;
+      else if (config.name === "sprayTool") tool = sprayTool;
+      else if (config.name === "rectangleTool") tool = rectangleTool;
+      else if (config.name === "lineTool") tool = lineTool;
+      else if (config.name === "circleTool") tool = circleTool;
+      else if (config.name === "floodFillTool") tool = floodFillTool;
 
-  if (brushBtn) {
-    brushBtn.addEventListener("click", () => setCurrentTool(brushTool));
-  }
-  if (eraserBtn) {
-    eraserBtn.addEventListener("click", () => setCurrentTool(eraserTool));
-  }
-  if (pickerBtn) {
-    pickerBtn.addEventListener("click", () => setCurrentTool(pickerTool));
-  }
-  if (sprayBtn) {
-    sprayBtn.addEventListener("click", () => setCurrentTool(sprayTool));
-  }
-  if (rectangleBtn) {
-    rectangleBtn.addEventListener("click", () => setCurrentTool(rectangleTool));
-  }
-  if (lineBtn) {
-    lineBtn.addEventListener("click", () => setCurrentTool(lineTool));
-  }
-  if (circleBtn) {
-    circleBtn.addEventListener("click", () => setCurrentTool(circleTool));
-  }
-  if (floodFillBtn) {
-    floodFillBtn.addEventListener("click", () => setCurrentTool(floodFillTool));
-  }
+      button.addEventListener("click", () => setCurrentTool(tool));
+    }
+  });
 
   // Keyboard shortcuts
   initKeyboardShortcuts();
@@ -1061,32 +1096,23 @@ function initKeyboardShortcuts() {
       return;
     }
 
-    // Tool shortcuts
-    switch (e.key.toLowerCase()) {
-      case "b":
-        setCurrentTool(brushTool);
-        break;
-      case "e":
-        setCurrentTool(eraserTool);
-        break;
-      case "p":
-        setCurrentTool(pickerTool);
-        break;
-      case "s":
-        setCurrentTool(sprayTool);
-        break;
-      case "r":
-        setCurrentTool(rectangleTool);
-        break;
-      case "l":
-        setCurrentTool(lineTool);
-        break;
-      case "c":
-        setCurrentTool(circleTool);
-        break;
-      case "f":
-        setCurrentTool(floodFillTool);
-        break;
+    // Tool shortcuts (using configuration)
+    const key = e.key.toLowerCase();
+    const toolConfig = TOOL_CONFIG.find((config) => config.key === key);
+    if (toolConfig) {
+      let tool;
+      if (toolConfig.name === "brushTool") tool = brushTool;
+      else if (toolConfig.name === "eraserTool") tool = eraserTool;
+      else if (toolConfig.name === "pickerTool") tool = pickerTool;
+      else if (toolConfig.name === "sprayTool") tool = sprayTool;
+      else if (toolConfig.name === "rectangleTool") tool = rectangleTool;
+      else if (toolConfig.name === "lineTool") tool = lineTool;
+      else if (toolConfig.name === "circleTool") tool = circleTool;
+      else if (toolConfig.name === "floodFillTool") tool = floodFillTool;
+
+      if (tool) {
+        setCurrentTool(tool);
+      }
     }
   });
 }
@@ -1895,7 +1921,6 @@ function initUIComponents() {
   initInput();
   initCommandHistory();
   initTools();
-  initKeyboardShortcuts();
   initLayerPanel();
   initInteractivePalette();
   initGlyphPicker();

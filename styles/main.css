@@ -14,6 +14,9 @@
 
 /* CSS Custom Properties */
 :root {
+    /* Font family */
+    --font-mono: "JetBrains Mono", monospace;
+
     /* Grid dimensions */
     --grid-w: 80;
     --grid-h: 25;
@@ -79,7 +82,7 @@ body {
 }
 
 body {
-    font-family: "JetBrains Mono", monospace;
+    font-family: var(--font-mono);
     font-size: var(--font-size-base);
     line-height: 1.5;
     color: var(--ui-text);
@@ -495,7 +498,7 @@ main {
 }
 
 .preview-cell {
-    font-family: "JetBrains Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 24px;
     line-height: 1;
     min-width: 32px;

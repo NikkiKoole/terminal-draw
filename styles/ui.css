@@ -658,7 +658,7 @@
 }
 
 .preview-cell {
-    font-family: "JetBrains Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 24px;
     line-height: 1;
     min-width: 32px;
@@ -701,7 +701,7 @@
 }
 
 .trigger-char {
-    font-family: "JetBrains Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 24px;
     line-height: 1;
     min-width: 32px;
@@ -821,7 +821,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: "JetBrains Mono", monospace;
+    font-family: var(--font-mono);
     font-size: 20px;
     background: var(--ui-bg);
     border: 1px solid var(--ui-border);

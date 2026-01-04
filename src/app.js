@@ -1054,6 +1054,10 @@ function initTools() {
   // Create tool instances with command history (using configuration)
   TOOL_CONFIG.forEach((config) => {
     const tool = new config.class(...config.args, commandHistory);
+
+    // Store tool reference in config for easy lookup
+    config.tool = tool;
+
     // Assign to module-level variable by name
     if (config.name === "brushTool") brushTool = tool;
     else if (config.name === "eraserTool") eraserTool = tool;
@@ -1195,10 +1199,8 @@ function setCurrentTool(tool) {
     }
   });
 
-  // Find and activate current tool
-  const activeConfig = TOOL_CONFIG.find(
-    (config) => window[config.name] === tool,
-  );
+  // Find and activate current tool using stored tool reference
+  const activeConfig = TOOL_CONFIG.find((config) => config.tool === tool);
   if (activeConfig) {
     const button = document.getElementById(`tool-${activeConfig.id}`);
     if (button) button.classList.add("active");

@@ -101,15 +101,31 @@ const TOOL_CONFIG = [
     id: "brush",
     key: "b",
     args: [{ ch: "█", fg: 7, bg: -1 }],
+    hasOptions: true,
   },
-  { name: "eraserTool", class: EraserTool, id: "eraser", key: "e", args: [] },
-  { name: "pickerTool", class: PickerTool, id: "picker", key: "p", args: [] },
+  {
+    name: "eraserTool",
+    class: EraserTool,
+    id: "eraser",
+    key: "e",
+    args: [],
+    hasOptions: false,
+  },
+  {
+    name: "pickerTool",
+    class: PickerTool,
+    id: "picker",
+    key: "p",
+    args: [],
+    hasOptions: false,
+  },
   {
     name: "sprayTool",
     class: SprayTool,
     id: "spray",
     key: "s",
     args: [{ ch: ".", fg: 7, bg: -1 }],
+    hasOptions: true,
   },
   {
     name: "rectangleTool",
@@ -117,6 +133,7 @@ const TOOL_CONFIG = [
     id: "rectangle",
     key: "r",
     args: [{ ch: "█", fg: 7, bg: -1 }],
+    hasOptions: true,
   },
   {
     name: "lineTool",
@@ -124,6 +141,7 @@ const TOOL_CONFIG = [
     id: "line",
     key: "l",
     args: [{ ch: "█", fg: 7, bg: -1 }],
+    hasOptions: false,
   },
   {
     name: "circleTool",
@@ -131,6 +149,7 @@ const TOOL_CONFIG = [
     id: "circle",
     key: "c",
     args: [{ ch: "█", fg: 7, bg: -1 }],
+    hasOptions: true,
   },
   {
     name: "floodFillTool",
@@ -138,6 +157,7 @@ const TOOL_CONFIG = [
     id: "floodfill",
     key: "f",
     args: [{ ch: "█", fg: 7, bg: -1 }],
+    hasOptions: false,
   },
 ];
 
@@ -1164,61 +1184,29 @@ function setCurrentTool(tool) {
     hitTestOverlay.setCursor(tool.getCursor());
   }
 
-  // Update button states
-  const buttons = document.querySelectorAll('[id^="tool-"]');
-  buttons.forEach((btn) => btn.classList.remove("active"));
+  // Clear all active states and hide all options using configuration
+  TOOL_CONFIG.forEach((config) => {
+    const button = document.getElementById(`tool-${config.id}`);
+    if (button) button.classList.remove("active");
 
-  // Hide all tool-specific options by default
-  const sprayOptions = document.getElementById("spray-options");
-  const brushOptions = document.getElementById("brush-options");
-  const rectangleOptions = document.getElementById("rectangle-options");
-  const circleOptions = document.getElementById("circle-options");
+    if (config.hasOptions) {
+      const options = document.getElementById(`${config.id}-options`);
+      if (options) options.style.display = "none";
+    }
+  });
 
-  if (sprayOptions) {
-    sprayOptions.style.display = "none";
-  }
-  if (brushOptions) {
-    brushOptions.style.display = "none";
-  }
-  if (rectangleOptions) {
-    rectangleOptions.style.display = "none";
-  }
-  if (circleOptions) {
-    circleOptions.style.display = "none";
-  }
+  // Find and activate current tool
+  const activeConfig = TOOL_CONFIG.find(
+    (config) => window[config.name] === tool,
+  );
+  if (activeConfig) {
+    const button = document.getElementById(`tool-${activeConfig.id}`);
+    if (button) button.classList.add("active");
 
-  if (tool === brushTool) {
-    document.getElementById("tool-brush")?.classList.add("active");
-    // Show brush options
-    if (brushOptions) {
-      brushOptions.style.display = "flex";
+    if (activeConfig.hasOptions) {
+      const options = document.getElementById(`${activeConfig.id}-options`);
+      if (options) options.style.display = "flex";
     }
-  } else if (tool === eraserTool) {
-    document.getElementById("tool-eraser")?.classList.add("active");
-  } else if (tool === pickerTool) {
-    document.getElementById("tool-picker")?.classList.add("active");
-  } else if (tool === sprayTool) {
-    document.getElementById("tool-spray")?.classList.add("active");
-    // Show spray options
-    if (sprayOptions) {
-      sprayOptions.style.display = "flex";
-    }
-  } else if (tool === rectangleTool) {
-    document.getElementById("tool-rectangle")?.classList.add("active");
-    // Show rectangle options
-    if (rectangleOptions) {
-      rectangleOptions.style.display = "flex";
-    }
-  } else if (tool === lineTool) {
-    document.getElementById("tool-line")?.classList.add("active");
-  } else if (tool === circleTool) {
-    document.getElementById("tool-circle")?.classList.add("active");
-    // Show circle options
-    if (circleOptions) {
-      circleOptions.style.display = "flex";
-    }
-  } else if (tool === floodFillTool) {
-    document.getElementById("tool-floodfill")?.classList.add("active");
   }
 
   updateStatus(

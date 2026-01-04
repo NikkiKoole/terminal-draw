@@ -297,19 +297,41 @@ export class CircleTool extends Tool {
       return cells;
     }
 
-    // Bresenham circle algorithm
+    // Bresenham circle algorithm - use connected mode for smart drawing
     const circlePoints = this._bresenhamCircle(
       this.centerX,
       this.centerY,
       radius,
+      this.drawingMode !== "normal",
     );
+
+    // For smart mode, collect all circle positions first
+    const circlePositions = new Set();
+    if (this.drawingMode !== "normal") {
+      for (const point of circlePoints) {
+        if (
+          point.x >= 0 &&
+          point.x < scene.w &&
+          point.y >= 0 &&
+          point.y < scene.h
+        ) {
+          circlePositions.add(`${point.x},${point.y}`);
+        }
+      }
+    }
 
     for (const point of circlePoints) {
       const { x, y } = point;
 
       // Check bounds
       if (x >= 0 && x < scene.w && y >= 0 && y < scene.h) {
-        const char = this._getCircleChar();
+        let char;
+        if (this.drawingMode === "normal") {
+          char = this._getCircleChar();
+        } else {
+          // Smart mode: select box-drawing character based on neighbors
+          char = this._getSmartCircleChar(x, y, circlePositions);
+        }
         const beforeCell = activeLayer.getCell(x, y) || new Cell(" ", 7, -1);
         const afterCell = this._applyPaintMode(char, beforeCell);
         cells.push({ x, y, cell: afterCell });
@@ -345,20 +367,42 @@ export class CircleTool extends Tool {
       return cells;
     }
 
-    // Generate ellipse outline points
+    // Generate ellipse outline points - use connected mode for smart drawing
     const ellipsePoints = this._bresenhamEllipse(
       this.centerX,
       this.centerY,
       radiusX,
       radiusY,
+      this.drawingMode !== "normal",
     );
+
+    // For smart mode, collect all ellipse positions first
+    const ellipsePositions = new Set();
+    if (this.drawingMode !== "normal") {
+      for (const point of ellipsePoints) {
+        if (
+          point.x >= 0 &&
+          point.x < scene.w &&
+          point.y >= 0 &&
+          point.y < scene.h
+        ) {
+          ellipsePositions.add(`${point.x},${point.y}`);
+        }
+      }
+    }
 
     for (const point of ellipsePoints) {
       const { x, y } = point;
 
       // Check bounds
       if (x >= 0 && x < scene.w && y >= 0 && y < scene.h) {
-        const char = this._getCircleChar();
+        let char;
+        if (this.drawingMode === "normal") {
+          char = this._getCircleChar();
+        } else {
+          // Smart mode: select box-drawing character based on neighbors
+          char = this._getSmartCircleChar(x, y, ellipsePositions);
+        }
         const beforeCell = activeLayer.getCell(x, y) || new Cell(" ", 7, -1);
         const afterCell = this._applyPaintMode(char, beforeCell);
         cells.push({ x, y, cell: afterCell });
@@ -476,14 +520,15 @@ export class CircleTool extends Tool {
   }
 
   /**
-   * Bresenham circle algorithm to get circle outline points
-   * @param {number} centerX - Circle center X coordinate
-   * @param {number} centerY - Circle center Y coordinate
+   * Generate circle outline using Bresenham algorithm
+   * @param {number} centerX - Center X coordinate
+   * @param {number} centerY - Center Y coordinate
    * @param {number} radius - Circle radius
-   * @returns {Array} Array of {x, y} points on circle outline
+   * @param {boolean} connected - If true, ensures 4-connectivity (no diagonal gaps)
+   * @returns {Array} Array of {x, y} points
    * @private
    */
-  _bresenhamCircle(centerX, centerY, radius) {
+  _bresenhamCircle(centerX, centerY, radius, connected = false) {
     const points = [];
     let x = 0;
     let y = radius;
@@ -493,6 +538,7 @@ export class CircleTool extends Tool {
     this._addCirclePoints(points, centerX, centerY, x, y);
 
     while (y >= x) {
+      const prevY = y;
       x++;
 
       if (d > 0) {
@@ -500,6 +546,11 @@ export class CircleTool extends Tool {
         d = d + 4 * (x - y) + 10;
       } else {
         d = d + 4 * x + 6;
+      }
+
+      // If connected mode and we moved diagonally, add connecting point
+      if (connected && y !== prevY && x > 0) {
+        this._addCirclePoints(points, centerX, centerY, x, prevY);
       }
 
       this._addCirclePoints(points, centerX, centerY, x, y);
@@ -514,10 +565,11 @@ export class CircleTool extends Tool {
    * @param {number} centerY - Ellipse center Y coordinate
    * @param {number} radiusX - Horizontal radius
    * @param {number} radiusY - Vertical radius
+   * @param {boolean} connected - If true, ensures 4-connectivity (no diagonal gaps)
    * @returns {Array} Array of {x, y} points on ellipse outline
    * @private
    */
-  _bresenhamEllipse(centerX, centerY, radiusX, radiusY) {
+  _bresenhamEllipse(centerX, centerY, radiusX, radiusY, connected = false) {
     const points = [];
 
     if (radiusX === 0 && radiusY === 0) {
@@ -556,6 +608,9 @@ export class CircleTool extends Tool {
     p = Math.round(radiusY2 - radiusX2 * radiusY + 0.25 * radiusX2);
 
     while (px < py) {
+      const prevX = x;
+      const prevY = y;
+
       x++;
       px += twoRadiusY2;
       if (p < 0) {
@@ -565,6 +620,12 @@ export class CircleTool extends Tool {
         py -= twoRadiusX2;
         p += radiusY2 + px - py;
       }
+
+      // If connected mode and we moved diagonally, add connecting point
+      if (connected && x !== prevX && y !== prevY) {
+        this._addEllipsePoints(points, centerX, centerY, x, prevY);
+      }
+
       this._addEllipsePoints(points, centerX, centerY, x, y);
     }
 
@@ -576,6 +637,9 @@ export class CircleTool extends Tool {
     );
 
     while (y > 0) {
+      const prevX = x;
+      const prevY = y;
+
       y--;
       py -= twoRadiusX2;
       if (p > 0) {
@@ -585,6 +649,12 @@ export class CircleTool extends Tool {
         px += twoRadiusY2;
         p += radiusX2 - py + px;
       }
+
+      // If connected mode and we moved diagonally, add connecting point
+      if (connected && x !== prevX && y !== prevY) {
+        this._addEllipsePoints(points, centerX, centerY, prevX, y);
+      }
+
       this._addEllipsePoints(points, centerX, centerY, x, y);
     }
 
@@ -640,6 +710,79 @@ export class CircleTool extends Tool {
     } else {
       return this.currentCell.ch; // Use selected glyph for normal mode
     }
+  }
+
+  /**
+   * Get box-drawing character set based on drawing mode
+   * @returns {object} Character set
+   * @private
+   */
+  _getBoxDrawingCharSet() {
+    if (this.drawingMode === "single") {
+      return {
+        horizontal: "─",
+        vertical: "│",
+        topLeft: "┌",
+        topRight: "┐",
+        bottomLeft: "└",
+        bottomRight: "┘",
+      };
+    } else if (this.drawingMode === "double") {
+      return {
+        horizontal: "═",
+        vertical: "║",
+        topLeft: "╔",
+        topRight: "╗",
+        bottomLeft: "╚",
+        bottomRight: "╝",
+      };
+    }
+    // Shouldn't reach here in smart mode
+    return {};
+  }
+
+  /**
+   * Get smart circle character based on neighboring positions
+   * @param {number} x - Current x position
+   * @param {number} y - Current y position
+   * @param {Set} positions - Set of all circle/ellipse position keys
+   * @returns {string} Appropriate box-drawing character
+   * @private
+   */
+  _getSmartCircleChar(x, y, positions) {
+    const chars = this._getBoxDrawingCharSet();
+
+    // Check 4-directional neighbors
+    const hasLeft = positions.has(`${x - 1},${y}`);
+    const hasRight = positions.has(`${x + 1},${y}`);
+    const hasUp = positions.has(`${x},${y - 1}`);
+    const hasDown = positions.has(`${x},${y + 1}`);
+
+    // Count connections
+    const connectionCount = [hasLeft, hasRight, hasUp, hasDown].filter(
+      Boolean,
+    ).length;
+
+    // Select character based on connection pattern
+    if (connectionCount === 1) {
+      if (hasLeft || hasRight) return chars.horizontal;
+      if (hasUp || hasDown) return chars.vertical;
+    }
+
+    if (connectionCount === 2) {
+      // Straight lines
+      if (hasLeft && hasRight) return chars.horizontal;
+      if (hasUp && hasDown) return chars.vertical;
+
+      // Corners
+      if (hasRight && hasDown) return chars.topLeft;
+      if (hasLeft && hasDown) return chars.topRight;
+      if (hasRight && hasUp) return chars.bottomLeft;
+      if (hasLeft && hasUp) return chars.bottomRight;
+    }
+
+    // For 3+ connections or no connections, use horizontal as fallback
+    return chars.horizontal;
   }
 
   /**

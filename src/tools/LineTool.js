@@ -172,10 +172,11 @@ export class LineTool extends Tool {
    * @param {number} y0 - Start y coordinate
    * @param {number} x1 - End x coordinate
    * @param {number} y1 - End y coordinate
+   * @param {boolean} connected - If true, ensures 4-connectivity (no diagonal gaps)
    * @returns {Array} Array of {x, y} points
    * @private
    */
-  _bresenham(x0, y0, x1, y1) {
+  _bresenham(x0, y0, x1, y1, connected = false) {
     const points = [];
     const dx = Math.abs(x1 - x0);
     const dy = Math.abs(y1 - y0);
@@ -194,6 +195,8 @@ export class LineTool extends Tool {
       }
 
       const e2 = 2 * err;
+      const prevX = x;
+      const prevY = y;
 
       if (e2 > -dy) {
         err -= dy;
@@ -203,6 +206,12 @@ export class LineTool extends Tool {
       if (e2 < dx) {
         err += dx;
         y += sy;
+      }
+
+      // If connected mode and we moved diagonally, add connecting point
+      if (connected && x !== prevX && y !== prevY) {
+        // Add intermediate point to ensure 4-connectivity
+        points.push({ x: prevX, y: y });
       }
     }
 
@@ -327,15 +336,12 @@ export class LineTool extends Tool {
       return cells;
     }
 
-    // In smart mode, we need to insert corner cells between staircase steps
-    const processedPoints =
-      this.drawingMode !== "normal"
-        ? this._insertCornerCells(points)
-        : points.map((p, i) => ({
-            ...p,
-            prev: i > 0 ? points[i - 1] : null,
-            next: i < points.length - 1 ? points[i + 1] : null,
-          }));
+    // Process points - in smart mode they already have corners from connected Bresenham
+    const processedPoints = points.map((p, i) => ({
+      ...p,
+      prev: i > 0 ? points[i - 1] : null,
+      next: i < points.length - 1 ? points[i + 1] : null,
+    }));
 
     for (const point of processedPoints) {
       // Determine character for this point
@@ -356,56 +362,6 @@ export class LineTool extends Tool {
     }
 
     return cells;
-  }
-
-  /**
-   * Insert corner cells between Bresenham staircase steps for smart mode
-   * @param {Array} points - Original Bresenham points
-   * @returns {Array} Points with corner cells inserted
-   * @private
-   */
-  _insertCornerCells(points) {
-    if (points.length < 2) {
-      return points.map((p, i) => ({
-        ...p,
-        prev: null,
-        next: i < points.length - 1 ? points[i + 1] : null,
-      }));
-    }
-
-    // Build a complete path by inserting corner cells between non-adjacent points
-    const completePath = [];
-
-    for (let i = 0; i < points.length; i++) {
-      const curr = points[i];
-      const next = i < points.length - 1 ? points[i + 1] : null;
-
-      completePath.push(curr);
-
-      if (next) {
-        const dx = next.x - curr.x;
-        const dy = next.y - curr.y;
-
-        // If Bresenham moved both horizontally and vertically in one step,
-        // we need to insert a corner cell to connect them
-        if (dx !== 0 && dy !== 0) {
-          // Insert corner at the "elbow" of the staircase
-          // We can go either horizontal-then-vertical or vertical-then-horizontal
-          // Let's go horizontal first (curr.x -> next.x, then curr.y -> next.y)
-          completePath.push({
-            x: next.x,
-            y: curr.y,
-          });
-        }
-      }
-    }
-
-    // Now add prev/next references to all points in the complete path
-    return completePath.map((p, i) => ({
-      ...p,
-      prev: i > 0 ? completePath[i - 1] : null,
-      next: i < completePath.length - 1 ? completePath[i + 1] : null,
-    }));
   }
 
   /**
@@ -439,12 +395,13 @@ export class LineTool extends Tool {
       return;
     }
 
-    // Calculate line points using Bresenham
+    // Calculate line points using Bresenham - use connected mode for smart drawing
     const points = this._bresenham(
       this.startX,
       this.startY,
       this.currentX,
       this.currentY,
+      this.drawingMode !== "normal",
     );
 
     // Get cells for the line

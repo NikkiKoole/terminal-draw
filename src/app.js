@@ -41,11 +41,37 @@ import { addBorderToScene, isValidBorderStyle } from "./core/BorderUtils.js";
 // Configuration & State
 // =============================================================================
 
+// Constants for magic numbers
+const Z_INDEX = {
+  LAYER_BASE: 100,
+  PREVIEW_OVERLAY: 1000,
+};
+
+const TIMEOUTS = {
+  STATUS_HIDE: 3000,
+  STATUS_UPDATE: 2000,
+};
+
+const PREVIEW_COLORS = {
+  CIRCLE: "rgba(100, 255, 150, 0.8)",
+  CIRCLE_BG: "rgba(100, 255, 150, 0.25)",
+  BRUSH: "rgba(100, 150, 255, 0.8)",
+  BRUSH_BG: "rgba(100, 150, 255, 0.25)",
+  RECTANGLE: "rgba(255, 200, 100, 0.8)",
+  RECTANGLE_BG: "rgba(255, 200, 100, 0.25)",
+};
+
+const SCALE = {
+  MIN: 10,
+  MAX: 1000,
+  DEFAULT: 100,
+};
+
 let GRID_WIDTH = 80;
 let GRID_HEIGHT = 25;
 
 let currentPalette = "default";
-let currentScale = 100;
+let currentScale = SCALE.DEFAULT;
 
 // Command History
 let commandHistory;
@@ -307,7 +333,7 @@ function createLayerContainers() {
     container.id = `layer-${layer.id}`;
     container.className = "visual-layer";
     container.setAttribute("data-layer", layer.id);
-    container.style.zIndex = 100 + index; // Ensure proper stacking order
+    container.style.zIndex = Z_INDEX.LAYER_BASE + index; // Ensure proper stacking order
 
     // Insert before the hit-test overlay (which should be on top)
     const hitTestOverlay = gridStack.querySelector(".hit-test-overlay");
@@ -627,16 +653,11 @@ function showCirclePreview(
   const container = document.querySelector(".grid-container");
   if (!container) return;
 
-  // Create preview overlay if it doesn't exist
-  let previewOverlay = document.getElementById("circle-preview-overlay");
-  if (!previewOverlay) {
-    previewOverlay = document.createElement("div");
-    previewOverlay.id = "circle-preview-overlay";
-    previewOverlay.style.position = "absolute";
-    previewOverlay.style.pointerEvents = "none";
-    previewOverlay.style.zIndex = "1000";
-    container.appendChild(previewOverlay);
-  }
+  // Create preview overlay
+  const previewOverlay = getOrCreatePreviewOverlay(
+    "circle-preview-overlay",
+    container,
+  );
 
   // Calculate circle preview cells using Bresenham algorithm
   const previewCells = getCirclePreviewCells(
@@ -657,8 +678,8 @@ function showCirclePreview(
     previewCell.style.top = `${cell.y * cellDimensions.height}px`;
     previewCell.style.width = `${cellDimensions.width}px`;
     previewCell.style.height = `${cellDimensions.height}px`;
-    previewCell.style.border = "1px solid rgba(100, 255, 150, 0.8)";
-    previewCell.style.backgroundColor = "rgba(100, 255, 150, 0.25)";
+    previewCell.style.border = `1px solid ${PREVIEW_COLORS.CIRCLE}`;
+    previewCell.style.backgroundColor = PREVIEW_COLORS.CIRCLE_BG;
     previewCell.style.borderRadius = "1px";
     previewCell.style.boxSizing = "border-box";
     previewOverlay.appendChild(previewCell);
@@ -881,16 +902,11 @@ function showBrushPreview(x, y) {
   const container = document.querySelector(".grid-container");
   if (!container) return;
 
-  // Create preview overlay if it doesn't exist
-  let previewOverlay = document.getElementById("brush-preview-overlay");
-  if (!previewOverlay) {
-    previewOverlay = document.createElement("div");
-    previewOverlay.id = "brush-preview-overlay";
-    previewOverlay.style.position = "absolute";
-    previewOverlay.style.pointerEvents = "none";
-    previewOverlay.style.zIndex = "1000";
-    container.appendChild(previewOverlay);
-  }
+  // Create preview overlay
+  const previewOverlay = getOrCreatePreviewOverlay(
+    "brush-preview-overlay",
+    container,
+  );
 
   // Get brush preview cells
   const previewCells = brushTool.getBrushPreview(x, y, scene);
@@ -904,8 +920,8 @@ function showBrushPreview(x, y) {
     previewCell.style.top = `${cell.y * cellDimensions.height}px`;
     previewCell.style.width = `${cellDimensions.width}px`;
     previewCell.style.height = `${cellDimensions.height}px`;
-    previewCell.style.border = "1px solid rgba(100, 150, 255, 0.8)";
-    previewCell.style.backgroundColor = "rgba(100, 150, 255, 0.25)";
+    previewCell.style.border = `1px solid ${PREVIEW_COLORS.BRUSH}`;
+    previewCell.style.backgroundColor = PREVIEW_COLORS.BRUSH_BG;
     previewCell.style.borderRadius = "2px";
     previewCell.style.boxSizing = "border-box";
     previewOverlay.appendChild(previewCell);
@@ -934,16 +950,11 @@ function showRectanglePreview(x1, y1, x2, y2, fillMode) {
   const container = document.querySelector(".grid-container");
   if (!container) return;
 
-  // Create preview overlay if it doesn't exist
-  let previewOverlay = document.getElementById("rectangle-preview-overlay");
-  if (!previewOverlay) {
-    previewOverlay = document.createElement("div");
-    previewOverlay.id = "rectangle-preview-overlay";
-    previewOverlay.style.position = "absolute";
-    previewOverlay.style.pointerEvents = "none";
-    previewOverlay.style.zIndex = "1000";
-    container.appendChild(previewOverlay);
-  }
+  // Create preview overlay
+  const previewOverlay = getOrCreatePreviewOverlay(
+    "rectangle-preview-overlay",
+    container,
+  );
 
   // Calculate rectangle preview cells
   const previewCells = getRectanglePreviewCells(x1, y1, x2, y2, fillMode);
@@ -957,8 +968,8 @@ function showRectanglePreview(x1, y1, x2, y2, fillMode) {
     previewCell.style.top = `${cell.y * cellDimensions.height}px`;
     previewCell.style.width = `${cellDimensions.width}px`;
     previewCell.style.height = `${cellDimensions.height}px`;
-    previewCell.style.border = "1px solid rgba(255, 200, 100, 0.8)";
-    previewCell.style.backgroundColor = "rgba(255, 200, 100, 0.25)";
+    previewCell.style.border = `1px solid ${PREVIEW_COLORS.RECTANGLE}`;
+    previewCell.style.backgroundColor = PREVIEW_COLORS.RECTANGLE_BG;
     previewCell.style.borderRadius = "1px";
     previewCell.style.boxSizing = "border-box";
     previewOverlay.appendChild(previewCell);
@@ -1311,6 +1322,23 @@ function initInteractivePalette() {
 }
 
 /**
+ * Get or create a preview overlay element
+ * @param {string} id - Unique ID for the overlay
+ * @param {HTMLElement} container - Container to append overlay to
+ * @returns {HTMLElement} The preview overlay element
+ */
+function getOrCreatePreviewOverlay(id, container) {
+  let overlay = document.getElementById(id);
+  if (!overlay) {
+    overlay = document.createElement("div");
+    overlay.id = id;
+    overlay.style.cssText = `position: absolute; pointer-events: none; z-index: ${Z_INDEX.PREVIEW_OVERLAY};`;
+    container.appendChild(overlay);
+  }
+  return overlay;
+}
+
+/**
  * Update all tools with a specific property
  */
 function updateAllToolsProperty(property, value) {
@@ -1509,7 +1537,7 @@ function showExportStatus(result, statusElement, layerId = null) {
   // Hide after 3 seconds
   setTimeout(() => {
     statusElement.classList.add("hidden");
-  }, 3000);
+  }, TIMEOUTS.STATUS_HIDE);
 }
 
 /**
@@ -1735,7 +1763,7 @@ function showProjectStatus(result, statusElement) {
   // Hide after 3 seconds
   setTimeout(() => {
     statusElement.classList.add("hidden");
-  }, 3000);
+  }, TIMEOUTS.STATUS_HIDE);
 }
 
 /**
@@ -1871,7 +1899,7 @@ function applyScale(scale) {
   if (!container) return;
 
   currentScale = scale;
-  container.style.transform = `scale(${scale / 100})`;
+  container.style.transform = `scale(${scale / SCALE.DEFAULT})`;
 
   // Update hit test overlay scale
   if (hitTestOverlay) {
@@ -1919,7 +1947,10 @@ function scaleGridToFit() {
     const scaleY = availableHeight / gridRect.height;
     const scale = Math.min(scaleX, scaleY);
 
-    const scalePercent = Math.max(10, Math.min(1000, Math.round(scale * 100)));
+    const scalePercent = Math.max(
+      SCALE.MIN,
+      Math.min(SCALE.MAX, Math.round(scale * SCALE.DEFAULT)),
+    );
     applyScale(scalePercent);
   });
 }
@@ -2146,7 +2177,7 @@ function initBrushSettings() {
       brushTool.setBrushSize(size);
 
       let statusMessage = `Brush Size: ${size}x${size}`;
-      updateStatus(statusMessage, 2000);
+      updateStatus(statusMessage, TIMEOUTS.STATUS_UPDATE);
       updateBrushPreview();
     });
 
@@ -2160,7 +2191,7 @@ function initBrushSettings() {
       brushTool.setBrushShape(shape);
 
       let statusMessage = `Brush Shape: ${shape.charAt(0).toUpperCase() + shape.slice(1)}`;
-      updateStatus(statusMessage, 2000);
+      updateStatus(statusMessage, TIMEOUTS.STATUS_UPDATE);
       updateBrushPreview();
     });
 

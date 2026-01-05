@@ -2,7 +2,7 @@
  * Tests for CellCommand class
  */
 
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "bun:test";
 import { CellCommand } from "../../src/commands/CellCommand.js";
 import { Command } from "../../src/commands/Command.js";
 

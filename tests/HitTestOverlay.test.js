@@ -1,4 +1,12 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import {
+  describe,
+  it,
+  expect,
+  beforeAll,
+  beforeEach,
+  afterEach,
+  vi,
+} from "bun:test";
 import { JSDOM } from "jsdom";
 import { HitTestOverlay } from "../src/input/HitTestOverlay.js";
 import { Scene } from "../src/core/Scene.js";
@@ -12,15 +20,17 @@ describe("HitTestOverlay", () => {
   let stateManager;
   let overlay;
 
-  beforeEach(() => {
-    // Create JSDOM instance
+  beforeAll(() => {
+    // Create JSDOM instance once for all tests
     dom = new JSDOM("<!DOCTYPE html><html><body></body></html>");
     document = dom.window.document;
     global.document = document;
     global.MouseEvent = dom.window.MouseEvent;
     global.getComputedStyle = dom.window.getComputedStyle;
+  });
 
-    // Create hit test element
+  beforeEach(() => {
+    // Create fresh DOM elements for each test
     element = document.createElement("div");
     element.id = "hit-test-layer";
     element.style.width = "1280px"; // 80 cells * 16px
@@ -40,6 +50,21 @@ describe("HitTestOverlay", () => {
     // Create scene and state manager
     scene = new Scene(80, 25);
     stateManager = new StateManager();
+  });
+
+  afterEach(() => {
+    // Clean up overlay first (before removing element)
+    if (overlay) {
+      // Check if overlay has a valid element before destroying
+      if (overlay.element) {
+        overlay.destroy();
+      }
+      overlay = null;
+    }
+    // Clean up DOM elements
+    if (element && element.parentNode) {
+      element.parentNode.removeChild(element);
+    }
   });
 
   describe("constructor", () => {
@@ -74,19 +99,19 @@ describe("HitTestOverlay", () => {
 
       expect(addEventListenerSpy).toHaveBeenCalledWith(
         "mousedown",
-        expect.any(Function)
+        expect.any(Function),
       );
       expect(addEventListenerSpy).toHaveBeenCalledWith(
         "mousemove",
-        expect.any(Function)
+        expect.any(Function),
       );
       expect(addEventListenerSpy).toHaveBeenCalledWith(
         "mouseup",
-        expect.any(Function)
+        expect.any(Function),
       );
       expect(addEventListenerSpy).toHaveBeenCalledWith(
         "mouseleave",
-        expect.any(Function)
+        expect.any(Function),
       );
     });
   });
@@ -338,7 +363,7 @@ describe("HitTestOverlay", () => {
         expect.objectContaining({
           shiftKey: true,
           ctrlKey: true,
-        })
+        }),
       );
     });
 
@@ -568,7 +593,7 @@ describe("HitTestOverlay", () => {
         expect.objectContaining({
           x: null,
           y: null,
-        })
+        }),
       );
     });
   });
@@ -652,19 +677,19 @@ describe("HitTestOverlay", () => {
 
       expect(removeEventListenerSpy).toHaveBeenCalledWith(
         "mousedown",
-        expect.any(Function)
+        expect.any(Function),
       );
       expect(removeEventListenerSpy).toHaveBeenCalledWith(
         "mousemove",
-        expect.any(Function)
+        expect.any(Function),
       );
       expect(removeEventListenerSpy).toHaveBeenCalledWith(
         "mouseup",
-        expect.any(Function)
+        expect.any(Function),
       );
       expect(removeEventListenerSpy).toHaveBeenCalledWith(
         "mouseleave",
-        expect.any(Function)
+        expect.any(Function),
       );
     });
   });
@@ -713,10 +738,10 @@ describe("HitTestOverlay", () => {
       overlay.handleMouseUp(upEvent);
 
       expect(downCallback).toHaveBeenCalledWith(
-        expect.objectContaining({ x: 10, y: 15 })
+        expect.objectContaining({ x: 10, y: 15 }),
       );
       expect(upCallback).toHaveBeenCalledWith(
-        expect.objectContaining({ x: 10, y: 15 })
+        expect.objectContaining({ x: 10, y: 15 }),
       );
     });
 

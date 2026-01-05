@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "bun:test";
 import { Scene } from "../src/core/Scene.js";
 import { StateManager } from "../src/core/StateManager.js";
 import { CommandHistory } from "../src/commands/CommandHistory.js";
@@ -17,7 +17,7 @@ describe("Clear Operations UI", () => {
   let gridStatus;
 
   // Mock DOM elements
-  function createMockElement(id, tag = 'button') {
+  function createMockElement(id, tag = "button") {
     const element = {
       id,
       tagName: tag.toUpperCase(),
@@ -25,25 +25,25 @@ describe("Clear Operations UI", () => {
         add: vi.fn(),
         remove: vi.fn(),
         contains: vi.fn(() => false),
-        toggle: vi.fn()
+        toggle: vi.fn(),
       },
       addEventListener: vi.fn(),
       removeEventListener: vi.fn(),
       click: vi.fn(),
-      textContent: '',
-      innerHTML: '',
+      textContent: "",
+      innerHTML: "",
       disabled: false,
       style: {},
       getAttribute: vi.fn(),
       setAttribute: vi.fn(),
-      removeAttribute: vi.fn()
+      removeAttribute: vi.fn(),
     };
 
     // Add click simulation
     element.click = () => {
-      const clickEvent = { type: 'click', target: element };
+      const clickEvent = { type: "click", target: element };
       element.addEventListener.mock.calls.forEach(([event, handler]) => {
-        if (event === 'click') {
+        if (event === "click") {
           handler(clickEvent);
         }
       });
@@ -54,9 +54,9 @@ describe("Clear Operations UI", () => {
 
   function createMockGetElementById() {
     const elements = {
-      'clear-grid': clearGridBtn,
-      'clear-layer': clearLayerBtn,
-      'grid-status': gridStatus
+      "clear-grid": clearGridBtn,
+      "clear-layer": clearLayerBtn,
+      "grid-status": gridStatus,
     };
 
     return vi.fn((id) => elements[id] || null);
@@ -68,21 +68,21 @@ describe("Clear Operations UI", () => {
     stateManager = new StateManager();
     commandHistory = new CommandHistory({
       maxSize: 50,
-      stateManager
+      stateManager,
     });
 
     // Create mock DOM elements
-    clearGridBtn = createMockElement('clear-grid');
-    clearLayerBtn = createMockElement('clear-layer');
-    gridStatus = createMockElement('grid-status', 'div');
+    clearGridBtn = createMockElement("clear-grid");
+    clearLayerBtn = createMockElement("clear-layer");
+    gridStatus = createMockElement("grid-status", "div");
 
     // Mock document and window
     mockDocument = {
-      getElementById: createMockGetElementById()
+      getElementById: createMockGetElementById(),
     };
 
     mockWindow = {
-      confirm: vi.fn(() => true) // Default to confirming actions
+      confirm: vi.fn(() => true), // Default to confirming actions
     };
 
     // Set up test data in layers
@@ -100,22 +100,22 @@ describe("Clear Operations UI", () => {
   describe("Clear Grid Button", () => {
     it("should register click event listener on clear grid button", () => {
       // Simulate initClearOperations() for clear grid
-      clearGridBtn.addEventListener('click', () => {
+      clearGridBtn.addEventListener("click", () => {
         // Mock implementation
       });
 
       expect(clearGridBtn.addEventListener).toHaveBeenCalledWith(
-        'click',
-        expect.any(Function)
+        "click",
+        expect.any(Function),
       );
     });
 
     it("should show confirmation dialog when clear grid is clicked", () => {
       const confirmSpy = vi.fn(() => true);
 
-      clearGridBtn.addEventListener('click', () => {
+      clearGridBtn.addEventListener("click", () => {
         const result = confirmSpy(
-          "Clear Grid\n\nThis will clear all layers and remove all content. This action can be undone.\n\nContinue?"
+          "Clear Grid\n\nThis will clear all layers and remove all content. This action can be undone.\n\nContinue?",
         );
         if (result) {
           // Execute clear command
@@ -125,22 +125,22 @@ describe("Clear Operations UI", () => {
       clearGridBtn.click();
 
       expect(confirmSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Clear Grid")
+        expect.stringContaining("Clear Grid"),
       );
       expect(confirmSpy).toHaveBeenCalledWith(
-        expect.stringContaining("all layers")
+        expect.stringContaining("all layers"),
       );
     });
 
     it("should execute clear all command when confirmed", () => {
       let executedCommand = null;
 
-      clearGridBtn.addEventListener('click', () => {
+      clearGridBtn.addEventListener("click", () => {
         const confirmed = true; // Simulate user confirming
         if (confirmed) {
           const clearCommand = ClearCommand.clearAll({
             scene,
-            stateManager
+            stateManager,
           });
           commandHistory.execute(clearCommand);
           executedCommand = clearCommand;
@@ -157,12 +157,12 @@ describe("Clear Operations UI", () => {
     it("should not execute command when user cancels confirmation", () => {
       let executedCommand = null;
 
-      clearGridBtn.addEventListener('click', () => {
+      clearGridBtn.addEventListener("click", () => {
         const confirmed = false; // Simulate user cancelling
         if (confirmed) {
           const clearCommand = ClearCommand.clearAll({
             scene,
-            stateManager
+            stateManager,
           });
           commandHistory.execute(clearCommand);
           executedCommand = clearCommand;
@@ -178,10 +178,10 @@ describe("Clear Operations UI", () => {
     it("should show success status after clearing grid", () => {
       const showStatusSpy = vi.fn();
 
-      clearGridBtn.addEventListener('click', () => {
+      clearGridBtn.addEventListener("click", () => {
         const clearCommand = ClearCommand.clearAll({
           scene,
-          stateManager
+          stateManager,
         });
         commandHistory.execute(clearCommand);
 
@@ -192,22 +192,22 @@ describe("Clear Operations UI", () => {
       clearGridBtn.click();
 
       expect(showStatusSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Cleared")
+        expect.stringContaining("Cleared"),
       );
       expect(showStatusSpy).toHaveBeenCalledWith(
-        expect.stringContaining("cells from all layers")
+        expect.stringContaining("cells from all layers"),
       );
     });
 
     it("should handle errors gracefully during grid clear", () => {
       const showErrorSpy = vi.fn();
 
-      clearGridBtn.addEventListener('click', () => {
+      clearGridBtn.addEventListener("click", () => {
         try {
           // Simulate error by passing invalid scene
           const clearCommand = ClearCommand.clearAll({
             scene: null,
-            stateManager
+            stateManager,
           });
           commandHistory.execute(clearCommand);
         } catch (error) {
@@ -218,20 +218,20 @@ describe("Clear Operations UI", () => {
       clearGridBtn.click();
 
       expect(showErrorSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Failed to clear grid")
+        expect.stringContaining("Failed to clear grid"),
       );
     });
   });
 
   describe("Clear Layer Button", () => {
     it("should register click event listener on clear layer button", () => {
-      clearLayerBtn.addEventListener('click', () => {
+      clearLayerBtn.addEventListener("click", () => {
         // Mock implementation
       });
 
       expect(clearLayerBtn.addEventListener).toHaveBeenCalledWith(
-        'click',
-        expect.any(Function)
+        "click",
+        expect.any(Function),
       );
     });
 
@@ -239,22 +239,22 @@ describe("Clear Operations UI", () => {
       const activeLayer = scene.getActiveLayer();
       const confirmSpy = vi.fn(() => true);
 
-      clearLayerBtn.addEventListener('click', () => {
+      clearLayerBtn.addEventListener("click", () => {
         if (!activeLayer) return;
 
         const stats = activeLayer.getStats();
         const confirmed = confirmSpy(
-          `Clear Layer\n\nThis will clear ${stats.nonEmptyCount} cells from layer "${activeLayer.name}". This action can be undone.\n\nContinue?`
+          `Clear Layer\n\nThis will clear ${stats.nonEmptyCount} cells from layer "${activeLayer.name}". This action can be undone.\n\nContinue?`,
         );
       });
 
       clearLayerBtn.click();
 
       expect(confirmSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Clear Layer")
+        expect.stringContaining("Clear Layer"),
       );
       expect(confirmSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Middle") // Default active layer
+        expect.stringContaining("Middle"), // Default active layer
       );
     });
 
@@ -262,7 +262,7 @@ describe("Clear Operations UI", () => {
       const activeLayer = scene.getActiveLayer();
       let executedCommand = null;
 
-      clearLayerBtn.addEventListener('click', () => {
+      clearLayerBtn.addEventListener("click", () => {
         if (!activeLayer) return;
 
         const confirmed = true;
@@ -270,7 +270,7 @@ describe("Clear Operations UI", () => {
           const clearCommand = ClearCommand.clearLayer({
             scene,
             layer: activeLayer,
-            stateManager
+            stateManager,
           });
           commandHistory.execute(clearCommand);
           executedCommand = clearCommand;
@@ -286,9 +286,9 @@ describe("Clear Operations UI", () => {
 
     it("should show error when no active layer is selected", () => {
       const showErrorSpy = vi.fn();
-      scene.activeLayerId = 'non-existent';
+      scene.activeLayerId = "non-existent";
 
-      clearLayerBtn.addEventListener('click', () => {
+      clearLayerBtn.addEventListener("click", () => {
         const activeLayer = scene.getActiveLayer();
         if (!activeLayer) {
           showErrorSpy("No active layer selected");
@@ -308,18 +308,20 @@ describe("Clear Operations UI", () => {
       scene.setActiveLayer(LAYER_FG);
       const fgLayer = scene.getActiveLayer();
 
-      clearLayerBtn.addEventListener('click', () => {
+      clearLayerBtn.addEventListener("click", () => {
         const activeLayer = scene.getActiveLayer();
         if (!activeLayer) return;
 
         const stats = activeLayer.getStats();
-        confirmSpy(`Will clear ${stats.nonEmptyCount} cells from ${activeLayer.name}`);
+        confirmSpy(
+          `Will clear ${stats.nonEmptyCount} cells from ${activeLayer.name}`,
+        );
       });
 
       clearLayerBtn.click();
 
       expect(confirmSpy).toHaveBeenCalledWith(
-        expect.stringContaining("1 cells from Foreground")
+        expect.stringContaining("1 cells from Foreground"),
       );
     });
 
@@ -327,24 +329,26 @@ describe("Clear Operations UI", () => {
       const showStatusSpy = vi.fn();
       const activeLayer = scene.getActiveLayer();
 
-      clearLayerBtn.addEventListener('click', () => {
+      clearLayerBtn.addEventListener("click", () => {
         if (!activeLayer) return;
 
         const clearCommand = ClearCommand.clearLayer({
           scene,
           layer: activeLayer,
-          stateManager
+          stateManager,
         });
         commandHistory.execute(clearCommand);
 
         const count = clearCommand.getAffectedCellCount();
-        showStatusSpy(`Cleared ${count} cells from layer "${activeLayer.name}"`);
+        showStatusSpy(
+          `Cleared ${count} cells from layer "${activeLayer.name}"`,
+        );
       });
 
       clearLayerBtn.click();
 
       expect(showStatusSpy).toHaveBeenCalledWith(
-        expect.stringContaining('cells from layer "Middle"')
+        expect.stringContaining('cells from layer "Middle"'),
       );
     });
   });
@@ -356,19 +360,19 @@ describe("Clear Operations UI", () => {
       // Mock showGridStatus function
       const showGridStatus = (message, isError = false) => {
         status.textContent = message;
-        status.classList.remove('hidden');
+        status.classList.remove("hidden");
         if (isError) {
-          status.classList.add('error');
+          status.classList.add("error");
         } else {
-          status.classList.remove('error');
+          status.classList.remove("error");
         }
       };
 
       showGridStatus("Test message");
 
       expect(status.textContent).toBe("Test message");
-      expect(status.classList.remove).toHaveBeenCalledWith('hidden');
-      expect(status.classList.remove).toHaveBeenCalledWith('error');
+      expect(status.classList.remove).toHaveBeenCalledWith("hidden");
+      expect(status.classList.remove).toHaveBeenCalledWith("error");
     });
 
     it("should show error status correctly", () => {
@@ -377,30 +381,38 @@ describe("Clear Operations UI", () => {
       const showGridStatus = (message, isError = false) => {
         status.textContent = message;
         if (isError) {
-          status.classList.add('error');
+          status.classList.add("error");
         }
       };
 
       showGridStatus("Error message", true);
 
       expect(status.textContent).toBe("Error message");
-      expect(status.classList.add).toHaveBeenCalledWith('error');
+      expect(status.classList.add).toHaveBeenCalledWith("error");
     });
 
-    it("should auto-hide status after timeout", (done) => {
+    it("should auto-hide status after timeout", () => {
+      vi.useFakeTimers();
+
       const status = gridStatus;
 
       const showGridStatus = (message) => {
         status.textContent = message;
-        status.classList.remove('hidden');
+        status.classList.remove("hidden");
 
         setTimeout(() => {
-          status.classList.add('hidden');
-          done();
+          status.classList.add("hidden");
         }, 50); // Short timeout for testing
       };
 
       showGridStatus("Auto-hide message");
+
+      // Fast-forward time by 50ms
+      vi.advanceTimersByTime(50);
+
+      expect(status.classList.add).toHaveBeenCalledWith("hidden");
+
+      vi.useRealTimers();
     });
   });
 
@@ -416,7 +428,7 @@ describe("Clear Operations UI", () => {
       const clearCommand = ClearCommand.clearLayer({
         scene,
         layer: midLayer,
-        stateManager
+        stateManager,
       });
       commandHistory.execute(clearCommand);
 
@@ -436,12 +448,12 @@ describe("Clear Operations UI", () => {
 
     it("should emit state change events during clear operations", () => {
       const cellChangedSpy = vi.fn();
-      stateManager.on('cell:changed', cellChangedSpy);
+      stateManager.on("cell:changed", cellChangedSpy);
 
       const clearCommand = ClearCommand.clearLayer({
         scene,
         layer: scene.getActiveLayer(),
-        stateManager
+        stateManager,
       });
 
       commandHistory.execute(clearCommand);
@@ -460,7 +472,7 @@ describe("Clear Operations UI", () => {
       const clearBg = ClearCommand.clearLayer({
         scene,
         layer: bgLayer,
-        stateManager
+        stateManager,
       });
       commandHistory.execute(clearBg);
 
@@ -468,7 +480,7 @@ describe("Clear Operations UI", () => {
       const clearMid = ClearCommand.clearLayer({
         scene,
         layer: midLayer,
-        stateManager
+        stateManager,
       });
       commandHistory.execute(clearMid);
 
@@ -487,21 +499,21 @@ describe("Clear Operations UI", () => {
       // Create history with small limit
       const smallHistory = new CommandHistory({
         maxSize: 2,
-        stateManager
+        stateManager,
       });
 
       const layers = [
         scene.getLayer(LAYER_BG),
         scene.getLayer(LAYER_MID),
-        scene.getLayer(LAYER_FG)
+        scene.getLayer(LAYER_FG),
       ];
 
       // Execute 3 clear commands (exceeds limit)
-      layers.forEach(layer => {
+      layers.forEach((layer) => {
         const clearCommand = ClearCommand.clearLayer({
           scene,
           layer,
-          stateManager
+          stateManager,
         });
         smallHistory.execute(clearCommand);
       });
@@ -509,7 +521,9 @@ describe("Clear Operations UI", () => {
       // Should only keep last 2 commands
       expect(smallHistory.getUndoStack()).toHaveLength(2);
       expect(smallHistory.getUndoStack()[0].description).toContain("Middle");
-      expect(smallHistory.getUndoStack()[1].description).toContain("Foreground");
+      expect(smallHistory.getUndoStack()[1].description).toContain(
+        "Foreground",
+      );
     });
   });
 
@@ -521,7 +535,7 @@ describe("Clear Operations UI", () => {
       const clearCommand = ClearCommand.clearLayer({
         scene,
         layer: emptyLayer,
-        stateManager
+        stateManager,
       });
 
       expect(() => {
@@ -539,7 +553,7 @@ describe("Clear Operations UI", () => {
       expect(() => {
         ClearCommand.clearAll({
           scene: emptyScene,
-          stateManager
+          stateManager,
         });
       }).not.toThrow();
     });
@@ -566,7 +580,7 @@ describe("Clear Operations UI", () => {
       const clearCommand = ClearCommand.clearLayer({
         scene,
         layer,
-        stateManager
+        stateManager,
       });
 
       commandHistory.execute(clearCommand);
@@ -577,7 +591,7 @@ describe("Clear Operations UI", () => {
       expect(layer.height).toBe(scene.h);
 
       // All cells should be empty
-      expect(layer.cells.every(cell => cell.isEmpty())).toBe(true);
+      expect(layer.cells.every((cell) => cell.isEmpty())).toBe(true);
     });
 
     it("should handle rapid successive clear operations", () => {
@@ -588,13 +602,13 @@ describe("Clear Operations UI", () => {
         const clearCommand = ClearCommand.clearLayer({
           scene,
           layer,
-          stateManager
+          stateManager,
         });
         commandHistory.execute(clearCommand);
       }
 
       expect(commandHistory.getUndoStack()).toHaveLength(5);
-      expect(layer.cells.every(cell => cell.isEmpty())).toBe(true);
+      expect(layer.cells.every((cell) => cell.isEmpty())).toBe(true);
     });
   });
 });

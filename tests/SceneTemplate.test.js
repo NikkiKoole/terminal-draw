@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "bun:test";
 import { Scene } from "../src/core/Scene.js";
 import { Cell } from "../src/core/Cell.js";
 import { PROJECT_TEMPLATES, getTemplate } from "../src/core/ProjectTemplate.js";

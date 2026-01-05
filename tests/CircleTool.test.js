@@ -2,7 +2,7 @@
  * CircleTool.test.js - Test suite for CircleTool
  */
 
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "bun:test";
 import { CircleTool } from "../src/tools/CircleTool.js";
 import { Scene } from "../src/core/Scene.js";
 import { Layer } from "../src/core/Layer.js";

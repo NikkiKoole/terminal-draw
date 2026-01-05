@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "bun:test";
 import { JSDOM } from "jsdom";
 import { LayerRenderer } from "../src/rendering/LayerRenderer.js";
 import { Layer } from "../src/core/Layer.js";

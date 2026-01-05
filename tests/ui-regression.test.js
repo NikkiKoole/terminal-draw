@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "bun:test";
 import { JSDOM } from "jsdom";
 import { Scene } from "../src/core/Scene.js";
 import { StateManager } from "../src/core/StateManager.js";

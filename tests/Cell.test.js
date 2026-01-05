@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "bun:test";
 import { Cell } from "../src/core/Cell.js";
 
 describe("Cell", () => {

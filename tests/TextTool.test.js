@@ -1,9 +1,12 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "bun:test";
 import { TextTool } from "../src/tools/TextTool.js";
 import { Scene } from "../src/core/Scene.js";
 import { StateManager } from "../src/core/StateManager.js";
 import { CommandHistory } from "../src/commands/CommandHistory.js";
 import { Cell } from "../src/core/Cell.js";
+
+// Mock console.warn to suppress expected warnings
+const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
 // Mock DOM globals for testing
 global.document = {
@@ -103,7 +106,11 @@ describe("TextTool", () => {
       expect(textTool.cursorX).toBe(5);
       expect(textTool.cursorY).toBe(3);
       expect(textTool.startX).toBe(5);
-      expect(mockEmit).toHaveBeenCalledWith("text:cursor", { x: 5, y: 3, visible: true });
+      expect(mockEmit).toHaveBeenCalledWith("text:cursor", {
+        x: 5,
+        y: 3,
+        visible: true,
+      });
       expect(mockEmit).toHaveBeenCalledWith("text:typing", { active: true });
     });
 
@@ -172,7 +179,7 @@ describe("TextTool", () => {
     });
 
     it("should commit word on space character", () => {
-      const executeSpy = vi.spyOn(commandHistory, 'execute');
+      const executeSpy = vi.spyOn(commandHistory, "execute");
 
       textTool._addCharacter("A");
       textTool._addCharacter("B");
@@ -210,7 +217,7 @@ describe("TextTool", () => {
     });
 
     it("should handle Escape key", () => {
-      const stopTypingSpy = vi.spyOn(textTool, 'stopTyping');
+      const stopTypingSpy = vi.spyOn(textTool, "stopTyping");
       textTool._handleEscape();
       expect(stopTypingSpy).toHaveBeenCalled();
     });
@@ -255,8 +262,8 @@ describe("TextTool", () => {
       const afterCell = textTool._applyPaintMode("A", beforeCell);
 
       expect(afterCell.ch).toBe("O"); // Unchanged
-      expect(afterCell.fg).toBe(5);   // Changed
-      expect(afterCell.bg).toBe(-1);  // Unchanged
+      expect(afterCell.fg).toBe(5); // Changed
+      expect(afterCell.bg).toBe(-1); // Unchanged
     });
 
     it("should apply 'bg' paint mode correctly", () => {
@@ -267,8 +274,8 @@ describe("TextTool", () => {
       const afterCell = textTool._applyPaintMode("A", beforeCell);
 
       expect(afterCell.ch).toBe("O"); // Unchanged
-      expect(afterCell.fg).toBe(7);   // Unchanged
-      expect(afterCell.bg).toBe(2);   // Changed
+      expect(afterCell.fg).toBe(7); // Unchanged
+      expect(afterCell.bg).toBe(2); // Changed
     });
 
     it("should apply 'glyph' paint mode correctly", () => {
@@ -279,8 +286,8 @@ describe("TextTool", () => {
       const afterCell = textTool._applyPaintMode("A", beforeCell);
 
       expect(afterCell.ch).toBe("A"); // Changed
-      expect(afterCell.fg).toBe(7);   // Unchanged
-      expect(afterCell.bg).toBe(-1);  // Unchanged
+      expect(afterCell.fg).toBe(7); // Unchanged
+      expect(afterCell.bg).toBe(-1); // Unchanged
     });
   });
 
@@ -290,7 +297,7 @@ describe("TextTool", () => {
     });
 
     it("should create undo command for word", () => {
-      const executeSpy = vi.spyOn(commandHistory, 'execute');
+      const executeSpy = vi.spyOn(commandHistory, "execute");
 
       textTool._addCharacter("H");
       textTool._addCharacter("i");
@@ -302,7 +309,7 @@ describe("TextTool", () => {
     });
 
     it("should batch multiple characters into one command", () => {
-      const executeSpy = vi.spyOn(commandHistory, 'execute');
+      const executeSpy = vi.spyOn(commandHistory, "execute");
 
       textTool._addCharacter("H");
       textTool._addCharacter("e");
@@ -324,10 +331,10 @@ describe("TextTool", () => {
       const mockEvent = {
         key: "Enter",
         preventDefault: vi.fn(),
-        stopPropagation: vi.fn()
+        stopPropagation: vi.fn(),
       };
 
-      const handleEnterSpy = vi.spyOn(textTool, '_handleEnter');
+      const handleEnterSpy = vi.spyOn(textTool, "_handleEnter");
       textTool.handleKeyDown(mockEvent);
 
       expect(mockEvent.preventDefault).toHaveBeenCalled();
@@ -341,10 +348,10 @@ describe("TextTool", () => {
       const mockEvent = {
         key: "a",
         preventDefault: vi.fn(),
-        stopPropagation: vi.fn()
+        stopPropagation: vi.fn(),
       };
 
-      const addCharacterSpy = vi.spyOn(textTool, '_addCharacter');
+      const addCharacterSpy = vi.spyOn(textTool, "_addCharacter");
       textTool.handleKeyPress(mockEvent);
 
       expect(mockEvent.preventDefault).toHaveBeenCalled();
@@ -358,10 +365,10 @@ describe("TextTool", () => {
       const mockEvent = {
         key: "a",
         preventDefault: vi.fn(),
-        stopPropagation: vi.fn()
+        stopPropagation: vi.fn(),
       };
 
-      const addCharacterSpy = vi.spyOn(textTool, '_addCharacter');
+      const addCharacterSpy = vi.spyOn(textTool, "_addCharacter");
       textTool.handleKeyPress(mockEvent);
 
       expect(mockEvent.preventDefault).not.toHaveBeenCalled();
@@ -393,7 +400,7 @@ describe("TextTool", () => {
       textTool._addCharacter("2");
 
       expect(textTool.cursorX).toBe(10); // 5 + 5 characters on second line
-      expect(textTool.cursorY).toBe(4);  // One line down from start
+      expect(textTool.cursorY).toBe(4); // One line down from start
 
       // Check that text was placed correctly
       const layer = scene.getActiveLayer();

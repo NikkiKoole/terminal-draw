@@ -2,7 +2,7 @@
  * SmartBoxDrawing.test.js - Tests for SmartBoxDrawing utility
  */
 
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach } from "bun:test";
 import { SmartBoxDrawing } from "../src/utils/SmartBoxDrawing.js";
 import { Layer } from "../src/core/Layer.js";
 import { Cell } from "../src/core/Cell.js";

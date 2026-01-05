@@ -2,11 +2,15 @@
  * SelectionManager.test.js - Tests for the SelectionManager class
  */
 
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "bun:test";
 import { SelectionManager } from "../src/core/SelectionManager.js";
 import { Scene } from "../src/core/Scene.js";
-import { StateManager } from "../src/core/StateManager.js";
 import { Cell } from "../src/core/Cell.js";
+import { StateManager } from "../src/core/StateManager.js";
+import { LAYER_MID } from "../src/core/constants.js";
+
+// Mock console.warn to suppress expected warnings
+const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
 describe("SelectionManager", () => {
   let selectionManager;

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "bun:test";
 import { ProjectManager } from "../src/io/ProjectManager.js";
 import { Scene } from "../src/core/Scene.js";
 import { Cell } from "../src/core/Cell.js";
@@ -34,15 +34,13 @@ describe("ProjectManager", () => {
     // Mock FileReader
     global.FileReader = vi.fn(function () {
       this.readAsText = vi.fn(function (blob) {
-        // Simulate async file reading
-        setTimeout(() => {
-          blob.text().then((text) => {
-            this.result = text;
-            if (this.onload) {
-              this.onload({ target: this });
-            }
-          });
-        }, 0);
+        // Simulate async file reading - immediate for testing
+        blob.text().then((text) => {
+          this.result = text;
+          if (this.onload) {
+            this.onload({ target: this });
+          }
+        });
       });
     });
 

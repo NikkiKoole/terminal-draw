@@ -73,10 +73,12 @@ export class HitTestOverlay {
    * Remove event listeners (cleanup)
    */
   detachEventListeners() {
-    this.element.removeEventListener("mousedown", this.handleMouseDown);
-    this.element.removeEventListener("mousemove", this.handleMouseMove);
-    this.element.removeEventListener("mouseup", this.handleMouseUp);
-    this.element.removeEventListener("mouseleave", this.handleMouseLeave);
+    if (this.element) {
+      this.element.removeEventListener("mousedown", this.handleMouseDown);
+      this.element.removeEventListener("mousemove", this.handleMouseMove);
+      this.element.removeEventListener("mouseup", this.handleMouseUp);
+      this.element.removeEventListener("mouseleave", this.handleMouseLeave);
+    }
   }
 
   /**

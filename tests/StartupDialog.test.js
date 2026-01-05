@@ -3,7 +3,7 @@
  * Tests for the project template selection dialog
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "bun:test";
 import { JSDOM } from "jsdom";
 import { StartupDialog } from "../src/ui/StartupDialog.js";
 import { PROJECT_TEMPLATES } from "../src/core/ProjectTemplate.js";
@@ -455,19 +455,22 @@ describe("StartupDialog", () => {
   });
 
   describe("Error Handling", () => {
-    it("should show error message and auto-remove it", (done) => {
+    it("should show error message and auto-remove it", () => {
+      vi.useFakeTimers();
+
       dialog.showError("Test error message");
 
       const errorElement = document.querySelector(".error-message");
       expect(errorElement).toBeTruthy();
       expect(errorElement.textContent).toBe("Test error message");
 
-      // Should auto-remove after 5 seconds
-      setTimeout(() => {
-        expect(document.querySelector(".error-message")).toBeFalsy();
-        done();
-      }, 5100);
-    }, 6000);
+      // Fast-forward time by 5 seconds
+      vi.advanceTimersByTime(5000);
+
+      expect(document.querySelector(".error-message")).toBeFalsy();
+
+      vi.useRealTimers();
+    });
 
     it("should replace existing error message", () => {
       dialog.showError("First error");

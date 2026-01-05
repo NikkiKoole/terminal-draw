@@ -2,7 +2,7 @@
  * LineTool.test.js - Tests for LineTool
  */
 
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach } from "bun:test";
 import { LineTool } from "../src/tools/LineTool.js";
 import { Scene } from "../src/core/Scene.js";
 import { StateManager } from "../src/core/StateManager.js";

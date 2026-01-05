@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "bun:test";
 import { JSDOM } from "jsdom";
 import { CommandHistory } from "../src/commands/CommandHistory.js";
 import { CellCommand } from "../src/commands/CellCommand.js";

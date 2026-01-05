@@ -3,7 +3,7 @@
  * Tests for border creation and utility functions
  */
 
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach } from "bun:test";
 import { Layer } from "../src/core/Layer.js";
 import { Scene } from "../src/core/Scene.js";
 import { Cell } from "../src/core/Cell.js";

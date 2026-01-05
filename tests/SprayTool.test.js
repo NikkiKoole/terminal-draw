@@ -2,7 +2,7 @@
  * SprayTool.test.js - Tests for SprayTool
  */
 
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "bun:test";
 import { SprayTool } from "../src/tools/SprayTool.js";
 import { Scene } from "../src/core/Scene.js";
 import { StateManager } from "../src/core/StateManager.js";

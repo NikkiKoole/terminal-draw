@@ -99,7 +99,7 @@ DOM structure:
 - [x] Define CSS custom properties (colors, cell size)
 - [x] Test font rendering with sample box-drawing characters
 - [x] Set up ES6 modules (type="module" in script tag)
-- [x] Add npm/Vite dev server setup
+- [x] Add Bun/Vite dev server setup
 - [x] Implement cell-based rendering with row wrappers
 - [x] Create background grid layer (single div)
 - [x] Add scale controls (slider + scale-to-fit button)
@@ -194,10 +194,10 @@ DOM structure:
 **Deliverable:** Data models tested and ready for use ✅ COMPLETE (4/4 modules, 179 tests passing)
 
 **Testing Infrastructure Added:**
-- ✅ Vitest test runner with watch mode
+- ✅ Bun test runner with watch mode
 - ✅ **179 tests passing** (23 Cell + 42 Layer + 15 constants + 53 Scene + 46 StateManager)
-- ✅ Node 20 requirement (.nvmrc added)
-- ✅ Test commands: `npm test`, `npm run test:run`, `npm run test:ui`
+- ✅ Bun runtime and package manager
+- ✅ Test commands: `bun test`, `bun run test:watch`
 
 ---
 
@@ -652,7 +652,7 @@ class Tool {
 - ✅ Scene.js with full test coverage (53 tests)
 - ✅ StateManager.js with comprehensive tests (46 tests)
 - ✅ constants.js with 14 glyph categories (15 tests)
-- ✅ Testing infrastructure (Vitest + Node 20)
+- ✅ Testing infrastructure (Bun test runner)
 - ✅ integration.test.js (18 tests)
 - ✅ **197 tests passing** (all modules complete)
 

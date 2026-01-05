@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "bun:test";
 import { Scene } from "../src/core/Scene.js";
 import { StateManager } from "../src/core/StateManager.js";
 import { CommandHistory } from "../src/commands/CommandHistory.js";
@@ -22,8 +22,12 @@ describe("Milestone 2 Integration Tests", () => {
   });
 
   afterEach(() => {
-    // Clean up any timers or resources
-    vi.clearAllTimers();
+    // Clean up any timers or resources - only if fake timers are active
+    try {
+      vi.clearAllTimers();
+    } catch (e) {
+      // Ignore error if fake timers are not active
+    }
   });
 
   describe("Command System Integration", () => {

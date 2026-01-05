@@ -2,7 +2,7 @@
  * Tests for CommandHistory class
  */
 
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "bun:test";
 import { CommandHistory } from "../../src/commands/CommandHistory.js";
 import { Command } from "../../src/commands/Command.js";
 

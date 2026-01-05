@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach } from "bun:test";
 import { Scene } from "../src/core/Scene.js";
 import { Layer } from "../src/core/Layer.js";
 import { Cell } from "../src/core/Cell.js";

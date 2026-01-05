@@ -44,40 +44,36 @@ A web-based ASCII art editor that renders true text glyphs in the DOM for creati
 
 ```bash
 # Install dependencies
-npm install
+bun install
 
 # Start dev server (runs in watch mode - keep terminal open)
-npm run dev
+bun run dev
 ```
 
 Open `http://localhost:5173` in your browser.
 
 **Note:** The dev server runs continuously and watches for file changes. Keep it running in a separate terminal window during development.
 
-## Node Version
+## Runtime & Tools
 
-This project requires **Node 20** (specified in `.nvmrc`).
+This project uses **Bun** as the JavaScript runtime, package manager, and test runner, with **Vite** for development server and bundling.
 
-If using nvm, run:
+**Architecture:**
+- 🏃 **Bun runtime** - Faster JavaScript execution
+- 📦 **Bun package manager** - Faster installs than npm
+- 🧪 **Bun test runner** - Built-in testing framework
+- ⚡ **Vite bundler** - Running on Bun for optimal performance
+
+Install Bun from [bun.sh](https://bun.sh/docs/installation) if you haven't already:
 ```bash
-nvm use
-```
-
-**Important for development/testing:** All terminal commands should use Node 20. To ensure this, prefix commands with:
-```bash
-source ~/.nvm/nvm.sh && nvm use 20 && <your-command>
-```
-
-Example:
-```bash
-source ~/.nvm/nvm.sh && nvm use 20 && npm test -- --run
+curl -fsSL https://bun.sh/install | bash
 ```
 
 **Development Workflow:**
-- Run `npm run dev` in one terminal (keep it running)
-- Run tests and other commands in a separate terminal
-- Use `npm run build` to create production build
-- Use `npm run preview` to test production build locally
+- Run `bun run dev` (Vite dev server on Bun runtime)
+- Run `bun run build` (Vite bundler on Bun runtime)  
+- Run `bun run preview` (Vite preview server on Bun runtime)
+- Run `bun test` (Bun's native test runner)
 
 **Important Development Notes:**
 
@@ -107,16 +103,16 @@ The project uses a simplified fixed-layer architecture:
 
 ```bash
 # Run tests in watch mode (recommended during development)
-npm test
+bun run test:watch
 
 # Run tests once
-npm run test:run
+bun run test
 
-# Run tests with UI
-npm run test:ui
+# Run all tests (same as above)
+bun test
 ```
 
-Tests are located in the `tests/` directory and use Vitest.
+Tests are located in the `tests/` directory and use Bun's built-in test runner.
 
 ## Project Structure
 
@@ -170,8 +166,8 @@ terminal-draw/
 
 - **Vanilla JavaScript** (ES6 modules)
 - **Plain CSS** (CSS Grid, custom properties)
-- **Vite** (dev server & build tool)
-- **Vitest** (testing framework)
+- **Vite** (dev server & build tool) running on **Bun** runtime
+- **Bun** (JavaScript runtime, package manager, and test runner)
 - **JetBrains Mono** (monospace font with ligatures)
 
 ## Architecture
@@ -285,7 +281,7 @@ See [00-implementation-plan.md](./docs/00-implementation-plan.md) for detailed r
 
 ## Testing Strategy
 
-We use **Vitest** for unit and integration tests:
+We use **Bun's built-in test runner** (migrated from Vitest) for unit and integration tests:
 
 - ✅ **Unit tests** for all modules (core, rendering, input, tools, templates)
 - ✅ **Integration tests** for dynamic layer system and template functionality
@@ -375,7 +371,7 @@ When adding new features, create corresponding test files:
 
 ```javascript
 // tests/YourModule.test.js
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'bun:test';
 import { YourModule } from '../src/core/YourModule.js';
 
 describe('YourModule', () => {

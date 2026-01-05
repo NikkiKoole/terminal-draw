@@ -3,7 +3,15 @@
  * Tests for the project template selection dialog
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from "bun:test";
+import {
+  describe,
+  it,
+  expect,
+  beforeAll,
+  beforeEach,
+  afterEach,
+  vi,
+} from "bun:test";
 import { JSDOM } from "jsdom";
 import { StartupDialog } from "../src/ui/StartupDialog.js";
 import { PROJECT_TEMPLATES } from "../src/core/ProjectTemplate.js";
@@ -34,8 +42,8 @@ describe("StartupDialog", () => {
   let dom;
   let document;
 
-  beforeEach(() => {
-    // Create JSDOM instance
+  beforeAll(() => {
+    // Create JSDOM instance once for all tests
     dom = new JSDOM("<!DOCTYPE html><html><body></body></html>");
     document = dom.window.document;
     global.document = document;
@@ -43,7 +51,9 @@ describe("StartupDialog", () => {
     global.Event = dom.window.Event;
     global.KeyboardEvent = dom.window.KeyboardEvent;
     global.localStorage = localStorageMock;
+  });
 
+  beforeEach(() => {
     // Reset localStorage mocks
     vi.clearAllMocks();
 

@@ -9,7 +9,14 @@
     "preview": "bun --bun vite preview",
     "test": "bun test",
     "test:watch": "bun test --watch",
-    "test:run": "bun test"
+    "test:run": "bun test",
+    "test:summary": "bun test 2>&1 | tail -3",
+    "build:check": "bun run build > /dev/null 2>&1 && echo '✅ Build successful' || echo '❌ Build failed'",
+    "lint": "bun scripts/lint-check.js",
+    "lint:fix": "echo '🔧 Auto-fix not implemented yet'",
+    "lint:check": "bun scripts/lint-check.js",
+    "check:all": "bun run test:summary && bun run build:check && bun run lint:check",
+    "show:structure": "bash scripts/show-structure.sh"
   },
   "devDependencies": {
     "jsdom": "^27.4.0",

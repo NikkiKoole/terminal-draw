@@ -2,6 +2,23 @@
 
 A web-based ASCII art editor that renders true text glyphs in the DOM for creating terminal art.
 
+## Quick Start
+
+```bash
+bun dev                 # Start development server
+bun run test:summary    # Run tests (summary)
+bun run check:all       # Test + build verification
+bun run show:structure  # Show project overview
+```
+
+## Project Structure
+
+- `src/core/` - Core classes (Scene, Layer, StateManager)
+- `src/tools/` - Drawing tools (Brush, Rectangle, Text, etc.)
+- `src/input/` - Input handling (HitTestOverlay)
+- `tests/` - 1130+ tests across 36 files
+- `src/app.js` - Main application entry point
+
 ## Features
 
  - ✅ Project Setup - Cell-based rendering, palettes, scaling

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hover Indicator Fix Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f0f0f0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .instructions {
+            background-color: #e8f4f8;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .test-area {
+            border: 2px solid #333;
+            width: 600px;
+            height: 400px;
+            margin: 20px auto;
+            position: relative;
+            background-color: #000;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            line-height: 16px;
+        }
+
+        .hover-indicator {
+            position: absolute;
+            border: 2px solid #ff0000;
+            background-color: rgba(255, 0, 0, 0.2);
+            width: 16px;
+            height: 16px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.1s;
+            z-index: 10;
+        }
+
+        .hover-indicator.visible {
+            opacity: 1;
+        }
+
+        .status {
+            text-align: center;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            margin-top: 10px;
+            font-family: monospace;
+        }
+
+        .test-results {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+        }
+
+        .pass {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .fail {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Hover Indicator Fix Test</h1>
+
+        <div class="instructions">
+            <h3>Test Instructions:</h3>
+            <ol>
+                <li>Move your mouse over the black test area below</li>
+                <li>You should see a red border highlighting the cell under your cursor</li>
+                <li>Move your mouse outside the test area</li>
+                <li>The red highlight should disappear (not stay at position 0,0)</li>
+                <li>Move back into the test area - highlight should reappear</li>
+            </ol>
+        </div>
+
+        <div id="test-area" class="test-area">
+            <div id="hover-indicator" class="hover-indicator"></div>
+        </div>
+
+        <div id="status" class="status">
+            Move mouse over test area to begin...
+        </div>
+
+        <div id="test-results" class="test-results">
+            <h3>Test Status:</h3>
+            <p id="result-text">Waiting for mouse interaction...</p>
+        </div>
+    </div>
+
+    <script>
+        const testArea = document.getElementById('test-area');
+        const hoverIndicator = document.getElementById('hover-indicator');
+        const status = document.getElementById('status');
+        const resultText = document.getElementById('result-text');
+        const testResults = document.getElementById('test-results');
+
+        let isMouseInside = false;
+        let testsPassed = 0;
+        let testsTotal = 0;
+
+        // Cell dimensions
+        const cellWidth = 16;
+        const cellHeight = 16;
+        const gridCols = Math.floor(600 / cellWidth);
+        const gridRows = Math.floor(400 / cellHeight);
+
+        function updateStatus(message) {
+            status.textContent = message;
+        }
+
+        function updateHoverIndicator(x, y) {
+            if (hoverIndicator) {
+                hoverIndicator.style.left = `${x * cellWidth}px`;
+                hoverIndicator.style.top = `${y * cellHeight}px`;
+                hoverIndicator.classList.add('visible');
+            }
+        }
+
+        function hideHoverIndicator() {
+            if (hoverIndicator) {
+                hoverIndicator.classList.remove('visible');
+            }
+        }
+
+        function getCellCoords(event) {
+            const rect = testArea.getBoundingClientRect();
+            const mouseX = event.clientX - rect.left;
+            const mouseY = event.clientY - rect.top;
+
+            const cellX = Math.floor(mouseX / cellWidth);
+            const cellY = Math.floor(mouseY / cellHeight);
+
+            // Validate bounds
+            if (cellX < 0 || cellX >= gridCols || cellY < 0 || cellY >= gridRows) {
+                return null;
+            }
+
+            return { x: cellX, y: cellY };
+        }
+
+        function handleCellHover(data) {
+            if (data && data.x !== undefined && data.y !== undefined && data.x !== null && data.y !== null) {
+                updateStatus(`Cell: (${data.x}, ${data.y}) • Grid: ${gridCols}×${gridRows}`);
+                updateHoverIndicator(data.x, data.y);
+
+                if (isMouseInside) {
+                    runTest('Hover indicator shows when mouse is inside', true);
+                }
+            } else {
+                updateStatus(`Mouse outside grid • Grid: ${gridCols}×${gridRows}`);
+                hideHoverIndicator();
+
+                if (!isMouseInside) {
+                    runTest('Hover indicator hidden when mouse is outside', !hoverIndicator.classList.contains('visible'));
+                }
+            }
+        }
+
+        function runTest(description, passed) {
+            testsTotal++;
+            if (passed) {
+                testsPassed++;
+                console.log(`✅ ${description}`);
+            } else {
+                console.log(`❌ ${description}`);
+            }
+
+            updateResults();
+        }
+
+        function updateResults() {
+            const passRate = testsTotal > 0 ? (testsPassed / testsTotal) * 100 : 0;
+            resultText.textContent = `Tests: ${testsPassed}/${testsTotal} passed (${passRate.toFixed(1)}%)`;
+
+            if (testsTotal > 0) {
+                if (testsPassed === testsTotal) {
+                    testResults.className = 'test-results pass';
+                } else {
+                    testResults.className = 'test-results fail';
+                }
+            }
+        }
+
+        // Event listeners
+        testArea.addEventListener('mousemove', (event) => {
+            const coords = getCellCoords(event);
+            isMouseInside = coords !== null;
+            handleCellHover(coords);
+        });
+
+        testArea.addEventListener('mouseenter', (event) => {
+            isMouseInside = true;
+        });
+
+        testArea.addEventListener('mouseleave', (event) => {
+            isMouseInside = false;
+            handleCellHover(null);
+        });
+
+        // Initialize
+        updateStatus('Ready • Move mouse over test area');
+        updateResults();
+    </script>
+</body>
+</html>

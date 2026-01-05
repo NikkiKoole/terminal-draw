@@ -4,7 +4,7 @@
  */
 
 import palettes from "./palettes.json";
-console.log(palettes);
+
 import { Scene } from "./core/Scene.js";
 import { Cell } from "./core/Cell.js";
 import { LayerRenderer } from "./rendering/LayerRenderer.js";
@@ -280,8 +280,6 @@ function initScene() {
 
   // Create test pattern in layers (flexible for any layer count)
   createTestPattern();
-
-  console.log(`Scene initialized with ${scene.layers.length} layers`);
 }
 
 /**
@@ -313,7 +311,6 @@ function initSceneFromTemplate(config) {
       : "single";
     try {
       addBorderToScene(scene, borderStyle, 7, -1);
-      console.log(`Added ${borderStyle} border to scene`);
     } catch (error) {
       console.error("Failed to add border:", error);
     }
@@ -327,10 +324,6 @@ function initSceneFromTemplate(config) {
 
   // Render scene to update grid dimensions and visual display
   renderScene();
-
-  console.log(
-    `Scene created from template '${template}' with ${scene.layers.length} layers (${dimensions.w}×${dimensions.h})${border?.enabled ? " with border" : ""}`,
-  );
 }
 
 /**
@@ -641,7 +634,13 @@ function initInput() {
 function handleCellHover(data) {
   if (!scene) return;
 
-  if (data && data.x !== undefined && data.y !== undefined) {
+  if (
+    data &&
+    data.x !== undefined &&
+    data.y !== undefined &&
+    data.x !== null &&
+    data.y !== null
+  ) {
     // Update status bar with coordinates
     updateStatus(
       `Cell: (${data.x}, ${data.y}) • Grid: ${GRID_WIDTH}×${GRID_HEIGHT} • Scale: ${currentScale}%`,
@@ -1505,7 +1504,6 @@ function initLayerPanel() {
     if (layerElement) {
       layerElement.innerHTML = ""; // Clear content immediately
       layerElement.remove();
-      console.log(`Immediately removed layer container: ${data.layerId}`);
     }
   });
 
@@ -1756,7 +1754,7 @@ function initClipboard() {
 
   // Listen to export events for additional feedback
   stateManager.on("export:success", (data) => {
-    console.log("Export successful:", data);
+    // Export completed successfully
   });
 
   stateManager.on("export:error", (data) => {
@@ -1871,11 +1869,11 @@ function initProject() {
 
   // Listen to project events
   stateManager.on("project:saved", (data) => {
-    console.log("Project saved:", data);
+    // Project saved successfully
   });
 
   stateManager.on("project:loaded", (data) => {
-    console.log("Project loaded:", data);
+    // Project loaded successfully
   });
 
   stateManager.on("project:error", (data) => {
@@ -2918,12 +2916,10 @@ function initCommandHistory() {
 
   // Listen for history events
   stateManager.on("history:changed", (status) => {
-    console.log("History changed:", status);
     updateUndoRedoButtons();
   });
 
   stateManager.on("history:executed", (data) => {
-    console.log("Command executed:", data.command.description);
     updateStatus(`Executed: ${data.command.description}`);
     updateUndoRedoButtons();
     // Re-render affected areas after command execution
@@ -2931,7 +2927,6 @@ function initCommandHistory() {
   });
 
   stateManager.on("history:undone", (data) => {
-    console.log("Command undone:", data.command.description);
     updateStatus(`Undid: ${data.command.description}`);
     updateUndoRedoButtons();
     // Re-render affected areas after undo
@@ -2939,7 +2934,6 @@ function initCommandHistory() {
   });
 
   stateManager.on("history:redone", (data) => {
-    console.log("Command redone:", data.command.description);
     updateStatus(`Redid: ${data.command.description}`);
     updateUndoRedoButtons();
     // Re-render affected areas after redo

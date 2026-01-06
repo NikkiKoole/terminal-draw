@@ -19,7 +19,8 @@ export class ProjectManager {
   constructor(scene, stateManager) {
     this.scene = scene;
     this.stateManager = stateManager;
-    this.version = "1.0";
+    this.version = "1.1"; // Updated for animation support
+    this.supportedVersions = ["1.0", "1.1"]; // Versions we can load
     this.currentProjectName = null;
   }
 
@@ -77,10 +78,10 @@ export class ProjectManager {
       throw new Error("Missing scene data");
     }
 
-    // Check version compatibility
-    if (project.version !== this.version) {
+    // Check version compatibility - accept any supported version
+    if (!this.supportedVersions.includes(project.version)) {
       throw new Error(
-        `Unsupported version: ${project.version} (expected ${this.version})`,
+        `Unsupported version: ${project.version} (supported: ${this.supportedVersions.join(", ")})`,
       );
     }
 

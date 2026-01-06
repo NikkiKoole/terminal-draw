@@ -29,6 +29,14 @@ export class BrushTool extends Tool {
     // Brush shape and size properties
     this.brushSize = 1; // 1, 3, or 5
     this.brushShape = "square"; // "square" or "circle"
+
+    // Animation properties
+    this.animationType = "none"; // "none", "blink", "flicker", "colorCycle", "charCycle"
+    this.animationSpeed = 500; // ms per frame
+    this.animationColors = [0, 1, 2, 3, 4, 5, 6, 7]; // colors for colorCycle
+    this.animationFrames = ["★", "✦", "·"]; // characters for charCycle
+    this.animationOffsetMode = "sync"; // "sync" or "random"
+    this.animationCycleMode = "forward"; // "forward", "reverse", "pingpong", "random"
   }
 
   /**
@@ -144,6 +152,149 @@ export class BrushTool extends Tool {
    */
   getBrushShape() {
     return this.brushShape;
+  }
+
+  /**
+   * Set animation type for painted cells
+   * @param {string} type - Animation type: "none", "blink", "flicker", "colorCycle", "charCycle"
+   */
+  setAnimationType(type) {
+    const validTypes = ["none", "blink", "flicker", "colorCycle", "charCycle"];
+    if (validTypes.includes(type)) {
+      this.animationType = type;
+    }
+  }
+
+  /**
+   * Get current animation type
+   * @returns {string} Current animation type
+   */
+  getAnimationType() {
+    return this.animationType;
+  }
+
+  /**
+   * Set animation speed
+   * @param {number} speed - Milliseconds per animation frame
+   */
+  setAnimationSpeed(speed) {
+    if (speed > 0) {
+      this.animationSpeed = speed;
+    }
+  }
+
+  /**
+   * Get current animation speed
+   * @returns {number} Current animation speed in ms
+   */
+  getAnimationSpeed() {
+    return this.animationSpeed;
+  }
+
+  /**
+   * Set animation colors for colorCycle
+   * @param {number[]} colors - Array of color indices (0-7)
+   */
+  setAnimationColors(colors) {
+    if (Array.isArray(colors) && colors.length > 0) {
+      this.animationColors = colors.filter(
+        (c) => typeof c === "number" && c >= 0 && c <= 7,
+      );
+    }
+  }
+
+  /**
+   * Get current animation colors
+   * @returns {number[]} Array of color indices
+   */
+  getAnimationColors() {
+    return [...this.animationColors];
+  }
+
+  /**
+   * Set animation frames for charCycle
+   * @param {string[]} frames - Array of characters
+   */
+  setAnimationFrames(frames) {
+    if (Array.isArray(frames) && frames.length > 0) {
+      this.animationFrames = frames.filter(
+        (f) => typeof f === "string" && f.length > 0,
+      );
+    }
+  }
+
+  /**
+   * Get current animation frames
+   * @returns {string[]} Array of characters
+   */
+  getAnimationFrames() {
+    return [...this.animationFrames];
+  }
+
+  /**
+   * Get animation config for current brush settings
+   * @returns {Object|null} Animation config or null if no animation
+   */
+  getAnimationConfig() {
+    if (this.animationType === "none") {
+      return null;
+    }
+
+    const config = {
+      type: this.animationType,
+      speed: this.animationSpeed,
+      offset:
+        this.animationOffsetMode === "random"
+          ? Math.floor(Math.random() * 10000)
+          : 0,
+    };
+
+    // Use configured colors/frames for cycle types
+    if (this.animationType === "colorCycle") {
+      config.colors = [...this.animationColors];
+      config.cycleMode = this.animationCycleMode;
+    } else if (this.animationType === "charCycle") {
+      config.frames = [...this.animationFrames];
+      config.cycleMode = this.animationCycleMode;
+    }
+
+    return config;
+  }
+
+  /**
+   * Set animation offset mode
+   * @param {string} mode - "sync" or "random"
+   */
+  setAnimationOffsetMode(mode) {
+    if (mode === "sync" || mode === "random") {
+      this.animationOffsetMode = mode;
+    }
+  }
+
+  /**
+   * Get current animation offset mode
+   * @returns {string} Current offset mode
+   */
+  getAnimationOffsetMode() {
+    return this.animationOffsetMode;
+  }
+
+  /**
+   * Set animation cycle mode
+   * @param {string} mode - "forward", "reverse", "pingpong", or "random"
+   */
+  setAnimationCycleMode(mode) {
+    if (["forward", "reverse", "pingpong", "random"].includes(mode)) {
+      this.animationCycleMode = mode;
+    }
+  }
+
+  /**
+   * Get current animation cycle mode
+   * @returns {string} Current cycle mode
+   */
+  getAnimationCycleMode() {
+    return this.animationCycleMode;
   }
 
   /**
@@ -349,6 +500,7 @@ export class BrushTool extends Tool {
   _paintMultipleCells(cellsToPaint, scene, stateManager) {
     const activeLayer = scene.getActiveLayer();
     const changes = [];
+    const animConfig = this.getAnimationConfig();
 
     for (const cellPos of cellsToPaint) {
       const index = cellPos.y * scene.w + cellPos.x;
@@ -388,6 +540,13 @@ export class BrushTool extends Tool {
             this.currentCell.fg,
             this.currentCell.bg,
           );
+      }
+
+      // Apply animation if set
+      if (animConfig) {
+        afterCell.anim = { ...animConfig };
+        if (animConfig.frames) afterCell.anim.frames = [...animConfig.frames];
+        if (animConfig.colors) afterCell.anim.colors = [...animConfig.colors];
       }
 
       changes.push({
@@ -446,6 +605,14 @@ export class BrushTool extends Tool {
           this.currentCell.fg,
           this.currentCell.bg,
         );
+    }
+
+    // Apply animation if set
+    const animConfig = this.getAnimationConfig();
+    if (animConfig) {
+      afterCell.anim = { ...animConfig };
+      if (animConfig.frames) afterCell.anim.frames = [...animConfig.frames];
+      if (animConfig.colors) afterCell.anim.colors = [...animConfig.colors];
     }
 
     // Create and execute command

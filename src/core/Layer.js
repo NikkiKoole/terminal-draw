@@ -10,7 +10,7 @@
  * - cells: Flat array of Cell objects (length = width * height)
  */
 
-import { Cell } from './Cell.js';
+import { Cell } from "./Cell.js";
 
 export class Layer {
   /**
@@ -88,7 +88,8 @@ export class Layer {
     if (cell instanceof Cell) {
       this.cells[index] = cell.clone();
     } else {
-      this.cells[index] = new Cell(cell.ch, cell.fg, cell.bg);
+      // Use Cell.fromObject to properly restore all properties including anim
+      this.cells[index] = Cell.fromObject(cell);
     }
 
     return true;
@@ -108,7 +109,8 @@ export class Layer {
    * @param {Cell|Object} cell - Cell to fill with
    */
   fill(cell) {
-    const fillCell = cell instanceof Cell ? cell : new Cell(cell.ch, cell.fg, cell.bg);
+    const fillCell =
+      cell instanceof Cell ? cell : new Cell(cell.ch, cell.fg, cell.bg);
 
     for (let i = 0; i < this.cells.length; i++) {
       this.cells[i] = fillCell.clone();
@@ -191,7 +193,7 @@ export class Layer {
       visible: this.visible,
       locked: this.locked,
       ligatures: this.ligatures,
-      cells: this.cells.map(cell => cell.toObject())
+      cells: this.cells.map((cell) => cell.toObject()),
     };
   }
 
@@ -208,7 +210,7 @@ export class Layer {
 
     // Restore cells
     if (obj.cells) {
-      layer.cells = obj.cells.map(cellData => Cell.fromObject(cellData));
+      layer.cells = obj.cells.map((cellData) => Cell.fromObject(cellData));
     }
 
     return layer;
@@ -236,7 +238,7 @@ export class Layer {
       totalCells: this.cells.length,
       emptyCount,
       nonEmptyCount,
-      charFrequency
+      charFrequency,
     };
   }
 }

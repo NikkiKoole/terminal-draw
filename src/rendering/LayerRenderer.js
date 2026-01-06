@@ -143,6 +143,51 @@ export class LayerRenderer {
   }
 
   /**
+   * Update a single cell with provided data (for animation)
+   * Unlike updateCell, this uses provided cell data instead of reading from layer
+   * @param {Layer} layer - Layer (used for coordinate validation)
+   * @param {HTMLElement} container - DOM container element
+   * @param {number} x - X coordinate
+   * @param {number} y - Y coordinate
+   * @param {Object} cellData - Cell data {ch, fg, bg}
+   * @returns {boolean} True if cell was updated, false otherwise
+   */
+  updateCellWithData(layer, container, x, y, cellData) {
+    if (!layer || !container || !cellData) {
+      return false;
+    }
+
+    // Validate coordinates
+    if (!layer.isValidCoord(x, y)) {
+      return false;
+    }
+
+    // Find the row
+    const rowDiv = container.querySelector(`[data-row="${y}"]`);
+    if (!rowDiv) {
+      return false;
+    }
+
+    // Find the cell span
+    const cellSpan = rowDiv.querySelector(`[data-x="${x}"][data-y="${y}"]`);
+    if (!cellSpan) {
+      return false;
+    }
+
+    // Update text content
+    cellSpan.textContent = cellData.ch;
+
+    // Remove old color classes
+    cellSpan.className = "cell";
+
+    // Apply new color classes
+    cellSpan.classList.add(`fg-${cellData.fg}`);
+    cellSpan.classList.add(`bg-${cellData.bg}`);
+
+    return true;
+  }
+
+  /**
    * Update layer visibility
    * @param {Layer} layer - Layer to update
    * @param {HTMLElement} container - DOM container element

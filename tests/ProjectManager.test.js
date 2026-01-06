@@ -56,7 +56,7 @@ describe("ProjectManager", () => {
     it("should create a project manager with scene and state manager", () => {
       expect(projectManager.scene).toBe(scene);
       expect(projectManager.stateManager).toBe(stateManager);
-      expect(projectManager.version).toBe("1.0");
+      expect(projectManager.version).toBe("1.1");
       expect(projectManager.currentProjectName).toBeNull();
     });
   });
@@ -70,7 +70,7 @@ describe("ProjectManager", () => {
       expect(project).toHaveProperty("timestamp");
       expect(project).toHaveProperty("scene");
 
-      expect(project.version).toBe("1.0");
+      expect(project.version).toBe("1.1");
       expect(project.name).toBe("Test Project");
       expect(project.scene).toEqual(scene.toObject());
     });
@@ -112,7 +112,7 @@ describe("ProjectManager", () => {
       const json = projectManager.serializeProject("Test");
       const parsed = JSON.parse(json);
 
-      expect(parsed.version).toBe("1.0");
+      expect(parsed.version).toBe("1.1");
       expect(parsed.name).toBe("Test");
       expect(parsed.scene).toBeDefined();
     });
@@ -132,7 +132,7 @@ describe("ProjectManager", () => {
       const json = projectManager.serializeProject("Test");
       const project = projectManager.parseProject(json);
 
-      expect(project.version).toBe("1.0");
+      expect(project.version).toBe("1.1");
       expect(project.name).toBe("Test");
       expect(project.scene).toBeDefined();
     });
@@ -495,7 +495,7 @@ describe("ProjectManager", () => {
 
       const info = projectManager.getProjectInfo();
 
-      expect(info.version).toBe("1.0");
+      expect(info.version).toBe("1.1");
       expect(info.name).toBe("My Project");
       expect(info.dimensions.width).toBe(80);
       expect(info.dimensions.height).toBe(25);

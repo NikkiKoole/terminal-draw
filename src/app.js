@@ -35,6 +35,8 @@ import { SelectionManager } from "./core/SelectionManager.js";
 
 import { ClearCommand } from "./commands/ClearCommand.js";
 
+import { AnimationEngine } from "./animation/AnimationEngine.js";
+
 import { StartupDialog } from "./ui/StartupDialog.js";
 import { PROJECT_TEMPLATES, getTemplate } from "./core/ProjectTemplate.js";
 
@@ -100,6 +102,9 @@ let currentTool = null;
 
 // Selection and clipboard management
 let selectionManager = null;
+
+// Animation engine
+let animationEngine = null;
 
 // Platform detection for keyboard shortcuts
 const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
@@ -2409,6 +2414,7 @@ function initUIComponents() {
   initClipboard();
   initProject();
   initIOPanel();
+  initAnimation();
 
   initClearOperations();
   initScaleControls();
@@ -2736,6 +2742,8 @@ function initPaintMode() {
 function initBrushSettings() {
   const sizeSelect = document.getElementById("brush-size");
   const shapeSelect = document.getElementById("brush-shape");
+  const animationSelect = document.getElementById("brush-animation");
+  const animSpeedSelect = document.getElementById("brush-anim-speed");
 
   if (sizeSelect && brushTool) {
     sizeSelect.addEventListener("change", (e) => {
@@ -2763,6 +2771,125 @@ function initBrushSettings() {
 
     // Set initial shape
     brushTool.setBrushShape("square");
+  }
+
+  // Animation settings
+  const colorCycleConfig = document.getElementById("color-cycle-config");
+  const colorCycleInput = document.getElementById("color-cycle-input");
+  const charCycleConfig = document.getElementById("char-cycle-config");
+  const charCycleInput = document.getElementById("char-cycle-input");
+
+  // Initialize color cycle input (just type digits 0-7, e.g. "0972")
+  if (colorCycleInput && brushTool) {
+    colorCycleInput.addEventListener("input", (e) => {
+      const colors = e.target.value
+        .split("")
+        .map((s) => parseInt(s))
+        .filter((n) => !isNaN(n) && n >= 0 && n <= 7);
+
+      if (colors.length > 0) {
+        brushTool.setAnimationColors(colors);
+        updateStatus(`Color Cycle: ${colors.join(", ")}`);
+      }
+    });
+  }
+
+  // Initialize char cycle input
+  if (charCycleInput && brushTool) {
+    charCycleInput.addEventListener("input", (e) => {
+      const chars = e.target.value.split("");
+      if (chars.length > 0) {
+        brushTool.setAnimationFrames(chars);
+        updateStatus(`Char Cycle: ${chars.length} characters`);
+      }
+    });
+  }
+
+  // Offset mode config
+  const animOffsetConfig = document.getElementById("anim-offset-config");
+  const animOffsetSelect = document.getElementById("anim-offset");
+
+  if (animOffsetSelect && brushTool) {
+    animOffsetSelect.addEventListener("change", (e) => {
+      brushTool.setAnimationOffsetMode(e.target.value);
+      updateStatus(
+        `Animation Offset: ${e.target.value === "sync" ? "Sync" : "Random"}`,
+      );
+    });
+  }
+
+  // Cycle mode config
+  const cycleModeConfig = document.getElementById("cycle-mode-config");
+  const cycleModeSelect = document.getElementById("cycle-mode");
+
+  if (cycleModeSelect && brushTool) {
+    cycleModeSelect.addEventListener("change", (e) => {
+      brushTool.setAnimationCycleMode(e.target.value);
+      const labels = {
+        forward: "Forward",
+        reverse: "Reverse",
+        pingpong: "Ping-Pong",
+        random: "Random",
+      };
+      updateStatus(`Cycle Mode: ${labels[e.target.value]}`);
+    });
+  }
+
+  // Show/hide config panels based on animation type
+  function updateAnimConfigPanels(animType) {
+    const hasAnimation = animType !== "none";
+    const isCycleType = animType === "colorCycle" || animType === "charCycle";
+    if (animOffsetConfig) {
+      animOffsetConfig.style.display = hasAnimation ? "flex" : "none";
+    }
+    if (cycleModeConfig) {
+      cycleModeConfig.style.display = isCycleType ? "flex" : "none";
+    }
+    if (colorCycleConfig) {
+      colorCycleConfig.style.display =
+        animType === "colorCycle" ? "flex" : "none";
+    }
+    if (charCycleConfig) {
+      charCycleConfig.style.display =
+        animType === "charCycle" ? "flex" : "none";
+    }
+  }
+
+  if (animationSelect && brushTool) {
+    animationSelect.addEventListener("change", (e) => {
+      const animType = e.target.value;
+      brushTool.setAnimationType(animType);
+
+      // Show/hide config panels
+      updateAnimConfigPanels(animType);
+
+      if (animType === "none") {
+        updateStatus("Brush Animation: None");
+      } else {
+        const labels = {
+          blink: "Blink (on/off)",
+          flicker: "Flicker (random)",
+          colorCycle: "Color Cycle",
+          charCycle: "Character Cycle",
+        };
+        updateStatus(`Brush Animation: ${labels[animType]}`);
+      }
+    });
+  }
+
+  if (animSpeedSelect && brushTool) {
+    animSpeedSelect.addEventListener("change", (e) => {
+      const speed = parseInt(e.target.value);
+      brushTool.setAnimationSpeed(speed);
+
+      const labels = {
+        1000: "Slow",
+        500: "Medium",
+        250: "Fast",
+        100: "Very Fast",
+      };
+      updateStatus(`Animation Speed: ${labels[speed]}`);
+    });
   }
 }
 
@@ -2897,6 +3024,73 @@ function initCircleSettings() {
     // Set initial ellipse mode
     circleTool.setEllipseMode(false);
   }
+}
+
+/**
+ * Initialize animation engine and controls
+ */
+function initAnimation() {
+  // Create animation engine with callback to update cells in DOM
+  const updateCellCallback = (layer, x, y, frame) => {
+    const container = document.getElementById(`layer-${layer.id}`);
+    if (!container || !renderer) return;
+
+    // Create a temporary cell-like object for rendering
+    const tempCell = { ch: frame.ch, fg: frame.fg, bg: frame.bg };
+    renderer.updateCellWithData(layer, container, x, y, tempCell);
+  };
+
+  animationEngine = new AnimationEngine(
+    scene,
+    stateManager,
+    updateCellCallback,
+  );
+
+  // Wire up play/pause button
+  const playBtn = document.getElementById("anim-play-btn");
+  const statusSpan = document.getElementById("anim-status");
+
+  if (playBtn) {
+    playBtn.addEventListener("click", () => {
+      const isPlaying = animationEngine.toggle();
+
+      if (isPlaying) {
+        playBtn.textContent = "⏸ Pause";
+        if (statusSpan) {
+          const count = animationEngine.getAnimatedCellCount();
+          statusSpan.textContent = `${count} animated`;
+        }
+        updateStatus("Animation playing");
+      } else {
+        playBtn.textContent = "▶ Play";
+        if (statusSpan) statusSpan.textContent = "";
+        updateStatus("Animation stopped");
+      }
+    });
+  }
+
+  // Listen for animation events
+  stateManager.on("animation:started", () => {
+    if (statusSpan) {
+      const count = animationEngine.getAnimatedCellCount();
+      statusSpan.textContent = `${count} animated`;
+    }
+  });
+
+  stateManager.on("animation:stopped", () => {
+    if (statusSpan) statusSpan.textContent = "";
+  });
+
+  // Refresh animation cache when cells change
+  stateManager.on("cell:changed", () => {
+    if (animationEngine && animationEngine.isPlaying()) {
+      // Debounce refresh to avoid excessive updates
+      clearTimeout(animationEngine._refreshTimeout);
+      animationEngine._refreshTimeout = setTimeout(() => {
+        animationEngine.refresh();
+      }, 100);
+    }
+  });
 }
 
 /**

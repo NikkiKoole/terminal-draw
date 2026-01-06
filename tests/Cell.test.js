@@ -183,4 +183,268 @@ describe("Cell", () => {
       expect(restored.equals(original)).toBe(true);
     });
   });
+
+  describe("animation support", () => {
+    describe("constructor", () => {
+      it("should create cell with null animation by default", () => {
+        const cell = new Cell();
+        expect(cell.anim).toBeNull();
+      });
+
+      it("should create cell with animation config", () => {
+        const cell = new Cell("★", 6, -1, { type: "blink", speed: 500 });
+        expect(cell.anim).toEqual({ type: "blink", speed: 500 });
+      });
+    });
+
+    describe("hasAnimation", () => {
+      it("should return false when no animation", () => {
+        const cell = new Cell();
+        expect(cell.hasAnimation()).toBe(false);
+      });
+
+      it("should return true when animation is set", () => {
+        const cell = new Cell("★", 6, -1);
+        cell.anim = { type: "blink", speed: 500 };
+        expect(cell.hasAnimation()).toBe(true);
+      });
+    });
+
+    describe("setAnimation", () => {
+      it("should set animation with type and speed", () => {
+        const cell = new Cell("★", 6, -1);
+        cell.setAnimation("blink", 500);
+
+        expect(cell.anim.type).toBe("blink");
+        expect(cell.anim.speed).toBe(500);
+      });
+
+      it("should set animation with additional options", () => {
+        const cell = new Cell("★", 6, -1);
+        cell.setAnimation("colorCycle", 100, { colors: [1, 2, 3] });
+
+        expect(cell.anim.type).toBe("colorCycle");
+        expect(cell.anim.speed).toBe(100);
+        expect(cell.anim.colors).toEqual([1, 2, 3]);
+      });
+
+      it("should use default speed if not provided", () => {
+        const cell = new Cell("★", 6, -1);
+        cell.setAnimation("blink");
+
+        expect(cell.anim.speed).toBe(500);
+      });
+    });
+
+    describe("clearAnimation", () => {
+      it("should remove animation", () => {
+        const cell = new Cell("★", 6, -1);
+        cell.anim = { type: "blink", speed: 500 };
+
+        cell.clearAnimation();
+
+        expect(cell.anim).toBeNull();
+        expect(cell.hasAnimation()).toBe(false);
+      });
+    });
+
+    describe("clear", () => {
+      it("should also clear animation", () => {
+        const cell = new Cell("★", 6, -1);
+        cell.anim = { type: "blink", speed: 500 };
+
+        cell.clear();
+
+        expect(cell.anim).toBeNull();
+      });
+    });
+
+    describe("clone", () => {
+      it("should clone animation data", () => {
+        const original = new Cell("★", 6, -1);
+        original.anim = { type: "colorCycle", speed: 100, colors: [1, 2, 3] };
+
+        const clone = original.clone();
+
+        expect(clone.anim).toEqual(original.anim);
+        expect(clone.anim).not.toBe(original.anim);
+      });
+
+      it("should deep clone animation arrays", () => {
+        const original = new Cell("★", 6, -1);
+        original.anim = {
+          type: "charCycle",
+          speed: 100,
+          frames: ["A", "B", "C"],
+        };
+
+        const clone = original.clone();
+        clone.anim.frames[0] = "X";
+
+        expect(original.anim.frames[0]).toBe("A");
+      });
+    });
+
+    describe("equals", () => {
+      it("should return true for cells with same animation", () => {
+        const cell1 = new Cell("★", 6, -1);
+        cell1.anim = { type: "blink", speed: 500 };
+
+        const cell2 = new Cell("★", 6, -1);
+        cell2.anim = { type: "blink", speed: 500 };
+
+        expect(cell1.equals(cell2)).toBe(true);
+      });
+
+      it("should return false for cells with different animation type", () => {
+        const cell1 = new Cell("★", 6, -1);
+        cell1.anim = { type: "blink", speed: 500 };
+
+        const cell2 = new Cell("★", 6, -1);
+        cell2.anim = { type: "flicker", speed: 500 };
+
+        expect(cell1.equals(cell2)).toBe(false);
+      });
+
+      it("should return false for cells with different animation speed", () => {
+        const cell1 = new Cell("★", 6, -1);
+        cell1.anim = { type: "blink", speed: 500 };
+
+        const cell2 = new Cell("★", 6, -1);
+        cell2.anim = { type: "blink", speed: 1000 };
+
+        expect(cell1.equals(cell2)).toBe(false);
+      });
+
+      it("should return false when one has animation and other does not", () => {
+        const cell1 = new Cell("★", 6, -1);
+        cell1.anim = { type: "blink", speed: 500 };
+
+        const cell2 = new Cell("★", 6, -1);
+
+        expect(cell1.equals(cell2)).toBe(false);
+      });
+
+      it("should return true when both have no animation", () => {
+        const cell1 = new Cell("★", 6, -1);
+        const cell2 = new Cell("★", 6, -1);
+
+        expect(cell1.equals(cell2)).toBe(true);
+      });
+    });
+
+    describe("toObject", () => {
+      it("should include animation in serialization", () => {
+        const cell = new Cell("★", 6, -1);
+        cell.anim = { type: "blink", speed: 500 };
+
+        const obj = cell.toObject();
+
+        expect(obj.anim).toEqual({ type: "blink", speed: 500 });
+      });
+
+      it("should not include anim key when no animation", () => {
+        const cell = new Cell("★", 6, -1);
+
+        const obj = cell.toObject();
+
+        expect(obj).not.toHaveProperty("anim");
+      });
+
+      it("should deep copy animation arrays", () => {
+        const cell = new Cell("★", 6, -1);
+        cell.anim = { type: "charCycle", speed: 100, frames: ["A", "B"] };
+
+        const obj = cell.toObject();
+        obj.anim.frames[0] = "X";
+
+        expect(cell.anim.frames[0]).toBe("A");
+      });
+    });
+
+    describe("fromObject", () => {
+      it("should restore animation from object", () => {
+        const obj = {
+          ch: "★",
+          fg: 6,
+          bg: -1,
+          anim: { type: "blink", speed: 500 },
+        };
+
+        const cell = Cell.fromObject(obj);
+
+        expect(cell.anim).toEqual({ type: "blink", speed: 500 });
+      });
+
+      it("should handle objects without animation", () => {
+        const obj = { ch: "★", fg: 6, bg: -1 };
+
+        const cell = Cell.fromObject(obj);
+
+        expect(cell.anim).toBeNull();
+      });
+
+      it("should deep copy animation arrays", () => {
+        const obj = {
+          ch: "★",
+          fg: 6,
+          bg: -1,
+          anim: { type: "colorCycle", speed: 100, colors: [1, 2, 3] },
+        };
+
+        const cell = Cell.fromObject(obj);
+        obj.anim.colors[0] = 9;
+
+        expect(cell.anim.colors[0]).toBe(1);
+      });
+    });
+
+    describe("round-trip with animation", () => {
+      it("should preserve blink animation through serialization", () => {
+        const original = new Cell("★", 6, -1);
+        original.anim = { type: "blink", speed: 500 };
+
+        const restored = Cell.fromObject(original.toObject());
+
+        expect(restored.equals(original)).toBe(true);
+      });
+
+      it("should preserve colorCycle animation through serialization", () => {
+        const original = new Cell("█", 7, -1);
+        original.anim = {
+          type: "colorCycle",
+          speed: 100,
+          colors: [0, 1, 2, 3],
+        };
+
+        const restored = Cell.fromObject(original.toObject());
+
+        expect(restored.equals(original)).toBe(true);
+        expect(restored.anim.colors).toEqual([0, 1, 2, 3]);
+      });
+
+      it("should preserve charCycle animation through serialization", () => {
+        const original = new Cell("★", 6, -1);
+        original.anim = {
+          type: "charCycle",
+          speed: 200,
+          frames: ["★", "✦", "·"],
+        };
+
+        const restored = Cell.fromObject(original.toObject());
+
+        expect(restored.equals(original)).toBe(true);
+        expect(restored.anim.frames).toEqual(["★", "✦", "·"]);
+      });
+
+      it("should preserve flicker animation through serialization", () => {
+        const original = new Cell("💡", 6, -1);
+        original.anim = { type: "flicker", speed: 100 };
+
+        const restored = Cell.fromObject(original.toObject());
+
+        expect(restored.equals(original)).toBe(true);
+      });
+    });
+  });
 });

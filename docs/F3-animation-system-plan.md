@@ -1351,17 +1351,703 @@ tests/
 
 ---
 
-## Future Phases
+## Phase 2.2: Precise Control & Force Fields (Planning)
 
-### Phase 3: Walking Sprites
+### Overview
+
+Currently emitters are placed via UI fields. This phase adds:
+1. **Drawable emitter placement** - Click/drag to place emitters precisely
+2. **Force fields** - Objects that affect particle movement
+3. **Collision** - Particles interact with drawn cells
+
+### Drawable Emitter Placement
+
+#### Tools
+
+| Tool | Interaction | Result |
+|------|-------------|--------|
+| **Point Emitter** | Click | Places emitter at click position |
+| **Line Emitter** | Click + drag | Creates line from start to end |
+| **Area Emitter** | Click + drag | Creates rectangle |
+
+#### Visual Indicators
+
+When particle panel is open or emitter tool selected:
+- Point emitters: Small marker (e.g., `◉`)
+- Line emitters: Dashed line showing bounds
+- Area emitters: Dashed rectangle outline
+- Force fields: Radius circle or zone boundary
+
+These indicators render on a UI overlay (not in the artwork).
+
+#### Data Model Changes
+
+```javascript
+// Emitters gain precise positioning
+emitter: {
+  // For line emitters
+  x1: 10, y1: 5,   // Start point
+  x2: 50, y2: 5,   // End point
+  
+  // For area emitters  
+  x: 10, y: 5,
+  width: 40,
+  height: 20,
+}
+```
+
+### Force Fields
+
+Force fields are scene-level objects that affect particles (and later, boids) passing through or near them.
+
+#### Force Field Types
+
+| Type | Effect | Parameters | Use Case |
+|------|--------|------------|----------|
+| **Attractor** | Pulls toward center | position, strength, radius | Drains, magnets, black holes |
+| **Repulsor** | Pushes away from center | position, strength, radius | Force fields, shields |
+| **Gravity Well** | Pull with 1/r² falloff | position, mass, radius | Orbital effects, realistic gravity |
+| **Wind Zone** | Constant directional force | bounds, direction, strength | Gusts, fans, drafts |
+| **Turbulence** | Random velocity perturbation | bounds, intensity, scale | Chaotic smoke, rough air |
+| **Vortex** | Circular/spiral force | position, strength, radius, inward | Tornadoes, whirlpools |
+| **Damping Zone** | Reduces velocity | bounds, factor | Friction, water resistance |
+| **Bounce Surface** | Reflects velocity | line/rect, elasticity | Walls, floors, barriers |
+
+#### Data Model
+
+```javascript
+// Scene-level force fields
+scene.forces = [
+  {
+    id: 'wind-1',
+    type: 'wind',
+    enabled: true,
+    
+    // Bounds (for zone-based forces)
+    bounds: { x: 0, y: 0, width: 80, height: 10 },
+    
+    // Or position + radius (for point-based forces)
+    position: { x: 40, y: 12 },
+    radius: 15,
+    
+    // Force parameters
+    strength: 5,           // Force magnitude
+    direction: { x: 1, y: 0 }, // For directional forces
+    falloff: 'linear',     // none | linear | quadratic
+    
+    // What it affects
+    affectsParticles: true,
+    affectsBoids: true,
+  }
+];
+```
+
+#### Force Field Class Hierarchy
+
+```javascript
+// Base class
+class ForceField {
+  constructor(config) { }
+  
+  // Calculate force on an entity at position
+  getForceAt(x, y) { return { fx: 0, fy: 0 }; }
+  
+  // Check if position is within influence
+  isInRange(x, y) { return false; }
+  
+  // Serialization
+  toObject() { }
+  static fromObject(obj) { }
+}
+
+// Point-based forces
+class Attractor extends ForceField {
+  getForceAt(x, y) {
+    const dx = this.position.x - x;
+    const dy = this.position.y - y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist > this.radius || dist < 0.1) return { fx: 0, fy: 0 };
+    
+    const falloff = this.getFalloff(dist);
+    const magnitude = this.strength * falloff;
+    return {
+      fx: (dx / dist) * magnitude,
+      fy: (dy / dist) * magnitude
+    };
+  }
+}
+
+class Repulsor extends Attractor {
+  getForceAt(x, y) {
+    const force = super.getForceAt(x, y);
+    return { fx: -force.fx, fy: -force.fy };
+  }
+}
+
+// Zone-based forces
+class WindZone extends ForceField {
+  getForceAt(x, y) {
+    if (!this.isInBounds(x, y)) return { fx: 0, fy: 0 };
+    return {
+      fx: this.direction.x * this.strength,
+      fy: this.direction.y * this.strength
+    };
+  }
+}
+
+class Vortex extends ForceField {
+  getForceAt(x, y) {
+    const dx = x - this.position.x;
+    const dy = y - this.position.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist > this.radius || dist < 0.1) return { fx: 0, fy: 0 };
+    
+    const falloff = this.getFalloff(dist);
+    const magnitude = this.strength * falloff;
+    
+    // Perpendicular force (tangential)
+    let fx = -dy / dist * magnitude;
+    let fy = dx / dist * magnitude;
+    
+    // Optional inward pull
+    if (this.inwardStrength) {
+      fx += (this.position.x - x) / dist * this.inwardStrength * falloff;
+      fy += (this.position.y - y) / dist * this.inwardStrength * falloff;
+    }
+    
+    return { fx, fy };
+  }
+}
+```
+
+#### Integration with Particle Engine
+
+```javascript
+// In ParticleEngine.updateParticles()
+updateParticles(deltaMs) {
+  const deltaSec = deltaMs / 1000;
+  const forces = this.scene.forces ?? [];
+  
+  for (const particle of this.particles) {
+    // Apply force fields
+    for (const field of forces) {
+      if (!field.enabled || !field.affectsParticles) continue;
+      
+      const { fx, fy } = field.getForceAt(particle.x, particle.y);
+      particle.vx += fx * deltaSec;
+      particle.vy += fy * deltaSec;
+    }
+    
+    // Existing update (gravity, movement)
+    particle.update(deltaMs);
+  }
+}
+```
+
+### Collision with Drawn Cells
+
+Particles can interact with the artwork itself.
+
+#### Collision Modes
+
+| Mode | Behavior | Use Case |
+|------|----------|----------|
+| **None** | Pass through (default) | Most effects |
+| **Stop** | Particle stops and stays | Snow accumulation |
+| **Destroy** | Particle despawns | Rain hitting ground |
+| **Bounce** | Reflect velocity | Bouncing balls |
+| **Spawn** | Destroy + emit new particles | Splashes, sparks |
+
+#### Implementation
+
+```javascript
+// In Particle or ParticleEngine
+checkCollision(scene, layer) {
+  const gridX = Math.floor(this.x);
+  const gridY = Math.floor(this.y);
+  
+  const cell = layer.getCell(gridX, gridY);
+  if (!cell || cell.ch === ' ' || cell.ch === '') {
+    return null; // No collision
+  }
+  
+  return { x: gridX, y: gridY, cell };
+}
+
+// Collision response based on emitter config
+handleCollision(particle, collision) {
+  switch (particle.collisionMode) {
+    case 'stop':
+      particle.vx = 0;
+      particle.vy = 0;
+      break;
+    case 'destroy':
+      particle.lifespan = 0; // Mark for removal
+      break;
+    case 'bounce':
+      // Simple bounce - reverse velocity component
+      // More sophisticated: calculate surface normal
+      particle.vy *= -particle.elasticity;
+      break;
+    case 'spawn':
+      particle.lifespan = 0;
+      this.spawnCollisionParticles(particle, collision);
+      break;
+  }
+}
+```
+
+### Drawable Force Field Placement
+
+Similar to emitters, force fields can be drawn:
+
+| Tool | Interaction | Creates |
+|------|-------------|---------|
+| **Attractor Tool** | Click | Point attractor at position |
+| **Repulsor Tool** | Click | Point repulsor at position |
+| **Wind Zone Tool** | Click + drag | Rectangular wind area |
+| **Vortex Tool** | Click + drag radius | Circular vortex |
+
+### UI Design
+
+#### Force Field Panel
+
+```
+┌─────────────────────────────────┐
+│ Force Fields                [+] │
+├─────────────────────────────────┤
+│ ◉ Wind Zone 1        [👁] [🗑] │
+│   Strength: [====----] 5        │
+│   Direction: → East             │
+├─────────────────────────────────┤
+│ ◉ Attractor 1        [👁] [🗑] │
+│   Strength: [======--] 8        │
+│   Radius: [===-------] 10       │
+└─────────────────────────────────┘
+```
+
+### File Structure
+
+```
+src/forces/
+├── ForceField.js        # Base class with common logic
+├── Attractor.js         # Point attractor
+├── Repulsor.js          # Point repulsor
+├── GravityWell.js       # 1/r² gravity
+├── WindZone.js          # Directional zone force
+├── Turbulence.js        # Random perturbation zone
+├── Vortex.js            # Circular/spiral force
+├── DampingZone.js       # Velocity reduction zone
+├── BounceSurface.js     # Reflection surface
+├── presets.js           # Pre-configured force setups
+└── index.js             # Barrel export
+
+tests/
+├── ForceField.test.js
+├── Attractor.test.js
+├── WindZone.test.js
+└── Vortex.test.js
+```
+
+### Implementation Order
+
+1. **Force field base system** - ForceField base class, integration with ParticleEngine
+2. **Basic forces** - Attractor, Repulsor, WindZone
+3. **Drawable emitter placement** - Tools for point/line/area
+4. **Advanced forces** - Vortex, Turbulence, GravityWell
+5. **Collision system** - Particle/cell interaction
+6. **Drawable force placement** - Tools for forces
+7. **UI polish** - Visual indicators, panel improvements
+
+---
+
+## Phase 2.3: Boids System (Planning)
+
+### Overview
+
+Boids are autonomous agents that exhibit flocking behavior through simple local rules. Unlike particles, each boid is aware of its neighbors and makes decisions based on them.
+
+### Boids vs Particles Comparison
+
+| Aspect | Particles | Boids |
+|--------|-----------|-------|
+| **Awareness** | None - independent | Sees neighbors within radius |
+| **Rules** | Physics (forces, gravity) | Behavioral (separation, alignment, cohesion) |
+| **Movement** | Deterministic from forces | Emergent from local decisions |
+| **Complexity** | O(n) | O(n²) naive, O(n log n) optimized |
+| **Use Cases** | Weather, fire, explosions | Flocks, schools, crowds, swarms |
+
+### Classic Boid Rules
+
+1. **Separation** - Steer away from nearby boids to avoid crowding
+2. **Alignment** - Steer toward average heading of nearby boids
+3. **Cohesion** - Steer toward average position of nearby boids
+
+```
+    Separation         Alignment          Cohesion
+    
+    ← ○ →             ○ → → →           ○ ↘
+   ↙  ↓  ↘            ○ → → →              ↘ ●
+    ○   ○             ○ → → →            ○ ↗
+   
+  "Don't crowd"    "Go same way"    "Stay together"
+```
+
+### Additional Behaviors
+
+| Behavior | Description | Use Case |
+|----------|-------------|----------|
+| **Avoidance** | Steer away from obstacles/predators | Obstacles, threats |
+| **Seek** | Steer toward a target | Food, goal |
+| **Flee** | Steer away from a target | Predator |
+| **Wander** | Random steering for natural movement | Idle behavior |
+| **Boundary** | Stay within bounds | Keep on screen |
+| **Leader Following** | Follow a designated boid | V-formation, leader |
+
+### Data Model
+
+```javascript
+// Boid class
+class Boid {
+  constructor(config) {
+    // Position and velocity
+    this.x = config.x ?? 0;
+    this.y = config.y ?? 0;
+    this.vx = config.vx ?? 0;
+    this.vy = config.vy ?? 0;
+    
+    // Appearance
+    this.glyph = config.glyph ?? '>';  // Direction-aware
+    this.glyphSet = config.glyphSet ?? {
+      right: '>',
+      left: '<',
+      up: '^',
+      down: 'v',
+      // Diagonals
+      upRight: '⌝',
+      upLeft: '⌜',
+      downRight: '⌟',
+      downLeft: '⌞',
+    };
+    this.fg = config.fg ?? 7;
+    this.bg = config.bg ?? -1;
+    
+    // Movement limits
+    this.maxSpeed = config.maxSpeed ?? 4;
+    this.maxForce = config.maxForce ?? 0.5;  // Steering limit
+    
+    // Perception
+    this.perceptionRadius = config.perceptionRadius ?? 5;
+    this.separationRadius = config.separationRadius ?? 2;
+    
+    // Flock reference
+    this.flockId = config.flockId;
+    
+    // DOM element
+    this.element = null;
+  }
+  
+  // Get neighbors within perception radius
+  getNeighbors(allBoids) {
+    return allBoids.filter(other => {
+      if (other === this) return false;
+      const dist = this.distanceTo(other);
+      return dist < this.perceptionRadius;
+    });
+  }
+  
+  // Calculate steering forces
+  separate(neighbors) { /* ... */ }
+  align(neighbors) { /* ... */ }
+  cohere(neighbors) { /* ... */ }
+  
+  // Update glyph based on velocity direction
+  updateGlyph() {
+    const angle = Math.atan2(this.vy, this.vx) * 180 / Math.PI;
+    // Map angle to glyph
+    if (angle > -22.5 && angle <= 22.5) this.glyph = this.glyphSet.right;
+    else if (angle > 22.5 && angle <= 67.5) this.glyph = this.glyphSet.downRight;
+    // ... etc
+  }
+}
+```
+
+```javascript
+// Flock class - manages a group of boids
+class Flock {
+  constructor(config) {
+    this.id = config.id ?? crypto.randomUUID();
+    this.name = config.name ?? 'Flock';
+    this.enabled = config.enabled ?? true;
+    this.layerId = config.layerId ?? 'fg';
+    
+    // Spawn settings
+    this.spawnArea = config.spawnArea ?? { x: 0, y: 0, width: 80, height: 25 };
+    this.count = config.count ?? 20;
+    
+    // Behavior weights (tune these for different effects)
+    this.weights = {
+      separation: config.weights?.separation ?? 1.5,
+      alignment: config.weights?.alignment ?? 1.0,
+      cohesion: config.weights?.cohesion ?? 1.0,
+      avoidance: config.weights?.avoidance ?? 2.0,
+      boundary: config.weights?.boundary ?? 1.0,
+    };
+    
+    // Boid template
+    this.boidTemplate = {
+      glyphSet: config.boidTemplate?.glyphSet ?? { /* ... */ },
+      fg: config.boidTemplate?.fg ?? 7,
+      maxSpeed: config.boidTemplate?.maxSpeed ?? 4,
+      perceptionRadius: config.boidTemplate?.perceptionRadius ?? 5,
+    };
+    
+    // Runtime
+    this.boids = [];
+  }
+  
+  // Spawn initial boids
+  spawn() { /* ... */ }
+  
+  // Update all boids
+  update(deltaMs, forces) { /* ... */ }
+}
+```
+
+### BoidEngine
+
+```javascript
+class BoidEngine {
+  constructor(scene, stateManager) {
+    this.scene = scene;
+    this.stateManager = stateManager;
+    this.playing = false;
+    this.flocks = [];  // Active flock instances
+  }
+  
+  // Main update loop
+  tick(timestamp) {
+    const deltaMs = timestamp - this.lastTimestamp;
+    const forces = this.scene.forces ?? [];
+    
+    for (const flock of this.flocks) {
+      if (!flock.enabled) continue;
+      
+      for (const boid of flock.boids) {
+        // Get nearby boids (same flock only, or all?)
+        const neighbors = boid.getNeighbors(flock.boids);
+        
+        // Calculate steering forces
+        let steerX = 0, steerY = 0;
+        
+        // Boid rules
+        const sep = boid.separate(neighbors);
+        const ali = boid.align(neighbors);
+        const coh = boid.cohere(neighbors);
+        
+        steerX += sep.x * flock.weights.separation;
+        steerY += sep.y * flock.weights.separation;
+        steerX += ali.x * flock.weights.alignment;
+        steerY += ali.y * flock.weights.alignment;
+        steerX += coh.x * flock.weights.cohesion;
+        steerY += coh.y * flock.weights.cohesion;
+        
+        // Force fields (shared with particles!)
+        for (const field of forces) {
+          if (!field.enabled || !field.affectsBoids) continue;
+          const { fx, fy } = field.getForceAt(boid.x, boid.y);
+          steerX += fx;
+          steerY += fy;
+        }
+        
+        // Boundary avoidance
+        const bound = boid.avoidBoundary(this.scene.w, this.scene.h);
+        steerX += bound.x * flock.weights.boundary;
+        steerY += bound.y * flock.weights.boundary;
+        
+        // Apply steering
+        boid.applyForce(steerX, steerY, deltaMs);
+        boid.updateGlyph();
+      }
+    }
+    
+    this.render();
+  }
+}
+```
+
+### Spatial Partitioning (Performance)
+
+For many boids, O(n²) neighbor checks are expensive. Use spatial hashing:
+
+```javascript
+class SpatialHash {
+  constructor(cellSize = 5) {
+    this.cellSize = cellSize;
+    this.buckets = new Map();
+  }
+  
+  // Get bucket key for position
+  getKey(x, y) {
+    const cx = Math.floor(x / this.cellSize);
+    const cy = Math.floor(y / this.cellSize);
+    return `${cx},${cy}`;
+  }
+  
+  // Add boid to hash
+  insert(boid) {
+    const key = this.getKey(boid.x, boid.y);
+    if (!this.buckets.has(key)) {
+      this.buckets.set(key, []);
+    }
+    this.buckets.get(key).push(boid);
+  }
+  
+  // Get nearby boids (check adjacent cells)
+  getNearby(x, y, radius) {
+    const results = [];
+    const cellRadius = Math.ceil(radius / this.cellSize);
+    const cx = Math.floor(x / this.cellSize);
+    const cy = Math.floor(y / this.cellSize);
+    
+    for (let dx = -cellRadius; dx <= cellRadius; dx++) {
+      for (let dy = -cellRadius; dy <= cellRadius; dy++) {
+        const key = `${cx + dx},${cy + dy}`;
+        const bucket = this.buckets.get(key);
+        if (bucket) results.push(...bucket);
+      }
+    }
+    
+    return results;
+  }
+  
+  // Clear and rebuild each frame
+  clear() {
+    this.buckets.clear();
+  }
+}
+```
+
+### Preset Flocks
+
+```javascript
+export const FLOCK_PRESETS = {
+  birds: {
+    name: 'Birds',
+    count: 15,
+    boidTemplate: {
+      glyphSet: {
+        right: '>', left: '<', up: '^', down: 'v',
+        upRight: '⌝', upLeft: '⌜', downRight: '⌟', downLeft: '⌞',
+      },
+      fg: 0,  // Black
+      maxSpeed: 5,
+      perceptionRadius: 8,
+    },
+    weights: { separation: 1.5, alignment: 1.2, cohesion: 1.0 },
+  },
+  
+  fish: {
+    name: 'Fish',
+    count: 25,
+    boidTemplate: {
+      glyphSet: {
+        right: '><>', left: '<><', up: 'A', down: 'V',
+        // ... or single char: ᗕ ᗒ etc
+      },
+      fg: 4,  // Cyan
+      maxSpeed: 3,
+      perceptionRadius: 6,
+    },
+    weights: { separation: 2.0, alignment: 1.0, cohesion: 1.5 },
+  },
+  
+  fireflies: {
+    name: 'Fireflies',
+    count: 30,
+    boidTemplate: {
+      glyphSet: { right: '*', left: '*', up: '*', down: '*' },
+      fg: 3,  // Yellow
+      fgCycle: [3, 3, 7, 3],  // Blinking
+      maxSpeed: 2,
+      perceptionRadius: 4,
+    },
+    weights: { separation: 1.0, alignment: 0.5, cohesion: 0.8 },
+  },
+  
+  crowd: {
+    name: 'Crowd',
+    count: 20,
+    boidTemplate: {
+      glyphSet: { right: '☻', left: '☻', up: '☻', down: '☻' },
+      fg: 7,
+      maxSpeed: 1.5,
+      perceptionRadius: 3,
+      separationRadius: 1.5,
+    },
+    weights: { separation: 3.0, alignment: 0.3, cohesion: 0.5 },
+  },
+};
+```
+
+### File Structure
+
+```
+src/boids/
+├── Boid.js              # Individual boid with steering behaviors
+├── Flock.js             # Manages a group of boids
+├── BoidEngine.js        # Main simulation loop
+├── SpatialHash.js       # Performance optimization
+├── presets.js           # Preset flock configurations
+└── index.js             # Barrel export
+
+tests/
+├── Boid.test.js
+├── Flock.test.js
+├── BoidEngine.test.js
+└── SpatialHash.test.js
+```
+
+### Shared Infrastructure
+
+Both particles and boids use:
+
+```
+src/forces/              # Shared force field system
+├── ForceField.js
+├── Attractor.js
+├── WindZone.js
+└── ...
+
+src/collision/           # Shared collision detection
+├── CellCollision.js     # Check against drawn cells
+└── BoundsCheck.js       # Screen boundary handling
+```
+
+### Implementation Order
+
+1. **Phase 2.2** - Force fields for particles (shared foundation)
+2. **Phase 2.3a** - Core boid classes (Boid, Flock)
+3. **Phase 2.3b** - BoidEngine with basic rules
+4. **Phase 2.3c** - Integration with force fields
+5. **Phase 2.3d** - Spatial partitioning for performance
+6. **Phase 2.3e** - Presets and UI
+
+---
+
+## Phase 3: Walking Sprites (Future)
+
 - Multi-cell sprites that move across the scene
 - Sprite library (person, car, bird)
-- Walker/traffic behaviors with spawn rules
+- Path following along drawn paths
+- Could potentially use boid steering for movement
 
-### Phase 4: Polish
-- Behavior presets
-- More movement patterns
-- UI improvements
+## Phase 4: Polish (Future)
+
+- Combined presets (rain + wind, fire + smoke + embers)
+- Scene templates with pre-configured effects
+- Export animations to GIF/video
+- Performance profiling and optimization
 
 ---
 

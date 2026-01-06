@@ -170,6 +170,11 @@ export class GlyphPicker {
       ch: char,
     });
 
+    // Copy to clipboard for easy pasting into animation fields
+    navigator.clipboard.writeText(char).catch(() => {
+      // Silently fail if clipboard access denied
+    });
+
     // Update trigger button
     this.updateTriggerButton();
 

@@ -5,13 +5,16 @@
  * - ch: The character/glyph to display
  * - fg: Foreground color index (0-7)
  * - bg: Background color index (-1 for transparent, 0-7 for colors)
- * - anim: Optional animation configuration
+ * - anim: Optional animation configuration with separate glyph/fg/bg animations
  *
- * Animation types:
- * - blink: Cell blinks on/off
- * - flicker: Random blink timing (like a failing light)
- * - colorCycle: Cycles through foreground colors
- * - charCycle: Cycles through characters
+ * Animation structure:
+ * anim: {
+ *   glyph: { frames: ['★','✦'], speed: 500, offset: 0, cycleMode: 'forward' },
+ *   fg: { colors: [1,2,3], speed: 250, offset: 0, cycleMode: 'pingpong' },
+ *   bg: { colors: [0,-1], speed: 1000, offset: 0, cycleMode: 'forward' }
+ * }
+ *
+ * Each sub-animation is optional. Color -1 = transparent.
  */
 export class Cell {
   /**
@@ -19,7 +22,7 @@ export class Cell {
    * @param {string} ch - Character (default: space)
    * @param {number} fg - Foreground color index 0-7 (default: 7 = white)
    * @param {number} bg - Background color index -1 to 7 (default: -1 = transparent)
-   * @param {Object} anim - Optional animation config {type, speed, frames?, colors?}
+   * @param {Object} anim - Optional animation config {glyph?, fg?, bg?}
    */
   constructor(ch = " ", fg = 7, bg = -1, anim = null) {
     this.ch = ch;
@@ -35,11 +38,37 @@ export class Cell {
   clone() {
     const cell = new Cell(this.ch, this.fg, this.bg);
     if (this.anim) {
-      cell.anim = { ...this.anim };
-      if (this.anim.frames) cell.anim.frames = [...this.anim.frames];
-      if (this.anim.colors) cell.anim.colors = [...this.anim.colors];
+      cell.anim = Cell.cloneAnim(this.anim);
     }
     return cell;
+  }
+
+  /**
+   * Deep clone an animation config
+   * @param {Object} anim - Animation config to clone
+   * @returns {Object} Cloned animation config
+   */
+  static cloneAnim(anim) {
+    if (!anim) return null;
+
+    const cloned = {};
+
+    if (anim.glyph) {
+      cloned.glyph = { ...anim.glyph };
+      if (anim.glyph.frames) cloned.glyph.frames = [...anim.glyph.frames];
+    }
+
+    if (anim.fg) {
+      cloned.fg = { ...anim.fg };
+      if (anim.fg.colors) cloned.fg.colors = [...anim.fg.colors];
+    }
+
+    if (anim.bg) {
+      cloned.bg = { ...anim.bg };
+      if (anim.bg.colors) cloned.bg.colors = [...anim.bg.colors];
+    }
+
+    return cloned;
   }
 
   /**
@@ -55,12 +84,7 @@ export class Cell {
     // Compare animation
     if (this.anim === other.anim) return true;
     if (!this.anim || !other.anim) return false;
-    return (
-      this.anim.type === other.anim.type &&
-      this.anim.speed === other.anim.speed &&
-      JSON.stringify(this.anim.frames) === JSON.stringify(other.anim.frames) &&
-      JSON.stringify(this.anim.colors) === JSON.stringify(other.anim.colors)
-    );
+    return JSON.stringify(this.anim) === JSON.stringify(other.anim);
   }
 
   /**
@@ -86,17 +110,42 @@ export class Cell {
    * @returns {boolean} True if cell has animation config
    */
   hasAnimation() {
-    return this.anim !== null;
+    if (!this.anim) return false;
+    // Check if any sub-animation exists
+    return !!(this.anim.glyph || this.anim.fg || this.anim.bg);
   }
 
   /**
-   * Set animation on this cell
-   * @param {string} type - Animation type: blink, flicker, colorCycle, charCycle
+   * Set glyph animation on this cell
+   * @param {string[]} frames - Characters to cycle through
    * @param {number} speed - Milliseconds per frame
-   * @param {Object} options - Additional options (frames for charCycle, colors for colorCycle)
+   * @param {Object} options - Additional options (offset, cycleMode)
    */
-  setAnimation(type, speed = 500, options = {}) {
-    this.anim = { type, speed, ...options };
+  setGlyphAnimation(frames, speed = 500, options = {}) {
+    if (!this.anim) this.anim = {};
+    this.anim.glyph = { frames: [...frames], speed, ...options };
+  }
+
+  /**
+   * Set foreground color animation on this cell
+   * @param {number[]} colors - Color indices to cycle through (0-7, -1 for transparent)
+   * @param {number} speed - Milliseconds per frame
+   * @param {Object} options - Additional options (offset, cycleMode)
+   */
+  setFgAnimation(colors, speed = 500, options = {}) {
+    if (!this.anim) this.anim = {};
+    this.anim.fg = { colors: [...colors], speed, ...options };
+  }
+
+  /**
+   * Set background color animation on this cell
+   * @param {number[]} colors - Color indices to cycle through (0-7, -1 for transparent)
+   * @param {number} speed - Milliseconds per frame
+   * @param {Object} options - Additional options (offset, cycleMode)
+   */
+  setBgAnimation(colors, speed = 500, options = {}) {
+    if (!this.anim) this.anim = {};
+    this.anim.bg = { colors: [...colors], speed, ...options };
   }
 
   /**
@@ -114,9 +163,7 @@ export class Cell {
   static fromObject(obj) {
     const cell = new Cell(obj.ch, obj.fg, obj.bg);
     if (obj.anim) {
-      cell.anim = { ...obj.anim };
-      if (obj.anim.frames) cell.anim.frames = [...obj.anim.frames];
-      if (obj.anim.colors) cell.anim.colors = [...obj.anim.colors];
+      cell.anim = Cell.cloneAnim(obj.anim);
     }
     return cell;
   }
@@ -132,9 +179,7 @@ export class Cell {
       bg: this.bg,
     };
     if (this.anim) {
-      obj.anim = { ...this.anim };
-      if (this.anim.frames) obj.anim.frames = [...this.anim.frames];
-      if (this.anim.colors) obj.anim.colors = [...this.anim.colors];
+      obj.anim = Cell.cloneAnim(this.anim);
     }
     return obj;
   }

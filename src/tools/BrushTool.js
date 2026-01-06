@@ -30,13 +30,28 @@ export class BrushTool extends Tool {
     this.brushSize = 1; // 1, 3, or 5
     this.brushShape = "square"; // "square" or "circle"
 
-    // Animation properties
-    this.animationType = "none"; // "none", "blink", "flicker", "colorCycle", "charCycle"
-    this.animationSpeed = 500; // ms per frame
-    this.animationColors = [0, 1, 2, 3, 4, 5, 6, 7]; // colors for colorCycle
-    this.animationFrames = ["★", "✦", "·"]; // characters for charCycle
-    this.animationOffsetMode = "sync"; // "sync" or "random"
-    this.animationCycleMode = "forward"; // "forward", "reverse", "pingpong", "random"
+    // Animation properties - separate configs for glyph, fg, bg
+    this.glyphAnim = {
+      enabled: false,
+      frames: ["★", "✦", "·"],
+      speed: 500,
+      offsetMode: "sync",
+      cycleMode: "forward",
+    };
+    this.fgAnim = {
+      enabled: false,
+      colors: [0, 1, 2, 3, 4, 5, 6, 7],
+      speed: 500,
+      offsetMode: "sync",
+      cycleMode: "forward",
+    };
+    this.bgAnim = {
+      enabled: false,
+      colors: [0, -1], // 0=black, -1=transparent
+      speed: 500,
+      offsetMode: "sync",
+      cycleMode: "forward",
+    };
   }
 
   /**
@@ -154,147 +169,208 @@ export class BrushTool extends Tool {
     return this.brushShape;
   }
 
+  // ===== Glyph Animation Methods =====
+
   /**
-   * Set animation type for painted cells
-   * @param {string} type - Animation type: "none", "blink", "flicker", "colorCycle", "charCycle"
+   * Enable/disable glyph animation
+   * @param {boolean} enabled
    */
-  setAnimationType(type) {
-    const validTypes = ["none", "blink", "flicker", "colorCycle", "charCycle"];
-    if (validTypes.includes(type)) {
-      this.animationType = type;
-    }
+  setGlyphAnimEnabled(enabled) {
+    this.glyphAnim.enabled = !!enabled;
   }
 
   /**
-   * Get current animation type
-   * @returns {string} Current animation type
+   * Set glyph animation frames
+   * @param {string[]} frames - Characters to cycle through
    */
-  getAnimationType() {
-    return this.animationType;
-  }
-
-  /**
-   * Set animation speed
-   * @param {number} speed - Milliseconds per animation frame
-   */
-  setAnimationSpeed(speed) {
-    if (speed > 0) {
-      this.animationSpeed = speed;
-    }
-  }
-
-  /**
-   * Get current animation speed
-   * @returns {number} Current animation speed in ms
-   */
-  getAnimationSpeed() {
-    return this.animationSpeed;
-  }
-
-  /**
-   * Set animation colors for colorCycle
-   * @param {number[]} colors - Array of color indices (0-7)
-   */
-  setAnimationColors(colors) {
-    if (Array.isArray(colors) && colors.length > 0) {
-      this.animationColors = colors.filter(
-        (c) => typeof c === "number" && c >= 0 && c <= 7,
-      );
-    }
-  }
-
-  /**
-   * Get current animation colors
-   * @returns {number[]} Array of color indices
-   */
-  getAnimationColors() {
-    return [...this.animationColors];
-  }
-
-  /**
-   * Set animation frames for charCycle
-   * @param {string[]} frames - Array of characters
-   */
-  setAnimationFrames(frames) {
+  setGlyphAnimFrames(frames) {
     if (Array.isArray(frames) && frames.length > 0) {
-      this.animationFrames = frames.filter(
+      this.glyphAnim.frames = frames.filter(
         (f) => typeof f === "string" && f.length > 0,
       );
     }
   }
 
   /**
-   * Get current animation frames
-   * @returns {string[]} Array of characters
+   * Set glyph animation speed
+   * @param {number} speed - Milliseconds per frame
    */
-  getAnimationFrames() {
-    return [...this.animationFrames];
+  setGlyphAnimSpeed(speed) {
+    if (speed > 0) this.glyphAnim.speed = speed;
   }
+
+  /**
+   * Set glyph animation offset mode
+   * @param {string} mode - "sync" or "random"
+   */
+  setGlyphAnimOffsetMode(mode) {
+    if (mode === "sync" || mode === "random") this.glyphAnim.offsetMode = mode;
+  }
+
+  /**
+   * Set glyph animation cycle mode
+   * @param {string} mode - "forward", "reverse", "pingpong", or "random"
+   */
+  setGlyphAnimCycleMode(mode) {
+    if (["forward", "reverse", "pingpong", "random"].includes(mode)) {
+      this.glyphAnim.cycleMode = mode;
+    }
+  }
+
+  // ===== Foreground Animation Methods =====
+
+  /**
+   * Enable/disable foreground color animation
+   * @param {boolean} enabled
+   */
+  setFgAnimEnabled(enabled) {
+    this.fgAnim.enabled = !!enabled;
+  }
+
+  /**
+   * Set foreground animation colors
+   * @param {number[]} colors - Color indices (0-7, -1 for transparent)
+   */
+  setFgAnimColors(colors) {
+    if (Array.isArray(colors) && colors.length > 0) {
+      this.fgAnim.colors = colors.filter(
+        (c) => typeof c === "number" && c >= -1 && c <= 7,
+      );
+    }
+  }
+
+  /**
+   * Set foreground animation speed
+   * @param {number} speed - Milliseconds per frame
+   */
+  setFgAnimSpeed(speed) {
+    if (speed > 0) this.fgAnim.speed = speed;
+  }
+
+  /**
+   * Set foreground animation offset mode
+   * @param {string} mode - "sync" or "random"
+   */
+  setFgAnimOffsetMode(mode) {
+    if (mode === "sync" || mode === "random") this.fgAnim.offsetMode = mode;
+  }
+
+  /**
+   * Set foreground animation cycle mode
+   * @param {string} mode - "forward", "reverse", "pingpong", or "random"
+   */
+  setFgAnimCycleMode(mode) {
+    if (["forward", "reverse", "pingpong", "random"].includes(mode)) {
+      this.fgAnim.cycleMode = mode;
+    }
+  }
+
+  // ===== Background Animation Methods =====
+
+  /**
+   * Enable/disable background color animation
+   * @param {boolean} enabled
+   */
+  setBgAnimEnabled(enabled) {
+    this.bgAnim.enabled = !!enabled;
+  }
+
+  /**
+   * Set background animation colors
+   * @param {number[]} colors - Color indices (0-7, -1 for transparent)
+   */
+  setBgAnimColors(colors) {
+    if (Array.isArray(colors) && colors.length > 0) {
+      this.bgAnim.colors = colors.filter(
+        (c) => typeof c === "number" && c >= -1 && c <= 7,
+      );
+    }
+  }
+
+  /**
+   * Set background animation speed
+   * @param {number} speed - Milliseconds per frame
+   */
+  setBgAnimSpeed(speed) {
+    if (speed > 0) this.bgAnim.speed = speed;
+  }
+
+  /**
+   * Set background animation offset mode
+   * @param {string} mode - "sync" or "random"
+   */
+  setBgAnimOffsetMode(mode) {
+    if (mode === "sync" || mode === "random") this.bgAnim.offsetMode = mode;
+  }
+
+  /**
+   * Set background animation cycle mode
+   * @param {string} mode - "forward", "reverse", "pingpong", or "random"
+   */
+  setBgAnimCycleMode(mode) {
+    if (["forward", "reverse", "pingpong", "random"].includes(mode)) {
+      this.bgAnim.cycleMode = mode;
+    }
+  }
+
+  // ===== Animation Config Generation =====
 
   /**
    * Get animation config for current brush settings
-   * @returns {Object|null} Animation config or null if no animation
+   * @returns {Object|null} Animation config or null if no animation enabled
    */
   getAnimationConfig() {
-    if (this.animationType === "none") {
-      return null;
+    const hasAnim =
+      this.glyphAnim.enabled || this.fgAnim.enabled || this.bgAnim.enabled;
+    if (!hasAnim) return null;
+
+    const config = {};
+
+    if (this.glyphAnim.enabled && this.glyphAnim.frames.length > 0) {
+      config.glyph = {
+        frames: [...this.glyphAnim.frames],
+        speed: this.glyphAnim.speed,
+        offset:
+          this.glyphAnim.offsetMode === "random"
+            ? Math.floor(Math.random() * 10000)
+            : 0,
+        cycleMode: this.glyphAnim.cycleMode,
+      };
     }
 
-    const config = {
-      type: this.animationType,
-      speed: this.animationSpeed,
-      offset:
-        this.animationOffsetMode === "random"
-          ? Math.floor(Math.random() * 10000)
-          : 0,
-    };
-
-    // Use configured colors/frames for cycle types
-    if (this.animationType === "colorCycle") {
-      config.colors = [...this.animationColors];
-      config.cycleMode = this.animationCycleMode;
-    } else if (this.animationType === "charCycle") {
-      config.frames = [...this.animationFrames];
-      config.cycleMode = this.animationCycleMode;
+    if (this.fgAnim.enabled && this.fgAnim.colors.length > 0) {
+      config.fg = {
+        colors: [...this.fgAnim.colors],
+        speed: this.fgAnim.speed,
+        offset:
+          this.fgAnim.offsetMode === "random"
+            ? Math.floor(Math.random() * 10000)
+            : 0,
+        cycleMode: this.fgAnim.cycleMode,
+      };
     }
 
-    return config;
+    if (this.bgAnim.enabled && this.bgAnim.colors.length > 0) {
+      config.bg = {
+        colors: [...this.bgAnim.colors],
+        speed: this.bgAnim.speed,
+        offset:
+          this.bgAnim.offsetMode === "random"
+            ? Math.floor(Math.random() * 10000)
+            : 0,
+        cycleMode: this.bgAnim.cycleMode,
+      };
+    }
+
+    return Object.keys(config).length > 0 ? config : null;
   }
 
   /**
-   * Set animation offset mode
-   * @param {string} mode - "sync" or "random"
+   * Check if any animation is enabled
+   * @returns {boolean}
    */
-  setAnimationOffsetMode(mode) {
-    if (mode === "sync" || mode === "random") {
-      this.animationOffsetMode = mode;
-    }
-  }
-
-  /**
-   * Get current animation offset mode
-   * @returns {string} Current offset mode
-   */
-  getAnimationOffsetMode() {
-    return this.animationOffsetMode;
-  }
-
-  /**
-   * Set animation cycle mode
-   * @param {string} mode - "forward", "reverse", "pingpong", or "random"
-   */
-  setAnimationCycleMode(mode) {
-    if (["forward", "reverse", "pingpong", "random"].includes(mode)) {
-      this.animationCycleMode = mode;
-    }
-  }
-
-  /**
-   * Get current animation cycle mode
-   * @returns {string} Current cycle mode
-   */
-  getAnimationCycleMode() {
-    return this.animationCycleMode;
+  hasAnimationEnabled() {
+    return this.glyphAnim.enabled || this.fgAnim.enabled || this.bgAnim.enabled;
   }
 
   /**

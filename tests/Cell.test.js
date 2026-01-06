@@ -192,8 +192,9 @@ describe("Cell", () => {
       });
 
       it("should create cell with animation config", () => {
-        const cell = new Cell("★", 6, -1, { type: "blink", speed: 500 });
-        expect(cell.anim).toEqual({ type: "blink", speed: 500 });
+        const anim = { glyph: { frames: ["★", "✦"], speed: 500 } };
+        const cell = new Cell("★", 6, -1, anim);
+        expect(cell.anim).toEqual(anim);
       });
     });
 
@@ -203,43 +204,66 @@ describe("Cell", () => {
         expect(cell.hasAnimation()).toBe(false);
       });
 
-      it("should return true when animation is set", () => {
+      it("should return true when glyph animation is set", () => {
         const cell = new Cell("★", 6, -1);
-        cell.anim = { type: "blink", speed: 500 };
+        cell.setGlyphAnimation(["★", "✦"], 500);
+        expect(cell.hasAnimation()).toBe(true);
+      });
+
+      it("should return true when fg animation is set", () => {
+        const cell = new Cell("★", 6, -1);
+        cell.setFgAnimation([1, 2, 3], 500);
+        expect(cell.hasAnimation()).toBe(true);
+      });
+
+      it("should return true when bg animation is set", () => {
+        const cell = new Cell("★", 6, -1);
+        cell.setBgAnimation([0, -1], 500);
         expect(cell.hasAnimation()).toBe(true);
       });
     });
 
-    describe("setAnimation", () => {
-      it("should set animation with type and speed", () => {
+    describe("setGlyphAnimation", () => {
+      it("should set glyph animation with frames and speed", () => {
         const cell = new Cell("★", 6, -1);
-        cell.setAnimation("blink", 500);
+        cell.setGlyphAnimation(["★", "✦", "·"], 500);
 
-        expect(cell.anim.type).toBe("blink");
-        expect(cell.anim.speed).toBe(500);
-      });
-
-      it("should set animation with additional options", () => {
-        const cell = new Cell("★", 6, -1);
-        cell.setAnimation("colorCycle", 100, { colors: [1, 2, 3] });
-
-        expect(cell.anim.type).toBe("colorCycle");
-        expect(cell.anim.speed).toBe(100);
-        expect(cell.anim.colors).toEqual([1, 2, 3]);
+        expect(cell.anim.glyph.frames).toEqual(["★", "✦", "·"]);
+        expect(cell.anim.glyph.speed).toBe(500);
       });
 
       it("should use default speed if not provided", () => {
         const cell = new Cell("★", 6, -1);
-        cell.setAnimation("blink");
+        cell.setGlyphAnimation(["a", "b"]);
 
-        expect(cell.anim.speed).toBe(500);
+        expect(cell.anim.glyph.speed).toBe(500);
+      });
+    });
+
+    describe("setFgAnimation", () => {
+      it("should set foreground color animation", () => {
+        const cell = new Cell("★", 6, -1);
+        cell.setFgAnimation([1, 2, 3], 100);
+
+        expect(cell.anim.fg.colors).toEqual([1, 2, 3]);
+        expect(cell.anim.fg.speed).toBe(100);
+      });
+    });
+
+    describe("setBgAnimation", () => {
+      it("should set background color animation", () => {
+        const cell = new Cell("★", 6, -1);
+        cell.setBgAnimation([0, -1], 250);
+
+        expect(cell.anim.bg.colors).toEqual([0, -1]);
+        expect(cell.anim.bg.speed).toBe(250);
       });
     });
 
     describe("clearAnimation", () => {
       it("should remove animation", () => {
         const cell = new Cell("★", 6, -1);
-        cell.anim = { type: "blink", speed: 500 };
+        cell.setGlyphAnimation(["★", "✦"], 500);
 
         cell.clearAnimation();
 
@@ -251,7 +275,7 @@ describe("Cell", () => {
     describe("clear", () => {
       it("should also clear animation", () => {
         const cell = new Cell("★", 6, -1);
-        cell.anim = { type: "blink", speed: 500 };
+        cell.setFgAnimation([1, 2, 3], 500);
 
         cell.clear();
 
@@ -262,7 +286,7 @@ describe("Cell", () => {
     describe("clone", () => {
       it("should clone animation data", () => {
         const original = new Cell("★", 6, -1);
-        original.anim = { type: "colorCycle", speed: 100, colors: [1, 2, 3] };
+        original.setFgAnimation([1, 2, 3], 100);
 
         const clone = original.clone();
 
@@ -270,55 +294,61 @@ describe("Cell", () => {
         expect(clone.anim).not.toBe(original.anim);
       });
 
-      it("should deep clone animation arrays", () => {
+      it("should deep clone glyph animation frames", () => {
         const original = new Cell("★", 6, -1);
-        original.anim = {
-          type: "charCycle",
-          speed: 100,
-          frames: ["A", "B", "C"],
-        };
+        original.setGlyphAnimation(["A", "B", "C"], 100);
 
         const clone = original.clone();
-        clone.anim.frames[0] = "X";
+        clone.anim.glyph.frames[0] = "X";
 
-        expect(original.anim.frames[0]).toBe("A");
+        expect(original.anim.glyph.frames[0]).toBe("A");
+      });
+
+      it("should deep clone fg animation colors", () => {
+        const original = new Cell("★", 6, -1);
+        original.setFgAnimation([1, 2, 3], 100);
+
+        const clone = original.clone();
+        clone.anim.fg.colors[0] = 9;
+
+        expect(original.anim.fg.colors[0]).toBe(1);
       });
     });
 
     describe("equals", () => {
       it("should return true for cells with same animation", () => {
         const cell1 = new Cell("★", 6, -1);
-        cell1.anim = { type: "blink", speed: 500 };
+        cell1.setGlyphAnimation(["★", "✦"], 500);
 
         const cell2 = new Cell("★", 6, -1);
-        cell2.anim = { type: "blink", speed: 500 };
+        cell2.setGlyphAnimation(["★", "✦"], 500);
 
         expect(cell1.equals(cell2)).toBe(true);
       });
 
-      it("should return false for cells with different animation type", () => {
+      it("should return false for cells with different animation frames", () => {
         const cell1 = new Cell("★", 6, -1);
-        cell1.anim = { type: "blink", speed: 500 };
+        cell1.setGlyphAnimation(["★", "✦"], 500);
 
         const cell2 = new Cell("★", 6, -1);
-        cell2.anim = { type: "flicker", speed: 500 };
+        cell2.setGlyphAnimation(["★", "·"], 500);
 
         expect(cell1.equals(cell2)).toBe(false);
       });
 
       it("should return false for cells with different animation speed", () => {
         const cell1 = new Cell("★", 6, -1);
-        cell1.anim = { type: "blink", speed: 500 };
+        cell1.setFgAnimation([1, 2], 500);
 
         const cell2 = new Cell("★", 6, -1);
-        cell2.anim = { type: "blink", speed: 1000 };
+        cell2.setFgAnimation([1, 2], 1000);
 
         expect(cell1.equals(cell2)).toBe(false);
       });
 
       it("should return false when one has animation and other does not", () => {
         const cell1 = new Cell("★", 6, -1);
-        cell1.anim = { type: "blink", speed: 500 };
+        cell1.setGlyphAnimation(["★", "✦"], 500);
 
         const cell2 = new Cell("★", 6, -1);
 
@@ -336,11 +366,12 @@ describe("Cell", () => {
     describe("toObject", () => {
       it("should include animation in serialization", () => {
         const cell = new Cell("★", 6, -1);
-        cell.anim = { type: "blink", speed: 500 };
+        cell.setGlyphAnimation(["★", "✦"], 500);
 
         const obj = cell.toObject();
 
-        expect(obj.anim).toEqual({ type: "blink", speed: 500 });
+        expect(obj.anim.glyph.frames).toEqual(["★", "✦"]);
+        expect(obj.anim.glyph.speed).toBe(500);
       });
 
       it("should not include anim key when no animation", () => {
@@ -353,12 +384,12 @@ describe("Cell", () => {
 
       it("should deep copy animation arrays", () => {
         const cell = new Cell("★", 6, -1);
-        cell.anim = { type: "charCycle", speed: 100, frames: ["A", "B"] };
+        cell.setGlyphAnimation(["A", "B"], 100);
 
         const obj = cell.toObject();
-        obj.anim.frames[0] = "X";
+        obj.anim.glyph.frames[0] = "X";
 
-        expect(cell.anim.frames[0]).toBe("A");
+        expect(cell.anim.glyph.frames[0]).toBe("A");
       });
     });
 
@@ -368,12 +399,13 @@ describe("Cell", () => {
           ch: "★",
           fg: 6,
           bg: -1,
-          anim: { type: "blink", speed: 500 },
+          anim: { glyph: { frames: ["★", "✦"], speed: 500 } },
         };
 
         const cell = Cell.fromObject(obj);
 
-        expect(cell.anim).toEqual({ type: "blink", speed: 500 });
+        expect(cell.anim.glyph.frames).toEqual(["★", "✦"]);
+        expect(cell.anim.glyph.speed).toBe(500);
       });
 
       it("should handle objects without animation", () => {
@@ -389,57 +421,52 @@ describe("Cell", () => {
           ch: "★",
           fg: 6,
           bg: -1,
-          anim: { type: "colorCycle", speed: 100, colors: [1, 2, 3] },
+          anim: { fg: { colors: [1, 2, 3], speed: 100 } },
         };
 
         const cell = Cell.fromObject(obj);
-        obj.anim.colors[0] = 9;
+        obj.anim.fg.colors[0] = 9;
 
-        expect(cell.anim.colors[0]).toBe(1);
+        expect(cell.anim.fg.colors[0]).toBe(1);
       });
     });
 
     describe("round-trip with animation", () => {
-      it("should preserve blink animation through serialization", () => {
+      it("should preserve glyph animation through serialization", () => {
         const original = new Cell("★", 6, -1);
-        original.anim = { type: "blink", speed: 500 };
+        original.setGlyphAnimation(["★", "✦", "·"], 200);
 
         const restored = Cell.fromObject(original.toObject());
 
         expect(restored.equals(original)).toBe(true);
+        expect(restored.anim.glyph.frames).toEqual(["★", "✦", "·"]);
       });
 
-      it("should preserve colorCycle animation through serialization", () => {
+      it("should preserve fg animation through serialization", () => {
         const original = new Cell("█", 7, -1);
-        original.anim = {
-          type: "colorCycle",
-          speed: 100,
-          colors: [0, 1, 2, 3],
-        };
+        original.setFgAnimation([0, 1, 2, 3], 100);
 
         const restored = Cell.fromObject(original.toObject());
 
         expect(restored.equals(original)).toBe(true);
-        expect(restored.anim.colors).toEqual([0, 1, 2, 3]);
+        expect(restored.anim.fg.colors).toEqual([0, 1, 2, 3]);
       });
 
-      it("should preserve charCycle animation through serialization", () => {
+      it("should preserve bg animation through serialization", () => {
+        const original = new Cell("█", 7, -1);
+        original.setBgAnimation([0, -1], 500);
+
+        const restored = Cell.fromObject(original.toObject());
+
+        expect(restored.equals(original)).toBe(true);
+        expect(restored.anim.bg.colors).toEqual([0, -1]);
+      });
+
+      it("should preserve combined animations through serialization", () => {
         const original = new Cell("★", 6, -1);
-        original.anim = {
-          type: "charCycle",
-          speed: 200,
-          frames: ["★", "✦", "·"],
-        };
-
-        const restored = Cell.fromObject(original.toObject());
-
-        expect(restored.equals(original)).toBe(true);
-        expect(restored.anim.frames).toEqual(["★", "✦", "·"]);
-      });
-
-      it("should preserve flicker animation through serialization", () => {
-        const original = new Cell("💡", 6, -1);
-        original.anim = { type: "flicker", speed: 100 };
+        original.setGlyphAnimation(["★", "✦"], 500);
+        original.setFgAnimation([1, 2, 3], 250);
+        original.setBgAnimation([0, -1], 1000);
 
         const restored = Cell.fromObject(original.toObject());
 

@@ -39,7 +39,7 @@ describe("AnimationEngine", () => {
     it("should find cells with animations", () => {
       const layer = scene.getLayer("mid");
       const animatedCell = new Cell("★", 6, -1);
-      animatedCell.anim = { type: "blink", speed: 500 };
+      animatedCell.setGlyphAnimation(["★", " "], 500);
       layer.setCell(5, 5, animatedCell);
 
       engine.scanForAnimatedCells();
@@ -52,11 +52,11 @@ describe("AnimationEngine", () => {
       const layer = scene.getLayer("mid");
 
       const cell1 = new Cell("A", 7, -1);
-      cell1.anim = { type: "blink", speed: 500 };
+      cell1.setGlyphAnimation(["A", " "], 500);
       layer.setCell(0, 0, cell1);
 
       const cell2 = new Cell("B", 7, -1);
-      cell2.anim = { type: "colorCycle", speed: 100, colors: [1, 2, 3] };
+      cell2.setFgAnimation([1, 2, 3], 100);
       layer.setCell(1, 1, cell2);
 
       engine.scanForAnimatedCells();
@@ -78,11 +78,11 @@ describe("AnimationEngine", () => {
       const fgLayer = scene.getLayer("fg");
 
       const bgCell = new Cell("1", 7, -1);
-      bgCell.anim = { type: "blink", speed: 500 };
+      bgCell.setGlyphAnimation(["1", " "], 500);
       bgLayer.setCell(0, 0, bgCell);
 
       const fgCell = new Cell("2", 7, -1);
-      fgCell.anim = { type: "blink", speed: 500 };
+      fgCell.setGlyphAnimation(["2", " "], 500);
       fgLayer.setCell(0, 0, fgCell);
 
       engine.scanForAnimatedCells();
@@ -96,7 +96,7 @@ describe("AnimationEngine", () => {
     it("should start animation loop", () => {
       const layer = scene.getLayer("mid");
       const cell = new Cell("★", 6, -1);
-      cell.anim = { type: "blink", speed: 500 };
+      cell.setGlyphAnimation(["★", " "], 500);
       layer.setCell(0, 0, cell);
 
       engine.start();
@@ -192,15 +192,15 @@ describe("AnimationEngine", () => {
       const midLayer = scene.getLayer("mid");
 
       const cell1 = new Cell("A", 7, -1);
-      cell1.anim = { type: "blink", speed: 500 };
+      cell1.setGlyphAnimation(["A", " "], 500);
       bgLayer.setCell(0, 0, cell1);
 
       const cell2 = new Cell("B", 7, -1);
-      cell2.anim = { type: "blink", speed: 500 };
+      cell2.setGlyphAnimation(["B", " "], 500);
       midLayer.setCell(0, 0, cell2);
 
       const cell3 = new Cell("C", 7, -1);
-      cell3.anim = { type: "blink", speed: 500 };
+      cell3.setGlyphAnimation(["C", " "], 500);
       midLayer.setCell(1, 1, cell3);
 
       engine.scanForAnimatedCells();
@@ -217,7 +217,7 @@ describe("AnimationEngine", () => {
       // Add animated cell
       const layer = scene.getLayer("mid");
       const cell = new Cell("★", 6, -1);
-      cell.anim = { type: "blink", speed: 500 };
+      cell.setGlyphAnimation(["★", " "], 500);
       layer.setCell(0, 0, cell);
 
       engine.refresh();
@@ -230,7 +230,7 @@ describe("AnimationEngine", () => {
     it("should stop and clear all state", () => {
       const layer = scene.getLayer("mid");
       const cell = new Cell("★", 6, -1);
-      cell.anim = { type: "blink", speed: 500 };
+      cell.setGlyphAnimation(["★", " "], 500);
       layer.setCell(0, 0, cell);
 
       engine.start();
@@ -246,7 +246,7 @@ describe("AnimationEngine", () => {
     it("should call update callback for changed cells", () => {
       const layer = scene.getLayer("mid");
       const cell = new Cell("★", 6, -1);
-      cell.anim = { type: "blink", speed: 500 };
+      cell.setGlyphAnimation(["★", " "], 500);
       layer.setCell(5, 5, cell);
 
       engine.scanForAnimatedCells();
@@ -258,7 +258,7 @@ describe("AnimationEngine", () => {
     it("should not update cells that haven't changed", () => {
       const layer = scene.getLayer("mid");
       const cell = new Cell("★", 6, -1);
-      cell.anim = { type: "blink", speed: 1000 };
+      cell.setGlyphAnimation(["★", " "], 1000);
       layer.setCell(5, 5, cell);
 
       engine.scanForAnimatedCells();
@@ -275,7 +275,7 @@ describe("AnimationEngine", () => {
     it("should update when animation phase changes", () => {
       const layer = scene.getLayer("mid");
       const cell = new Cell("★", 6, -1);
-      cell.anim = { type: "blink", speed: 500 };
+      cell.setGlyphAnimation(["★", " "], 500);
       layer.setCell(5, 5, cell);
 
       engine.scanForAnimatedCells();
@@ -294,7 +294,7 @@ describe("AnimationEngine", () => {
       layer.visible = false;
 
       const cell = new Cell("★", 6, -1);
-      cell.anim = { type: "blink", speed: 500 };
+      cell.setGlyphAnimation(["★", " "], 500);
       layer.setCell(5, 5, cell);
 
       engine.scanForAnimatedCells();
@@ -309,7 +309,7 @@ describe("AnimationEngine", () => {
 
       const layer = scene.getLayer("mid");
       const cell = new Cell("★", 6, -1);
-      cell.anim = { type: "blink", speed: 500 };
+      cell.setGlyphAnimation(["★", " "], 500);
       layer.setCell(5, 5, cell);
 
       engine.scanForAnimatedCells();
@@ -320,7 +320,7 @@ describe("AnimationEngine", () => {
           layerId: "mid",
           x: 5,
           y: 5,
-        })
+        }),
       );
     });
   });
@@ -329,7 +329,7 @@ describe("AnimationEngine", () => {
     it("should restore cells to original state", () => {
       const layer = scene.getLayer("mid");
       const cell = new Cell("★", 6, -1);
-      cell.anim = { type: "blink", speed: 500 };
+      cell.setGlyphAnimation(["★", " "], 500);
       layer.setCell(5, 5, cell);
 
       engine.scanForAnimatedCells();
@@ -346,7 +346,7 @@ describe("AnimationEngine", () => {
           ch: "★",
           fg: 6,
           bg: -1,
-        })
+        }),
       );
     });
   });

@@ -1,11 +1,12 @@
 /**
  * CellAnimator - Calculates animation frames for individual cells
  *
- * Supports animation types:
- * - blink: Cell toggles between visible and invisible
- * - flicker: Random on/off timing (like a failing light)
- * - colorCycle: Cycles through foreground colors
- * - charCycle: Cycles through characters
+ * Animation structure with separate glyph/fg/bg animations:
+ * anim: {
+ *   glyph: { frames: ['★','✦'], speed: 500, offset: 0, cycleMode: 'forward' },
+ *   fg: { colors: [1,2,3], speed: 250, offset: 0, cycleMode: 'pingpong' },
+ *   bg: { colors: [0,-1], speed: 1000, offset: 0, cycleMode: 'forward' }
+ * }
  */
 export class CellAnimator {
   /**
@@ -19,114 +20,66 @@ export class CellAnimator {
       return { ch: cell.ch, fg: cell.fg, bg: cell.bg, visible: true };
     }
 
-    const { type, speed } = cell.anim;
+    return CellAnimator.getAnimatedFrame(cell, timestamp);
+  }
 
-    switch (type) {
-      case "blink":
-        return CellAnimator.getBlinkFrame(cell, timestamp);
-      case "flicker":
-        return CellAnimator.getFlickerFrame(cell, timestamp);
-      case "colorCycle":
-        return CellAnimator.getColorCycleFrame(cell, timestamp);
-      case "charCycle":
-        return CellAnimator.getCharCycleFrame(cell, timestamp);
-      default:
-        return { ch: cell.ch, fg: cell.fg, bg: cell.bg, visible: true };
+  /**
+   * Get frame for animated cell with separate glyph/fg/bg animations
+   * @param {Cell} cell - The cell with animation config
+   * @param {number} timestamp - Current time in ms
+   * @returns {Object} Visual state {ch, fg, bg, visible}
+   */
+  static getAnimatedFrame(cell, timestamp) {
+    let ch = cell.ch;
+    let fg = cell.fg;
+    let bg = cell.bg;
+
+    // Process glyph animation
+    if (cell.anim.glyph) {
+      const glyphAnim = cell.anim.glyph;
+      const frames = glyphAnim.frames || [cell.ch];
+      if (frames.length > 0) {
+        const index = CellAnimator.getCycleIndex(
+          timestamp + (glyphAnim.offset || 0),
+          glyphAnim.speed || 500,
+          frames.length,
+          glyphAnim.cycleMode || "forward",
+        );
+        ch = frames[index];
+      }
     }
-  }
 
-  /**
-   * Blink animation - alternates between visible and invisible
-   * @param {Cell} cell - The cell with blink animation
-   * @param {number} timestamp - Current time in ms
-   * @returns {Object} Visual state
-   */
-  static getBlinkFrame(cell, timestamp) {
-    const { speed, offset = 0 } = cell.anim;
-    const phase = Math.floor((timestamp + offset) / speed) % 2;
-    const visible = phase === 0;
+    // Process foreground color animation
+    if (cell.anim.fg) {
+      const fgAnim = cell.anim.fg;
+      const colors = fgAnim.colors || [cell.fg];
+      if (colors.length > 0) {
+        const index = CellAnimator.getCycleIndex(
+          timestamp + (fgAnim.offset || 0),
+          fgAnim.speed || 500,
+          colors.length,
+          fgAnim.cycleMode || "forward",
+        );
+        fg = colors[index];
+      }
+    }
 
-    return {
-      ch: visible ? cell.ch : " ",
-      fg: cell.fg,
-      bg: cell.bg,
-      visible,
-    };
-  }
+    // Process background color animation
+    if (cell.anim.bg) {
+      const bgAnim = cell.anim.bg;
+      const colors = bgAnim.colors || [cell.bg];
+      if (colors.length > 0) {
+        const index = CellAnimator.getCycleIndex(
+          timestamp + (bgAnim.offset || 0),
+          bgAnim.speed || 500,
+          colors.length,
+          bgAnim.cycleMode || "forward",
+        );
+        bg = colors[index];
+      }
+    }
 
-  /**
-   * Flicker animation - random on/off timing like a failing light
-   * Uses a pseudo-random approach based on timestamp for consistency
-   * @param {Cell} cell - The cell with flicker animation
-   * @param {number} timestamp - Current time in ms
-   * @returns {Object} Visual state
-   */
-  static getFlickerFrame(cell, timestamp) {
-    const { speed, offset = 0 } = cell.anim;
-    // Create pseudo-random flicker using timestamp
-    // Divide into segments, each segment has a chance to be off
-    const segment = Math.floor((timestamp + offset) / speed);
-    // Use a simple hash to get pseudo-random behavior
-    const hash = (segment * 2654435761) % 100;
-    const visible = hash > 20; // 80% on, 20% off
-
-    return {
-      ch: visible ? cell.ch : " ",
-      fg: cell.fg,
-      bg: cell.bg,
-      visible,
-    };
-  }
-
-  /**
-   * Color cycle animation - cycles through foreground colors
-   * @param {Cell} cell - The cell with colorCycle animation
-   * @param {number} timestamp - Current time in ms
-   * @returns {Object} Visual state
-   */
-  static getColorCycleFrame(cell, timestamp) {
-    const { speed, colors, offset = 0, cycleMode = "forward" } = cell.anim;
-    // Default to cycling through all 8 colors if none specified
-    const colorList =
-      colors && colors.length > 0 ? colors : [0, 1, 2, 3, 4, 5, 6, 7];
-    const frameIndex = CellAnimator.getCycleIndex(
-      timestamp + offset,
-      speed,
-      colorList.length,
-      cycleMode,
-    );
-
-    return {
-      ch: cell.ch,
-      fg: colorList[frameIndex],
-      bg: cell.bg,
-      visible: true,
-    };
-  }
-
-  /**
-   * Character cycle animation - cycles through characters
-   * @param {Cell} cell - The cell with charCycle animation
-   * @param {number} timestamp - Current time in ms
-   * @returns {Object} Visual state
-   */
-  static getCharCycleFrame(cell, timestamp) {
-    const { speed, frames, offset = 0, cycleMode = "forward" } = cell.anim;
-    // Default to original char if no frames specified
-    const charList = frames && frames.length > 0 ? frames : [cell.ch];
-    const frameIndex = CellAnimator.getCycleIndex(
-      timestamp + offset,
-      speed,
-      charList.length,
-      cycleMode,
-    );
-
-    return {
-      ch: charList[frameIndex],
-      fg: cell.fg,
-      bg: cell.bg,
-      visible: true,
-    };
+    return { ch, fg, bg, visible: true };
   }
 
   /**

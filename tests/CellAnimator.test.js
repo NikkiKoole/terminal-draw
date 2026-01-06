@@ -27,196 +27,165 @@ describe("CellAnimator", () => {
     });
   });
 
-  describe("getBlinkFrame", () => {
-    it("should show cell on first half of cycle", () => {
-      const cell = new Cell("★", 6, -1);
-      cell.anim = { type: "blink", speed: 1000 };
-
-      // At t=0, should be visible (first half of 1000ms cycle)
-      const frame = CellAnimator.getBlinkFrame(cell, 0);
-
-      expect(frame.ch).toBe("★");
-      expect(frame.visible).toBe(true);
-    });
-
-    it("should hide cell on second half of cycle", () => {
-      const cell = new Cell("★", 6, -1);
-      cell.anim = { type: "blink", speed: 1000 };
-
-      // At t=1000, should be hidden (second half of cycle)
-      const frame = CellAnimator.getBlinkFrame(cell, 1000);
-
-      expect(frame.ch).toBe(" ");
-      expect(frame.visible).toBe(false);
-    });
-
-    it("should cycle correctly over time", () => {
-      const cell = new Cell("●", 7, -1);
-      cell.anim = { type: "blink", speed: 500 };
-
-      // t=0: visible
-      expect(CellAnimator.getBlinkFrame(cell, 0).visible).toBe(true);
-      // t=500: hidden
-      expect(CellAnimator.getBlinkFrame(cell, 500).visible).toBe(false);
-      // t=1000: visible again
-      expect(CellAnimator.getBlinkFrame(cell, 1000).visible).toBe(true);
-      // t=1500: hidden again
-      expect(CellAnimator.getBlinkFrame(cell, 1500).visible).toBe(false);
-    });
-
-    it("should preserve colors when visible", () => {
-      const cell = new Cell("X", 3, 2);
-      cell.anim = { type: "blink", speed: 1000 };
-
-      const frame = CellAnimator.getBlinkFrame(cell, 0);
-
-      expect(frame.fg).toBe(3);
-      expect(frame.bg).toBe(2);
-    });
-  });
-
-  describe("getFlickerFrame", () => {
-    it("should mostly show the cell (80% on)", () => {
-      const cell = new Cell("💡", 6, -1);
-      cell.anim = { type: "flicker", speed: 100 };
-
-      // Test multiple timestamps to verify mostly visible
-      let visibleCount = 0;
-      for (let t = 0; t < 10000; t += 100) {
-        const frame = CellAnimator.getFlickerFrame(cell, t);
-        if (frame.visible) visibleCount++;
-      }
-
-      // Should be visible roughly 80% of the time
-      expect(visibleCount).toBeGreaterThan(70);
-      expect(visibleCount).toBeLessThan(90);
-    });
-
-    it("should preserve colors", () => {
-      const cell = new Cell("*", 5, 1);
-      cell.anim = { type: "flicker", speed: 100 };
-
-      const frame = CellAnimator.getFlickerFrame(cell, 0);
-
-      expect(frame.fg).toBe(5);
-      expect(frame.bg).toBe(1);
-    });
-  });
-
-  describe("getColorCycleFrame", () => {
-    it("should cycle through provided colors", () => {
-      const cell = new Cell("█", 7, -1);
-      cell.anim = { type: "colorCycle", speed: 100, colors: [1, 2, 3] };
-
-      expect(CellAnimator.getColorCycleFrame(cell, 0).fg).toBe(1);
-      expect(CellAnimator.getColorCycleFrame(cell, 100).fg).toBe(2);
-      expect(CellAnimator.getColorCycleFrame(cell, 200).fg).toBe(3);
-      expect(CellAnimator.getColorCycleFrame(cell, 300).fg).toBe(1); // loops
-    });
-
-    it("should use all 8 colors if none specified", () => {
-      const cell = new Cell("█", 7, -1);
-      cell.anim = { type: "colorCycle", speed: 100 };
-
-      const colors = [];
-      for (let t = 0; t < 800; t += 100) {
-        colors.push(CellAnimator.getColorCycleFrame(cell, t).fg);
-      }
-
-      expect(colors).toEqual([0, 1, 2, 3, 4, 5, 6, 7]);
-    });
-
-    it("should preserve character and background", () => {
-      const cell = new Cell("★", 7, 2);
-      cell.anim = { type: "colorCycle", speed: 100, colors: [1, 2, 3] };
-
-      const frame = CellAnimator.getColorCycleFrame(cell, 0);
-
-      expect(frame.ch).toBe("★");
-      expect(frame.bg).toBe(2);
-      expect(frame.visible).toBe(true);
-    });
-  });
-
-  describe("getCharCycleFrame", () => {
+  describe("glyph animation", () => {
     it("should cycle through provided characters", () => {
       const cell = new Cell("★", 6, -1);
-      cell.anim = { type: "charCycle", speed: 200, frames: ["★", "✦", "·"] };
+      cell.setGlyphAnimation(["★", "✦", "·"], 200);
 
-      expect(CellAnimator.getCharCycleFrame(cell, 0).ch).toBe("★");
-      expect(CellAnimator.getCharCycleFrame(cell, 200).ch).toBe("✦");
-      expect(CellAnimator.getCharCycleFrame(cell, 400).ch).toBe("·");
-      expect(CellAnimator.getCharCycleFrame(cell, 600).ch).toBe("★"); // loops
-    });
-
-    it("should use original char if no frames specified", () => {
-      const cell = new Cell("X", 7, -1);
-      cell.anim = { type: "charCycle", speed: 100 };
-
-      const frame = CellAnimator.getCharCycleFrame(cell, 0);
-
-      expect(frame.ch).toBe("X");
+      expect(CellAnimator.getFrame(cell, 0).ch).toBe("★");
+      expect(CellAnimator.getFrame(cell, 200).ch).toBe("✦");
+      expect(CellAnimator.getFrame(cell, 400).ch).toBe("·");
+      expect(CellAnimator.getFrame(cell, 600).ch).toBe("★"); // loops
     });
 
     it("should preserve colors", () => {
       const cell = new Cell("A", 3, 2);
-      cell.anim = { type: "charCycle", speed: 100, frames: ["A", "B", "C"] };
+      cell.setGlyphAnimation(["A", "B", "C"], 100);
 
-      const frame = CellAnimator.getCharCycleFrame(cell, 100);
+      const frame = CellAnimator.getFrame(cell, 100);
 
       expect(frame.ch).toBe("B");
       expect(frame.fg).toBe(3);
       expect(frame.bg).toBe(2);
       expect(frame.visible).toBe(true);
     });
+
+    it("should use offset for wave effect", () => {
+      const cell = new Cell("★", 6, -1);
+      cell.anim = { glyph: { frames: ["A", "B"], speed: 100, offset: 100 } };
+
+      // With 100ms offset, t=0 should show what t=100 would normally show
+      expect(CellAnimator.getFrame(cell, 0).ch).toBe("B");
+    });
   });
 
-  describe("getFrame dispatching", () => {
-    it("should dispatch to blink handler", () => {
-      const cell = new Cell("X", 7, -1);
-      cell.anim = { type: "blink", speed: 500 };
+  describe("fg color animation", () => {
+    it("should cycle through provided colors", () => {
+      const cell = new Cell("█", 7, -1);
+      cell.setFgAnimation([1, 2, 3], 100);
 
-      const frame = CellAnimator.getFrame(cell, 500);
-
-      expect(frame.visible).toBe(false);
+      expect(CellAnimator.getFrame(cell, 0).fg).toBe(1);
+      expect(CellAnimator.getFrame(cell, 100).fg).toBe(2);
+      expect(CellAnimator.getFrame(cell, 200).fg).toBe(3);
+      expect(CellAnimator.getFrame(cell, 300).fg).toBe(1); // loops
     });
 
-    it("should dispatch to flicker handler", () => {
-      const cell = new Cell("X", 7, -1);
-      cell.anim = { type: "flicker", speed: 100 };
+    it("should preserve character and background", () => {
+      const cell = new Cell("★", 7, 2);
+      cell.setFgAnimation([1, 2, 3], 100);
 
       const frame = CellAnimator.getFrame(cell, 0);
 
-      expect(frame).toHaveProperty("visible");
+      expect(frame.ch).toBe("★");
+      expect(frame.bg).toBe(2);
+      expect(frame.visible).toBe(true);
+    });
+  });
+
+  describe("bg color animation", () => {
+    it("should cycle through provided colors", () => {
+      const cell = new Cell("█", 7, 0);
+      cell.setBgAnimation([0, 1, 2], 100);
+
+      expect(CellAnimator.getFrame(cell, 0).bg).toBe(0);
+      expect(CellAnimator.getFrame(cell, 100).bg).toBe(1);
+      expect(CellAnimator.getFrame(cell, 200).bg).toBe(2);
+      expect(CellAnimator.getFrame(cell, 300).bg).toBe(0); // loops
     });
 
-    it("should dispatch to colorCycle handler", () => {
-      const cell = new Cell("X", 7, -1);
-      cell.anim = { type: "colorCycle", speed: 100, colors: [1, 2, 3] };
+    it("should support transparent color (-1)", () => {
+      const cell = new Cell("★", 7, 0);
+      cell.setBgAnimation([0, -1], 100);
 
-      const frame = CellAnimator.getFrame(cell, 100);
+      expect(CellAnimator.getFrame(cell, 0).bg).toBe(0);
+      expect(CellAnimator.getFrame(cell, 100).bg).toBe(-1);
+    });
+  });
 
+  describe("combined animations", () => {
+    it("should animate glyph and fg independently", () => {
+      const cell = new Cell("★", 6, -1);
+      cell.setGlyphAnimation(["A", "B"], 100);
+      cell.setFgAnimation([1, 2, 3], 150);
+
+      // At t=0: glyph=A (0%100=0), fg=1 (0%150=0)
+      let frame = CellAnimator.getFrame(cell, 0);
+      expect(frame.ch).toBe("A");
+      expect(frame.fg).toBe(1);
+
+      // At t=100: glyph=B (100%100=0->1), fg=1 (100%150=0)
+      frame = CellAnimator.getFrame(cell, 100);
+      expect(frame.ch).toBe("B");
+      expect(frame.fg).toBe(1);
+
+      // At t=150: glyph=B (150%100=1), fg=2 (150%150=0->1)
+      frame = CellAnimator.getFrame(cell, 150);
+      expect(frame.ch).toBe("B");
       expect(frame.fg).toBe(2);
     });
 
-    it("should dispatch to charCycle handler", () => {
-      const cell = new Cell("A", 7, -1);
-      cell.anim = { type: "charCycle", speed: 100, frames: ["A", "B", "C"] };
-
-      const frame = CellAnimator.getFrame(cell, 100);
-
-      expect(frame.ch).toBe("B");
-    });
-
-    it("should return original for unknown animation type", () => {
-      const cell = new Cell("X", 7, -1);
-      cell.anim = { type: "unknown", speed: 100 };
+    it("should animate all three independently", () => {
+      const cell = new Cell("★", 6, 0);
+      cell.setGlyphAnimation(["A", "B"], 100);
+      cell.setFgAnimation([1, 2], 200);
+      cell.setBgAnimation([0, 3], 300);
 
       const frame = CellAnimator.getFrame(cell, 0);
+      expect(frame.ch).toBe("A");
+      expect(frame.fg).toBe(1);
+      expect(frame.bg).toBe(0);
+    });
+  });
 
-      expect(frame.ch).toBe("X");
-      expect(frame.fg).toBe(7);
-      expect(frame.visible).toBe(true);
+  describe("getCycleIndex", () => {
+    describe("forward mode", () => {
+      it("should cycle forward through indices", () => {
+        expect(CellAnimator.getCycleIndex(0, 100, 3, "forward")).toBe(0);
+        expect(CellAnimator.getCycleIndex(100, 100, 3, "forward")).toBe(1);
+        expect(CellAnimator.getCycleIndex(200, 100, 3, "forward")).toBe(2);
+        expect(CellAnimator.getCycleIndex(300, 100, 3, "forward")).toBe(0);
+      });
+    });
+
+    describe("reverse mode", () => {
+      it("should cycle backward through indices", () => {
+        expect(CellAnimator.getCycleIndex(0, 100, 3, "reverse")).toBe(2);
+        expect(CellAnimator.getCycleIndex(100, 100, 3, "reverse")).toBe(1);
+        expect(CellAnimator.getCycleIndex(200, 100, 3, "reverse")).toBe(0);
+        expect(CellAnimator.getCycleIndex(300, 100, 3, "reverse")).toBe(2);
+      });
+    });
+
+    describe("pingpong mode", () => {
+      it("should bounce back and forth", () => {
+        // With 3 items: 0,1,2,1,0,1,2,1,...
+        expect(CellAnimator.getCycleIndex(0, 100, 3, "pingpong")).toBe(0);
+        expect(CellAnimator.getCycleIndex(100, 100, 3, "pingpong")).toBe(1);
+        expect(CellAnimator.getCycleIndex(200, 100, 3, "pingpong")).toBe(2);
+        expect(CellAnimator.getCycleIndex(300, 100, 3, "pingpong")).toBe(1);
+        expect(CellAnimator.getCycleIndex(400, 100, 3, "pingpong")).toBe(0);
+      });
+    });
+
+    describe("random mode", () => {
+      it("should return valid indices", () => {
+        for (let t = 0; t < 1000; t += 100) {
+          const idx = CellAnimator.getCycleIndex(t, 100, 5, "random");
+          expect(idx).toBeGreaterThanOrEqual(0);
+          expect(idx).toBeLessThan(5);
+        }
+      });
+
+      it("should be deterministic for same time", () => {
+        const idx1 = CellAnimator.getCycleIndex(500, 100, 5, "random");
+        const idx2 = CellAnimator.getCycleIndex(500, 100, 5, "random");
+        expect(idx1).toBe(idx2);
+      });
+    });
+
+    it("should return 0 for single item", () => {
+      expect(CellAnimator.getCycleIndex(0, 100, 1, "forward")).toBe(0);
+      expect(CellAnimator.getCycleIndex(1000, 100, 1, "forward")).toBe(0);
     });
   });
 });

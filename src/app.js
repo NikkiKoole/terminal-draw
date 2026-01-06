@@ -2773,122 +2773,128 @@ function initBrushSettings() {
     brushTool.setBrushShape("square");
   }
 
-  // Animation settings
-  const colorCycleConfig = document.getElementById("color-cycle-config");
-  const colorCycleInput = document.getElementById("color-cycle-input");
-  const charCycleConfig = document.getElementById("char-cycle-config");
-  const charCycleInput = document.getElementById("char-cycle-input");
+  // Animation settings - new 3-row UI for glyph/fg/bg
 
-  // Initialize color cycle input (just type digits 0-7, e.g. "0972")
-  if (colorCycleInput && brushTool) {
-    colorCycleInput.addEventListener("input", (e) => {
-      const colors = e.target.value
-        .split("")
-        .map((s) => parseInt(s))
-        .filter((n) => !isNaN(n) && n >= 0 && n <= 7);
+  // Helper to parse color input (0-7 normal, 8 = transparent/-1)
+  function parseColorInput(value) {
+    return value
+      .split("")
+      .map((s) => parseInt(s))
+      .filter((n) => !isNaN(n) && n >= 0 && n <= 8)
+      .map((n) => (n === 8 ? -1 : n)); // Convert 8 to -1 (transparent)
+  }
 
-      if (colors.length > 0) {
-        brushTool.setAnimationColors(colors);
-        updateStatus(`Color Cycle: ${colors.join(", ")}`);
+  // Glyph animation controls
+  const glyphEnabled = document.getElementById("glyph-anim-enabled");
+  const glyphFrames = document.getElementById("glyph-anim-frames");
+  const glyphSpeed = document.getElementById("glyph-anim-speed");
+  const glyphOffset = document.getElementById("glyph-anim-offset");
+  const glyphMode = document.getElementById("glyph-anim-mode");
+  const glyphDetails = document.getElementById("glyph-anim-details");
+
+  if (glyphEnabled && brushTool) {
+    glyphEnabled.addEventListener("change", (e) => {
+      brushTool.setGlyphAnimEnabled(e.target.checked);
+      if (glyphDetails) {
+        glyphDetails.style.display = e.target.checked ? "flex" : "none";
       }
     });
   }
+  if (glyphFrames && brushTool) {
+    glyphFrames.addEventListener("input", (e) => {
+      const frames = e.target.value.split("").filter((c) => c.length > 0);
+      if (frames.length > 0) brushTool.setGlyphAnimFrames(frames);
+    });
+  }
+  if (glyphSpeed && brushTool) {
+    glyphSpeed.addEventListener("change", (e) => {
+      brushTool.setGlyphAnimSpeed(parseInt(e.target.value));
+    });
+  }
+  if (glyphOffset && brushTool) {
+    glyphOffset.addEventListener("change", (e) => {
+      brushTool.setGlyphAnimOffsetMode(e.target.value);
+    });
+  }
+  if (glyphMode && brushTool) {
+    glyphMode.addEventListener("change", (e) => {
+      brushTool.setGlyphAnimCycleMode(e.target.value);
+    });
+  }
 
-  // Initialize char cycle input
-  if (charCycleInput && brushTool) {
-    charCycleInput.addEventListener("input", (e) => {
-      const chars = e.target.value.split("");
-      if (chars.length > 0) {
-        brushTool.setAnimationFrames(chars);
-        updateStatus(`Char Cycle: ${chars.length} characters`);
+  // FG animation controls
+  const fgEnabled = document.getElementById("fg-anim-enabled");
+  const fgColors = document.getElementById("fg-anim-colors");
+  const fgSpeed = document.getElementById("fg-anim-speed");
+  const fgOffset = document.getElementById("fg-anim-offset");
+  const fgMode = document.getElementById("fg-anim-mode");
+  const fgDetails = document.getElementById("fg-anim-details");
+
+  if (fgEnabled && brushTool) {
+    fgEnabled.addEventListener("change", (e) => {
+      brushTool.setFgAnimEnabled(e.target.checked);
+      if (fgDetails) {
+        fgDetails.style.display = e.target.checked ? "flex" : "none";
       }
     });
   }
-
-  // Offset mode config
-  const animOffsetConfig = document.getElementById("anim-offset-config");
-  const animOffsetSelect = document.getElementById("anim-offset");
-
-  if (animOffsetSelect && brushTool) {
-    animOffsetSelect.addEventListener("change", (e) => {
-      brushTool.setAnimationOffsetMode(e.target.value);
-      updateStatus(
-        `Animation Offset: ${e.target.value === "sync" ? "Sync" : "Random"}`,
-      );
+  if (fgColors && brushTool) {
+    fgColors.addEventListener("input", (e) => {
+      const colors = parseColorInput(e.target.value);
+      if (colors.length > 0) brushTool.setFgAnimColors(colors);
+    });
+  }
+  if (fgSpeed && brushTool) {
+    fgSpeed.addEventListener("change", (e) => {
+      brushTool.setFgAnimSpeed(parseInt(e.target.value));
+    });
+  }
+  if (fgOffset && brushTool) {
+    fgOffset.addEventListener("change", (e) => {
+      brushTool.setFgAnimOffsetMode(e.target.value);
+    });
+  }
+  if (fgMode && brushTool) {
+    fgMode.addEventListener("change", (e) => {
+      brushTool.setFgAnimCycleMode(e.target.value);
     });
   }
 
-  // Cycle mode config
-  const cycleModeConfig = document.getElementById("cycle-mode-config");
-  const cycleModeSelect = document.getElementById("cycle-mode");
+  // BG animation controls
+  const bgEnabled = document.getElementById("bg-anim-enabled");
+  const bgColors = document.getElementById("bg-anim-colors");
+  const bgSpeed = document.getElementById("bg-anim-speed");
+  const bgOffset = document.getElementById("bg-anim-offset");
+  const bgMode = document.getElementById("bg-anim-mode");
+  const bgDetails = document.getElementById("bg-anim-details");
 
-  if (cycleModeSelect && brushTool) {
-    cycleModeSelect.addEventListener("change", (e) => {
-      brushTool.setAnimationCycleMode(e.target.value);
-      const labels = {
-        forward: "Forward",
-        reverse: "Reverse",
-        pingpong: "Ping-Pong",
-        random: "Random",
-      };
-      updateStatus(`Cycle Mode: ${labels[e.target.value]}`);
-    });
-  }
-
-  // Show/hide config panels based on animation type
-  function updateAnimConfigPanels(animType) {
-    const hasAnimation = animType !== "none";
-    const isCycleType = animType === "colorCycle" || animType === "charCycle";
-    if (animOffsetConfig) {
-      animOffsetConfig.style.display = hasAnimation ? "flex" : "none";
-    }
-    if (cycleModeConfig) {
-      cycleModeConfig.style.display = isCycleType ? "flex" : "none";
-    }
-    if (colorCycleConfig) {
-      colorCycleConfig.style.display =
-        animType === "colorCycle" ? "flex" : "none";
-    }
-    if (charCycleConfig) {
-      charCycleConfig.style.display =
-        animType === "charCycle" ? "flex" : "none";
-    }
-  }
-
-  if (animationSelect && brushTool) {
-    animationSelect.addEventListener("change", (e) => {
-      const animType = e.target.value;
-      brushTool.setAnimationType(animType);
-
-      // Show/hide config panels
-      updateAnimConfigPanels(animType);
-
-      if (animType === "none") {
-        updateStatus("Brush Animation: None");
-      } else {
-        const labels = {
-          blink: "Blink (on/off)",
-          flicker: "Flicker (random)",
-          colorCycle: "Color Cycle",
-          charCycle: "Character Cycle",
-        };
-        updateStatus(`Brush Animation: ${labels[animType]}`);
+  if (bgEnabled && brushTool) {
+    bgEnabled.addEventListener("change", (e) => {
+      brushTool.setBgAnimEnabled(e.target.checked);
+      if (bgDetails) {
+        bgDetails.style.display = e.target.checked ? "flex" : "none";
       }
     });
   }
-
-  if (animSpeedSelect && brushTool) {
-    animSpeedSelect.addEventListener("change", (e) => {
-      const speed = parseInt(e.target.value);
-      brushTool.setAnimationSpeed(speed);
-
-      const labels = {
-        1000: "Slow",
-        500: "Medium",
-        250: "Fast",
-        100: "Very Fast",
-      };
-      updateStatus(`Animation Speed: ${labels[speed]}`);
+  if (bgColors && brushTool) {
+    bgColors.addEventListener("input", (e) => {
+      const colors = parseColorInput(e.target.value);
+      if (colors.length > 0) brushTool.setBgAnimColors(colors);
+    });
+  }
+  if (bgSpeed && brushTool) {
+    bgSpeed.addEventListener("change", (e) => {
+      brushTool.setBgAnimSpeed(parseInt(e.target.value));
+    });
+  }
+  if (bgOffset && brushTool) {
+    bgOffset.addEventListener("change", (e) => {
+      brushTool.setBgAnimOffsetMode(e.target.value);
+    });
+  }
+  if (bgMode && brushTool) {
+    bgMode.addEventListener("change", (e) => {
+      brushTool.setBgAnimCycleMode(e.target.value);
     });
   }
 }

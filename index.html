@@ -254,141 +254,285 @@
                             style="height: 24px; margin: 0 8px"
                         ></div>
 
-                        <label style="font-weight: 500">Animation:</label>
-                        <select
-                            id="brush-animation"
+                        <!-- Animation Section Header -->
+                        <span style="font-weight: 600; margin-right: 8px"
+                            >Animation:</span
+                        >
+
+                        <!-- Glyph Animation Row -->
+                        <div
                             style="
-                                padding: 6px 12px;
+                                display: flex;
+                                align-items: center;
+                                gap: 6px;
+                                padding: 2px 6px;
                                 background: var(--ui-bg);
-                                color: var(--ui-text);
-                                border: 1px solid var(--ui-border);
                                 border-radius: 4px;
-                                cursor: pointer;
-                                font-size: 0.95em;
                             "
                         >
-                            <option value="none" selected>None</option>
-                            <option value="blink">Blink</option>
-                            <option value="flicker">Flicker</option>
-                            <option value="colorCycle">Color Cycle</option>
-                            <option value="charCycle">Char Cycle</option>
-                        </select>
+                            <input
+                                type="checkbox"
+                                id="glyph-anim-enabled"
+                                title="Enable glyph animation"
+                            />
+                            <label style="font-size: 0.85em; min-width: 35px"
+                                >Glyph</label
+                            >
+                            <div
+                                id="glyph-anim-details"
+                                style="
+                                    display: none;
+                                    align-items: center;
+                                    gap: 6px;
+                                "
+                            >
+                                <input
+                                    type="text"
+                                    id="glyph-anim-frames"
+                                    value="★✦·"
+                                    maxlength="16"
+                                    placeholder="chars"
+                                    style="
+                                        width: 60px;
+                                        padding: 3px 5px;
+                                        background: var(--ui-bg);
+                                        color: var(--ui-text);
+                                        border: 1px solid var(--ui-border);
+                                        border-radius: 3px;
+                                        font-family: monospace;
+                                        font-size: 0.9em;
+                                    "
+                                />
+                                <select
+                                    id="glyph-anim-speed"
+                                    style="
+                                        padding: 3px;
+                                        background: var(--ui-bg);
+                                        color: var(--ui-text);
+                                        border: 1px solid var(--ui-border);
+                                        border-radius: 3px;
+                                        font-size: 0.85em;
+                                    "
+                                >
+                                    <option value="1000">Slow</option>
+                                    <option value="500" selected>Med</option>
+                                    <option value="250">Fast</option>
+                                </select>
+                                <select
+                                    id="glyph-anim-offset"
+                                    style="
+                                        padding: 3px;
+                                        background: var(--ui-bg);
+                                        color: var(--ui-text);
+                                        border: 1px solid var(--ui-border);
+                                        border-radius: 3px;
+                                        font-size: 0.85em;
+                                    "
+                                >
+                                    <option value="sync">Sync</option>
+                                    <option value="random">Rand</option>
+                                </select>
+                                <select
+                                    id="glyph-anim-mode"
+                                    style="
+                                        padding: 3px;
+                                        background: var(--ui-bg);
+                                        color: var(--ui-text);
+                                        border: 1px solid var(--ui-border);
+                                        border-radius: 3px;
+                                        font-size: 0.85em;
+                                    "
+                                >
+                                    <option value="forward">Fwd</option>
+                                    <option value="reverse">Rev</option>
+                                    <option value="pingpong">Ping</option>
+                                    <option value="random">Rand</option>
+                                </select>
+                            </div>
+                        </div>
 
-                        <label style="font-weight: 500">Speed:</label>
-                        <select
-                            id="brush-anim-speed"
+                        <!-- FG Animation Row -->
+                        <div
                             style="
-                                padding: 6px 12px;
+                                display: flex;
+                                align-items: center;
+                                gap: 6px;
+                                padding: 2px 6px;
                                 background: var(--ui-bg);
-                                color: var(--ui-text);
-                                border: 1px solid var(--ui-border);
                                 border-radius: 4px;
-                                cursor: pointer;
-                                font-size: 0.95em;
                             "
                         >
-                            <option value="1000">Slow</option>
-                            <option value="500" selected>Medium</option>
-                            <option value="250">Fast</option>
-                            <option value="100">Very Fast</option>
-                        </select>
-
-                        <!-- Offset Config (shown for all animation types except none) -->
-                        <div
-                            id="anim-offset-config"
-                            style="display: none; align-items: center; gap: 8px"
-                        >
-                            <label style="font-weight: 500">Offset:</label>
-                            <select
-                                id="anim-offset"
+                            <input
+                                type="checkbox"
+                                id="fg-anim-enabled"
+                                title="Enable foreground color animation"
+                            />
+                            <label style="font-size: 0.85em; min-width: 35px"
+                                >FG</label
+                            >
+                            <div
+                                id="fg-anim-details"
                                 style="
-                                    padding: 6px 12px;
-                                    background: var(--ui-bg);
-                                    color: var(--ui-text);
-                                    border: 1px solid var(--ui-border);
-                                    border-radius: 4px;
-                                    cursor: pointer;
-                                    font-size: 0.95em;
+                                    display: none;
+                                    align-items: center;
+                                    gap: 6px;
                                 "
                             >
-                                <option value="sync" selected>Sync</option>
-                                <option value="random">Random</option>
-                            </select>
+                                <input
+                                    type="text"
+                                    id="fg-anim-colors"
+                                    value="01234567"
+                                    maxlength="16"
+                                    placeholder="0-7,8=trans"
+                                    style="
+                                        width: 60px;
+                                        padding: 3px 5px;
+                                        background: var(--ui-bg);
+                                        color: var(--ui-text);
+                                        border: 1px solid var(--ui-border);
+                                        border-radius: 3px;
+                                        font-family: monospace;
+                                        font-size: 0.9em;
+                                    "
+                                />
+                                <select
+                                    id="fg-anim-speed"
+                                    style="
+                                        padding: 3px;
+                                        background: var(--ui-bg);
+                                        color: var(--ui-text);
+                                        border: 1px solid var(--ui-border);
+                                        border-radius: 3px;
+                                        font-size: 0.85em;
+                                    "
+                                >
+                                    <option value="1000">Slow</option>
+                                    <option value="500" selected>Med</option>
+                                    <option value="250">Fast</option>
+                                </select>
+                                <select
+                                    id="fg-anim-offset"
+                                    style="
+                                        padding: 3px;
+                                        background: var(--ui-bg);
+                                        color: var(--ui-text);
+                                        border: 1px solid var(--ui-border);
+                                        border-radius: 3px;
+                                        font-size: 0.85em;
+                                    "
+                                >
+                                    <option value="sync">Sync</option>
+                                    <option value="random">Rand</option>
+                                </select>
+                                <select
+                                    id="fg-anim-mode"
+                                    style="
+                                        padding: 3px;
+                                        background: var(--ui-bg);
+                                        color: var(--ui-text);
+                                        border: 1px solid var(--ui-border);
+                                        border-radius: 3px;
+                                        font-size: 0.85em;
+                                    "
+                                >
+                                    <option value="forward">Fwd</option>
+                                    <option value="reverse">Rev</option>
+                                    <option value="pingpong">Ping</option>
+                                    <option value="random">Rand</option>
+                                </select>
+                            </div>
                         </div>
 
-                        <!-- Cycle Mode Config (shown for colorCycle and charCycle) -->
+                        <!-- BG Animation Row -->
                         <div
-                            id="cycle-mode-config"
-                            style="display: none; align-items: center; gap: 8px"
+                            style="
+                                display: flex;
+                                align-items: center;
+                                gap: 6px;
+                                padding: 2px 6px;
+                                background: var(--ui-bg);
+                                border-radius: 4px;
+                            "
                         >
-                            <label style="font-weight: 500">Mode:</label>
-                            <select
-                                id="cycle-mode"
+                            <input
+                                type="checkbox"
+                                id="bg-anim-enabled"
+                                title="Enable background color animation"
+                            />
+                            <label style="font-size: 0.85em; min-width: 35px"
+                                >BG</label
+                            >
+                            <div
+                                id="bg-anim-details"
                                 style="
-                                    padding: 6px 12px;
-                                    background: var(--ui-bg);
-                                    color: var(--ui-text);
-                                    border: 1px solid var(--ui-border);
-                                    border-radius: 4px;
-                                    cursor: pointer;
-                                    font-size: 0.95em;
+                                    display: none;
+                                    align-items: center;
+                                    gap: 6px;
                                 "
                             >
-                                <option value="forward" selected>
-                                    Forward
-                                </option>
-                                <option value="reverse">Reverse</option>
-                                <option value="pingpong">Ping-Pong</option>
-                                <option value="random">Random</option>
-                            </select>
-                        </div>
-
-                        <!-- Color Cycle Config (hidden by default) -->
-                        <div
-                            id="color-cycle-config"
-                            style="display: none; align-items: center; gap: 8px"
-                        >
-                            <label style="font-weight: 500">Colors:</label>
-                            <input
-                                type="text"
-                                id="color-cycle-input"
-                                value="01234567"
-                                maxlength="16"
-                                style="
-                                    width: 100px;
-                                    padding: 6px 8px;
-                                    background: var(--ui-bg);
-                                    color: var(--ui-text);
-                                    border: 1px solid var(--ui-border);
-                                    border-radius: 4px;
-                                    font-family: monospace;
-                                    font-size: 1em;
-                                "
-                            />
-                        </div>
-
-                        <!-- Char Cycle Config (hidden by default) -->
-                        <div
-                            id="char-cycle-config"
-                            style="display: none; align-items: center; gap: 8px"
-                        >
-                            <label style="font-weight: 500">Chars:</label>
-                            <input
-                                type="text"
-                                id="char-cycle-input"
-                                value="★✦·"
-                                maxlength="16"
-                                style="
-                                    width: 100px;
-                                    padding: 6px 8px;
-                                    background: var(--ui-bg);
-                                    color: var(--ui-text);
-                                    border: 1px solid var(--ui-border);
-                                    border-radius: 4px;
-                                    font-family: monospace;
-                                    font-size: 1em;
-                                "
-                            />
+                                <input
+                                    type="text"
+                                    id="bg-anim-colors"
+                                    value="14"
+                                    maxlength="16"
+                                    placeholder="0-7,8=trans"
+                                    style="
+                                        width: 60px;
+                                        padding: 3px 5px;
+                                        background: var(--ui-bg);
+                                        color: var(--ui-text);
+                                        border: 1px solid var(--ui-border);
+                                        border-radius: 3px;
+                                        font-family: monospace;
+                                        font-size: 0.9em;
+                                    "
+                                />
+                                <select
+                                    id="bg-anim-speed"
+                                    style="
+                                        padding: 3px;
+                                        background: var(--ui-bg);
+                                        color: var(--ui-text);
+                                        border: 1px solid var(--ui-border);
+                                        border-radius: 3px;
+                                        font-size: 0.85em;
+                                    "
+                                >
+                                    <option value="1000">Slow</option>
+                                    <option value="500" selected>Med</option>
+                                    <option value="250">Fast</option>
+                                </select>
+                                <select
+                                    id="bg-anim-offset"
+                                    style="
+                                        padding: 3px;
+                                        background: var(--ui-bg);
+                                        color: var(--ui-text);
+                                        border: 1px solid var(--ui-border);
+                                        border-radius: 3px;
+                                        font-size: 0.85em;
+                                    "
+                                >
+                                    <option value="sync">Sync</option>
+                                    <option value="random">Rand</option>
+                                </select>
+                                <select
+                                    id="bg-anim-mode"
+                                    style="
+                                        padding: 3px;
+                                        background: var(--ui-bg);
+                                        color: var(--ui-text);
+                                        border: 1px solid var(--ui-border);
+                                        border-radius: 3px;
+                                        font-size: 0.85em;
+                                    "
+                                >
+                                    <option value="forward">Fwd</option>
+                                    <option value="reverse">Rev</option>
+                                    <option value="pingpong">Ping</option>
+                                    <option value="random">Rand</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
 

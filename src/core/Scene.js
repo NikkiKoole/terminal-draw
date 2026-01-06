@@ -26,6 +26,7 @@ import {
   validateTemplate,
   createLayerTemplate,
 } from "./ProjectTemplate.js";
+import { ParticleEmitter } from "../particles/ParticleEmitter.js";
 // LayerTemplate system removed - using fixed layers from project templates
 
 export class Scene {
@@ -49,6 +50,11 @@ export class Scene {
     this.paletteId = paletteId;
     this.templateId = templateId;
     this.options = {};
+
+    // Initialize particle system
+    this.particles = {
+      emitters: [],
+    };
 
     // Initialize layers
     if (layers) {
@@ -243,6 +249,9 @@ export class Scene {
       activeLayerId: this.activeLayerId,
       options: { ...this.options },
       layers: this.layers.map((layer) => layer.toObject()),
+      particles: {
+        emitters: this.particles.emitters.map((e) => e.toObject()),
+      },
     };
   }
 
@@ -260,6 +269,13 @@ export class Scene {
     // Replace default layers with saved layers
     if (obj.layers) {
       scene.layers = obj.layers.map((layerData) => Layer.fromObject(layerData));
+    }
+
+    // Restore particle emitters
+    if (obj.particles?.emitters) {
+      scene.particles.emitters = obj.particles.emitters.map((e) =>
+        ParticleEmitter.fromObject(e),
+      );
     }
 
     return scene;

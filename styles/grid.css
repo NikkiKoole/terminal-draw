@@ -232,3 +232,50 @@
 .grid-container.test-pattern .cell {
     background: rgba(255, 255, 255, 0.02);
 }
+
+/* ============================================
+   Particle Layers (per drawing layer)
+   ============================================ */
+
+/* Particle layer sits on top of its corresponding visual layer */
+.particle-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: calc(var(--grid-w) * 1ch);
+    height: calc(var(--grid-h) * var(--cell-height));
+    pointer-events: none;
+    overflow: hidden;
+    font-family: var(--font-mono);
+    font-size: var(--cell-size);
+}
+
+/* Particle layers follow visual layer z-index + 0.5 to render on top of their layer */
+.particle-layer[data-layer="bg"] {
+    z-index: 2;
+}
+
+.particle-layer[data-layer="mid"] {
+    z-index: 3;
+}
+
+.particle-layer[data-layer="fg"] {
+    z-index: 4;
+}
+
+/* Hidden particle layer (follows parent layer visibility) */
+.particle-layer.hidden {
+    display: none;
+}
+
+.particle {
+    position: absolute;
+    font-family: var(--font-mono);
+    font-size: var(--cell-size);
+    line-height: var(--cell-height);
+    width: 1ch;
+    height: var(--cell-height);
+    text-align: center;
+    white-space: pre;
+    pointer-events: none;
+}

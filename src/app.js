@@ -36,6 +36,12 @@ import { SelectionManager } from "./core/SelectionManager.js";
 import { ClearCommand } from "./commands/ClearCommand.js";
 
 import { AnimationEngine } from "./animation/AnimationEngine.js";
+import {
+  ParticleEngine,
+  ParticleEmitter,
+  createFromPreset,
+  PRESETS,
+} from "./particles/index.js";
 
 import { StartupDialog } from "./ui/StartupDialog.js";
 import { PROJECT_TEMPLATES, getTemplate } from "./core/ProjectTemplate.js";
@@ -105,6 +111,9 @@ let selectionManager = null;
 
 // Animation engine
 let animationEngine = null;
+
+// Particle engine
+let particleEngine = null;
 
 // Platform detection for keyboard shortcuts
 const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
@@ -1958,6 +1967,12 @@ function replaceScene(newScene) {
 
   // Apply the palette from loaded scene
   applyPalette(scene.paletteId);
+
+  // Update particle engine with new scene
+  if (particleEngine) {
+    particleEngine.stop();
+    particleEngine.scene = scene;
+  }
 }
 
 /**
@@ -2419,6 +2434,7 @@ function initUIComponents() {
   initClearOperations();
   initScaleControls();
   initPaletteSelector();
+  initParticles();
 
   // Mark body as loaded to prevent FOUC
   document.body.classList.add("loaded");
@@ -3097,6 +3113,252 @@ function initAnimation() {
       }, 100);
     }
   });
+}
+
+/**
+ * Initialize particle system and controls
+ */
+function initParticles() {
+  const gridContainer = document.querySelector(".grid-container");
+  if (!gridContainer) {
+    console.error("Grid container not found for particle engine");
+    return;
+  }
+
+  // Create particle engine
+  particleEngine = new ParticleEngine(scene, stateManager, gridContainer);
+
+  // Wire up particle panel toggle
+  const particleToggle = document.getElementById("particle-toggle");
+  const particlePanel = document.getElementById("particle-panel");
+  const particlePanelClose = document.getElementById("particle-panel-close");
+
+  if (particleToggle && particlePanel) {
+    particleToggle.addEventListener("click", () => {
+      particlePanel.classList.toggle("hidden");
+      particleToggle.classList.toggle("active");
+    });
+
+    // Close panel on close button
+    if (particlePanelClose) {
+      particlePanelClose.addEventListener("click", () => {
+        particlePanel.classList.add("hidden");
+        particleToggle.classList.remove("active");
+      });
+    }
+
+    // Close panel when clicking outside
+    document.addEventListener("click", (e) => {
+      if (
+        !particlePanel.contains(e.target) &&
+        !particleToggle.contains(e.target) &&
+        !particlePanel.classList.contains("hidden")
+      ) {
+        particlePanel.classList.add("hidden");
+        particleToggle.classList.remove("active");
+      }
+    });
+  }
+
+  // Wire up preset buttons
+  const presetButtons = document.querySelectorAll(".preset-btn[data-preset]");
+  const layerSelect = document.getElementById("particle-layer-select");
+
+  // Populate layer select with actual scene layers
+  if (layerSelect && scene) {
+    layerSelect.innerHTML = "";
+    scene.layers.forEach((layer, index) => {
+      const option = document.createElement("option");
+      option.value = layer.id;
+      option.textContent = layer.name || layer.id;
+      // Select the last (topmost) layer by default
+      if (index === scene.layers.length - 1) {
+        option.selected = true;
+      }
+      layerSelect.appendChild(option);
+    });
+  }
+
+  presetButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const presetId = btn.dataset.preset;
+      const selectedLayer = layerSelect ? layerSelect.value : "fg";
+
+      // Build overrides based on preset type to set sensible positions
+      const overrides = { layerId: selectedLayer };
+      const preset = PRESETS[presetId];
+
+      if (preset) {
+        switch (preset.type) {
+          case "point":
+            // Center of scene
+            overrides.x = Math.floor(scene.w / 2);
+            overrides.y = Math.floor(scene.h / 2);
+            break;
+          case "line":
+            // Horizontal line across bottom (for fire/bubbles rising up)
+            if (preset.particle?.velocity?.y < 0) {
+              // Rising particles - spawn at bottom, full width
+              overrides.x = 0;
+              overrides.y = scene.h - 2;
+              overrides.width = scene.w;
+            } else {
+              // Falling particles - spawn at top
+              overrides.x = 0;
+              overrides.y = 0;
+              overrides.width = scene.w;
+            }
+            break;
+          case "area":
+            // Cover most of the scene for sparkle/stars
+            overrides.x = 2;
+            overrides.y = 2;
+            overrides.width = scene.w - 4;
+            overrides.height = scene.h - 4;
+            break;
+          // 'edge' type doesn't need position - uses scene dimensions
+        }
+      }
+
+      // Create emitter from preset with overrides
+      const emitterConfig = createFromPreset(presetId, overrides);
+      const emitter = new ParticleEmitter(emitterConfig);
+
+      // Add to scene
+      scene.particles.emitters.push(emitter);
+
+      // Refresh emitter list UI
+      updateEmitterList();
+
+      // Start particle engine if not already playing
+      if (!particleEngine.isPlaying()) {
+        particleEngine.start();
+        updateAnimPlayButton();
+      }
+
+      updateStatus(
+        `Added ${emitterConfig.name} effect on ${selectedLayer} layer`,
+      );
+    });
+  });
+
+  // Wire up clear emitters button
+  const clearEmittersBtn = document.getElementById("clear-emitters-btn");
+  if (clearEmittersBtn) {
+    clearEmittersBtn.addEventListener("click", () => {
+      scene.particles.emitters = [];
+      particleEngine.clearParticles();
+      updateEmitterList();
+      updateStatus("Cleared all particle emitters");
+    });
+  }
+
+  // Sync particle engine with animation play/pause
+  stateManager.on("animation:started", () => {
+    if (particleEngine && scene.particles.emitters.length > 0) {
+      particleEngine.start();
+    }
+  });
+
+  stateManager.on("animation:stopped", () => {
+    if (particleEngine) {
+      particleEngine.stop();
+    }
+  });
+
+  // Update emitter list UI
+  function updateEmitterList() {
+    const emitterList = document.getElementById("emitter-list");
+    if (!emitterList) return;
+
+    const emitters = scene.particles.emitters;
+
+    if (emitters.length === 0) {
+      emitterList.innerHTML =
+        '<div class="emitter-empty">No emitters. Click a preset to add one.</div>';
+      return;
+    }
+
+    emitterList.innerHTML = emitters
+      .map(
+        (emitter, index) => `
+      <div class="emitter-item" data-index="${index}">
+        <div class="emitter-info">
+          <span class="emitter-name">${emitter.name}</span>
+          <span class="emitter-layer">${emitter.layerId}</span>
+        </div>
+        <div class="emitter-controls">
+          <button class="emitter-toggle ${emitter.enabled ? "" : "disabled"}"
+                  data-index="${index}" title="${emitter.enabled ? "Disable" : "Enable"}">
+            ${emitter.enabled ? "👁" : "👁‍🗨"}
+          </button>
+          <button class="emitter-remove" data-index="${index}" title="Remove">×</button>
+        </div>
+      </div>
+    `,
+      )
+      .join("");
+
+    // Wire up toggle buttons
+    emitterList.querySelectorAll(".emitter-toggle").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const idx = parseInt(btn.dataset.index);
+        const emitter = scene.particles.emitters[idx];
+        if (emitter) {
+          emitter.enabled = !emitter.enabled;
+          updateEmitterList();
+        }
+      });
+    });
+
+    // Wire up remove buttons
+    emitterList.querySelectorAll(".emitter-remove").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const idx = parseInt(btn.dataset.index);
+        scene.particles.emitters.splice(idx, 1);
+        updateEmitterList();
+        updateStatus("Removed particle emitter");
+      });
+    });
+  }
+
+  // Helper to update play button state
+  function updateAnimPlayButton() {
+    const playBtn = document.getElementById("anim-play-btn");
+    const statusSpan = document.getElementById("anim-status");
+
+    if (playBtn && particleEngine.isPlaying()) {
+      playBtn.textContent = "⏸ Pause";
+      if (statusSpan) {
+        const animCount = animationEngine
+          ? animationEngine.getAnimatedCellCount()
+          : 0;
+        const particleCount = particleEngine.getParticleCount();
+        const parts = [];
+        if (animCount > 0) parts.push(`${animCount} animated`);
+        if (particleCount > 0) parts.push(`${particleCount} particles`);
+        statusSpan.textContent = parts.join(", ");
+      }
+    }
+  }
+
+  // Update layer select options based on scene layers
+  function updateLayerOptions() {
+    if (!layerSelect) return;
+
+    layerSelect.innerHTML = scene.layers
+      .map(
+        (layer) =>
+          `<option value="${layer.id}" ${layer.id === "mid" ? "selected" : ""}>${layer.name}</option>`,
+      )
+      .join("");
+  }
+
+  // Initialize
+  updateLayerOptions();
+  updateEmitterList();
 }
 
 /**

@@ -86,6 +86,13 @@
                         id="anim-status"
                         style="font-size: 0.85em; color: var(--text-muted)"
                     ></span>
+                    <button
+                        id="particle-toggle"
+                        class="tool-btn"
+                        title="Particle Effects"
+                    >
+                        ✨ Particles
+                    </button>
 
                     <div
                         style="
@@ -712,6 +719,239 @@
                             <div id="grid-status" class="grid-status hidden">
                                 ✅ Grid resized!
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Particle Panel -->
+                <div id="particle-panel" class="particle-panel hidden">
+                    <div class="particle-panel-content">
+                        <div class="particle-panel-header">
+                            <h3>Particle Effects</h3>
+                            <button id="particle-panel-close" class="close-btn">
+                                &times;
+                            </button>
+                        </div>
+
+                        <div class="particle-section">
+                            <label class="section-label">Quick Add</label>
+                            <div class="preset-grid">
+                                <button
+                                    class="preset-btn"
+                                    data-preset="rain"
+                                    title="Rain"
+                                >
+                                    🌧️
+                                </button>
+                                <button
+                                    class="preset-btn"
+                                    data-preset="snow"
+                                    title="Snow"
+                                >
+                                    ❄️
+                                </button>
+                                <button
+                                    class="preset-btn"
+                                    data-preset="sparkle"
+                                    title="Sparkle"
+                                >
+                                    ✨
+                                </button>
+                                <button
+                                    class="preset-btn"
+                                    data-preset="smoke"
+                                    title="Smoke"
+                                >
+                                    💨
+                                </button>
+                                <button
+                                    class="preset-btn"
+                                    data-preset="fire"
+                                    title="Fire"
+                                >
+                                    🔥
+                                </button>
+                                <button
+                                    class="preset-btn"
+                                    data-preset="bubbles"
+                                    title="Bubbles"
+                                >
+                                    🫧
+                                </button>
+                                <button
+                                    class="preset-btn"
+                                    data-preset="clouds"
+                                    title="Clouds"
+                                >
+                                    ☁️
+                                </button>
+                                <button
+                                    class="preset-btn"
+                                    data-preset="stars"
+                                    title="Stars"
+                                >
+                                    ⭐
+                                </button>
+                            </div>
+                            <label class="section-label" style="margin-top: 8px"
+                                >Dense Effects</label
+                            >
+                            <div class="preset-grid">
+                                <button
+                                    class="preset-btn"
+                                    data-preset="smokePlume"
+                                    title="Smoke Plume"
+                                >
+                                    🌫️
+                                </button>
+                                <button
+                                    class="preset-btn"
+                                    data-preset="inferno"
+                                    title="Inferno"
+                                >
+                                    🔥
+                                </button>
+                                <button
+                                    class="preset-btn"
+                                    data-preset="stormClouds"
+                                    title="Storm Clouds"
+                                >
+                                    ⛈️
+                                </button>
+                                <button
+                                    class="preset-btn"
+                                    data-preset="fog"
+                                    title="Fog"
+                                >
+                                    🌁
+                                </button>
+                                <button
+                                    class="preset-btn"
+                                    data-preset="embers"
+                                    title="Embers"
+                                >
+                                    ✨
+                                </button>
+                            </div>
+                            <label class="section-label" style="margin-top: 8px"
+                                >Radial / Physics</label
+                            >
+                            <div class="preset-grid">
+                                <button
+                                    class="preset-btn"
+                                    data-preset="explosion"
+                                    title="Explosion"
+                                >
+                                    💥
+                                </button>
+                                <button
+                                    class="preset-btn"
+                                    data-preset="burst"
+                                    title="Burst"
+                                >
+                                    💫
+                                </button>
+                                <button
+                                    class="preset-btn"
+                                    data-preset="fountain"
+                                    title="Fountain"
+                                >
+                                    ⛲
+                                </button>
+                                <button
+                                    class="preset-btn"
+                                    data-preset="firework"
+                                    title="Firework"
+                                >
+                                    🎆
+                                </button>
+                                <button
+                                    class="preset-btn"
+                                    data-preset="shockwave"
+                                    title="Shockwave"
+                                >
+                                    🔘
+                                </button>
+                                <button
+                                    class="preset-btn"
+                                    data-preset="confetti"
+                                    title="Confetti"
+                                >
+                                    🎊
+                                </button>
+                                <button
+                                    class="preset-btn"
+                                    data-preset="waterfall"
+                                    title="Waterfall"
+                                >
+                                    🌊
+                                </button>
+                                <button
+                                    class="preset-btn"
+                                    data-preset="leaves"
+                                    title="Falling Leaves"
+                                >
+                                    🍂
+                                </button>
+                                <button
+                                    class="preset-btn"
+                                    data-preset="meteor"
+                                    title="Meteor Shower"
+                                >
+                                    ☄️
+                                </button>
+                                <button
+                                    class="preset-btn"
+                                    data-preset="magic"
+                                    title="Magic Dust"
+                                >
+                                    🪄
+                                </button>
+                                <button
+                                    class="preset-btn"
+                                    data-preset="steam"
+                                    title="Steam"
+                                >
+                                    ♨️
+                                </button>
+                                <button
+                                    class="preset-btn"
+                                    data-preset="plasma"
+                                    title="Plasma"
+                                >
+                                    🔮
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="particle-section">
+                            <label class="section-label">Layer</label>
+                            <select
+                                id="particle-layer-select"
+                                class="particle-select"
+                            >
+                                <option value="bg">Background</option>
+                                <option value="mid" selected>Middle</option>
+                                <option value="fg">Foreground</option>
+                            </select>
+                        </div>
+
+                        <div class="particle-section">
+                            <label class="section-label">Active Emitters</label>
+                            <div id="emitter-list" class="emitter-list">
+                                <div class="emitter-empty">
+                                    No emitters. Click a preset to add one.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="particle-section">
+                            <button
+                                id="clear-emitters-btn"
+                                class="io-btn clear-btn"
+                            >
+                                🗑️ Clear All Emitters
+                            </button>
                         </div>
                     </div>
                 </div>

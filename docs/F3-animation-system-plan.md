@@ -1396,6 +1396,53 @@ emitter: {
 }
 ```
 
+### Despawn Boundaries
+
+Currently particles despawn at scene edges. This adds configurable despawn zones:
+
+#### Despawn Modes
+
+| Mode | Behavior | Use Case |
+|------|----------|----------|
+| **Scene** | Despawn at scene edges (default) | Rain, snow, most effects |
+| **Emitter Zone** | Despawn when leaving emitter's spawn area | Contained effects, localized fog |
+| **Custom Zone** | Despawn when leaving a defined rectangle | Chimney smoke, window effects |
+| **Distance** | Despawn when N cells from spawn point | Explosions, radial limits |
+| **None** | Only despawn via lifespan or collision | Long-lived particles |
+
+#### Data Model
+
+```javascript
+emitter: {
+  // Despawn boundary settings
+  despawnMode: 'scene',  // scene | emitterZone | customZone | distance | none
+  
+  // For customZone mode
+  despawnBounds: { x: 5, y: 0, width: 30, height: 15 },
+  
+  // For distance mode
+  despawnDistance: 20,   // Cells from spawn point
+  
+  // Edge behavior before despawn
+  edgeBehavior: 'despawn',  // despawn | wrap | bounce | clamp
+}
+```
+
+#### Edge Behaviors
+
+| Behavior | Description | Use Case |
+|----------|-------------|----------|
+| **Despawn** | Remove particle (default) | Most effects |
+| **Wrap** | Teleport to opposite edge | Continuous rain, scrolling |
+| **Bounce** | Reflect velocity at boundary | Contained bouncing |
+| **Clamp** | Stop at edge, stay alive | Accumulation effects |
+
+#### Visual Indicators
+
+When editing emitters:
+- Despawn boundaries shown as dotted lines (distinct from spawn area)
+- Different colors: spawn area (green), despawn zone (red/orange)
+
 ### Force Fields
 
 Force fields are scene-level objects that affect particles (and later, boids) passing through or near them.
@@ -1649,15 +1696,149 @@ tests/
 └── Vortex.test.js
 ```
 
+### Per-Emitter Controls
+
+Additional emitter settings for precise timing and behavior:
+
+| Setting | Description | Use Case |
+|---------|-------------|----------|
+| **Burst Mode** | Spawn N particles instantly, then stop | Explosions, one-shot effects |
+| **Delay** | Wait X ms before starting | Staged effects, sequencing |
+| **Duration** | Run for Y ms, then stop | Timed effects |
+| **Loop Count** | Repeat burst N times | Repeating explosions |
+| **Loop Delay** | Wait between loops | Pulsing effects |
+
+```javascript
+emitter: {
+  // Timing controls
+  delay: 0,              // ms before first spawn
+  duration: null,        // ms to run (null = forever)
+  
+  // Burst mode
+  burstMode: false,      // If true, spawn burstCount instantly
+  burstCount: 50,        // Particles per burst
+  burstLoops: 1,         // Number of bursts (0 = infinite)
+  burstDelay: 1000,      // ms between bursts
+}
+```
+
+### Emitter Linking / Chain Reactions
+
+Emitters can trigger other emitters, enabling complex staged effects:
+
+| Trigger | Description | Use Case |
+|---------|-------------|----------|
+| **On Particle Death** | When particle despawns, trigger emitter at that location | Firework stages, splashes |
+| **On Collision** | When particle hits cell, trigger emitter | Impact sparks, ripples |
+| **On Timer** | After X ms, trigger linked emitter | Staged explosions |
+| **On Emitter Complete** | When emitter finishes, trigger next | Effect sequences |
+
+```javascript
+emitter: {
+  // Linking
+  linkedEmitters: [
+    {
+      emitterId: 'sparks-1',        // Emitter to trigger
+      trigger: 'onParticleDeath',   // When to trigger
+      probability: 0.3,              // Chance per trigger (0-1)
+      inheritPosition: true,         // Spawn at particle's position
+      inheritVelocity: false,        // Inherit particle's velocity
+    }
+  ]
+}
+```
+
+**Example: Multi-stage Firework**
+```
+Emitter A (rocket):     Launches upward
+    ↓ onParticleDeath
+Emitter B (explosion):  Radial burst of sparks
+    ↓ onParticleDeath  
+Emitter C (trails):     Small trailing particles
+```
+
+### Path/Spline Following
+
+Particles can follow drawn paths for guided effects:
+
+#### Path Types
+
+| Type | Description | Use Case |
+|------|-------------|----------|
+| **Linear Path** | Follow straight line segments | Conveyor belts, rails |
+| **Bezier Curve** | Smooth curved path | Rivers, swooping effects |
+| **Loop Path** | Closed path that repeats | Orbits, circular flows |
+
+#### Drawing Paths
+
+- **Path Tool** - Click points to create path segments
+- **Curve Tool** - Click and drag for bezier control points
+- Paths are scene-level objects (like emitters and forces)
+
+```javascript
+// Scene-level paths
+scene.paths = [
+  {
+    id: 'river-1',
+    type: 'bezier',
+    points: [
+      { x: 0, y: 10 },
+      { x: 20, y: 8, cp1: { x: 10, y: 5 }, cp2: { x: 15, y: 12 } },
+      { x: 40, y: 10 },
+    ],
+    loop: false,
+  }
+];
+
+// Emitter following a path
+emitter: {
+  followPath: 'river-1',    // Path ID to follow
+  pathSpeed: 5,             // Cells per second along path
+  pathSpeedVariance: 1,     // Speed variation
+  pathOffset: 0.5,          // Perpendicular offset variance
+}
+```
+
+### Kill Zones
+
+Specific cells or colors that destroy particles on contact:
+
+```javascript
+// Scene-level kill zone settings
+scene.particles.killZones = {
+  enabled: true,
+  
+  // Kill by cell content
+  killGlyphs: ['█', '▓'],   // These glyphs destroy particles
+  
+  // Kill by color
+  killColors: [0],           // Black cells kill particles
+  
+  // Kill by layer
+  killOnLayer: 'obstacles',  // Any non-empty cell on this layer kills
+};
+
+// Or per-emitter override
+emitter: {
+  particle: {
+    killOnGlyphs: ['█'],
+    killOnColors: [0],
+  }
+}
+```
+
 ### Implementation Order
 
 1. **Force field base system** - ForceField base class, integration with ParticleEngine
 2. **Basic forces** - Attractor, Repulsor, WindZone
 3. **Drawable emitter placement** - Tools for point/line/area
-4. **Advanced forces** - Vortex, Turbulence, GravityWell
-5. **Collision system** - Particle/cell interaction
-6. **Drawable force placement** - Tools for forces
-7. **UI polish** - Visual indicators, panel improvements
+4. **Per-emitter controls** - Burst mode, delay, duration
+5. **Advanced forces** - Vortex, Turbulence, GravityWell
+6. **Collision system** - Particle/cell interaction, kill zones
+7. **Emitter linking** - Chain reactions, triggers
+8. **Path following** - Path drawing, particle guidance
+9. **Drawable force placement** - Tools for forces
+10. **UI polish** - Visual indicators, panel improvements
 
 ---
 
